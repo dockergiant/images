@@ -20,9 +20,8 @@ jobs:
           - "6.2"
           - "7.0"
           - "7.2"
-#        include:
-#          - version: "7.2"
-#            modifier: "-rc"
+          - "7.4"
+          - "8.0"
 
 
     steps:
