@@ -95,7 +95,7 @@ jobs:
             OS_RELEASE=${{ matrix.php_os_release }}
             ENV_SOURCE_IMAGE=php
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm:${{ matrix.php_version }}, rollupdev/php-fpm:${{ matrix.php_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm:${{ matrix.php_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm:${{ matrix.php_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm:${{ matrix.php_version }}-buildcache,mode=max
 
@@ -110,7 +110,7 @@ jobs:
             OS_RELEASE=${{ matrix.php_os_release }}
             ENV_SOURCE_IMAGE=php
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm:latest, rollupdev/php-fpm:latest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm:latest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm:${{ matrix.php_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm:${{ matrix.php_version }}-buildcache,mode=max
 
@@ -156,7 +156,7 @@ jobs:
             NODE_VERSION=${{ matrix.node_version }}
             OS_RELEASE=${{ matrix.node_os_release }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm:${{ matrix.php_version }}-node${{ matrix.node_version }}, rollupdev/php-fpm:${{ matrix.php_version }}-node${{ matrix.node_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm:${{ matrix.php_version }}-node${{ matrix.node_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -172,7 +172,7 @@ jobs:
             NODE_VERSION=${{ matrix.node_version }}
             OS_RELEASE=${{ matrix.node_os_release }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm:latest-nodelatest, rollupdev/php-fpm:latest-nodelatest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm:latest-nodelatest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -218,7 +218,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}, rollupdev/php-fpm-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -233,7 +233,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${{ matrix.php_version }}, rollupdev/php-fpm-debug:${{ matrix.php_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${{ matrix.php_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -248,7 +248,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-debug:latest-nodelatest, rollupdev/php-fpm-debug:latest-nodelatest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-debug:latest-nodelatest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -263,7 +263,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-debug:latest, rollupdev/php-fpm-debug:latest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-debug:latest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
           
@@ -308,7 +308,7 @@ jobs:
             ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:${{ matrix.php_version }}-node${{ matrix.node_version }}, rollupdev/php-fpm-magento1:${{ matrix.php_version }}-node${{ matrix.node_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:${{ matrix.php_version }}-node${{ matrix.node_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -322,7 +322,7 @@ jobs:
             ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm
             PHP_VERSION=${{ matrix.php_version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:${{ matrix.php_version }}, rollupdev/php-fpm-magento1:${{ matrix.php_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:${{ matrix.php_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -336,7 +336,7 @@ jobs:
             ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:latest-nodelatest, rollupdev/php-fpm-magento1:latest-nodelatest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:latest-nodelatest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -350,7 +350,7 @@ jobs:
             ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm
             PHP_VERSION=${{ matrix.php_version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:latest, rollupdev/php-fpm-magento1:latest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:latest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
   magento1-xdebug:
@@ -395,7 +395,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}, rollupdev/php-fpm-magento1-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -410,7 +410,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:${{ matrix.php_version }}, rollupdev/php-fpm-magento1-debug:${{ matrix.php_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:${{ matrix.php_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -425,7 +425,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:latest-nodelatest, rollupdev/php-fpm-magento1-debug:latest-nodelatest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:latest-nodelatest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -440,7 +440,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:latest, rollupdev/php-fpm-magento1-debug:latest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:latest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
           
@@ -485,7 +485,7 @@ jobs:
             ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:${{ matrix.php_version }}-node${{ matrix.node_version }}, rollupdev/php-fpm-magento2:${{ matrix.php_version }}-node${{ matrix.node_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:${{ matrix.php_version }}-node${{ matrix.node_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -499,7 +499,7 @@ jobs:
             ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm
             PHP_VERSION=${{ matrix.php_version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:${{ matrix.php_version }}, rollupdev/php-fpm-magento2:${{ matrix.php_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:${{ matrix.php_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -513,7 +513,7 @@ jobs:
             ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:latest-nodelatest, rollupdev/php-fpm-magento2:latest-nodelatest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:latest-nodelatest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -527,7 +527,7 @@ jobs:
             ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm
             PHP_VERSION=${{ matrix.php_version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:latest, rollupdev/php-fpm-magento2:latest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:latest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -573,7 +573,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}, rollupdev/php-fpm-magento2-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -588,7 +588,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:${{ matrix.php_version }}, rollupdev/php-fpm-magento2-debug:${{ matrix.php_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:${{ matrix.php_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -603,7 +603,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:latest-nodelatest, rollupdev/php-fpm-magento2-debug:latest-nodelatest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:latest-nodelatest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -618,7 +618,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:latest, rollupdev/php-fpm-magento2-debug:latest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:latest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-magento2-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -663,7 +663,7 @@ jobs:
             ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:${{ matrix.php_version }}-node${{ matrix.node_version }}, rollupdev/php-fpm-wordpress:${{ matrix.php_version }}-node${{ matrix.node_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:${{ matrix.php_version }}-node${{ matrix.node_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -677,7 +677,7 @@ jobs:
             ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm
             PHP_VERSION=${{ matrix.php_version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:${{ matrix.php_version }}, rollupdev/php-fpm-wordpress:${{ matrix.php_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:${{ matrix.php_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -691,7 +691,7 @@ jobs:
             ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:latest-nodelatest, rollupdev/php-fpm-wordpress:latest-nodelatest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:latest-nodelatest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -705,7 +705,7 @@ jobs:
             ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm
             PHP_VERSION=${{ matrix.php_version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:latest, rollupdev/php-fpm-wordpress:latest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:latest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -751,7 +751,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}, rollupdev/php-fpm-wordpress-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -766,7 +766,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:${{ matrix.php_version }}, rollupdev/php-fpm-wordpress-debug:${{ matrix.php_version }}
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:${{ matrix.php_version }}
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -781,7 +781,7 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:latest-nodelatest, rollupdev/php-fpm-wordpress-debug:latest-nodelatest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:latest-nodelatest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
 
@@ -796,6 +796,6 @@ jobs:
             PHP_VERSION=${{ matrix.php_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:latest, rollupdev/php-fpm-wordpress-debug:latest
+          tags: ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:latest
           cache-from: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache
           cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/php-fpm-wordpress-debug:${{ matrix.php_version }}-node${{ matrix.node_version }}-buildcache,mode=max
