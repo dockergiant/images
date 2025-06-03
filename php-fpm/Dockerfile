@@ -23,11 +23,11 @@ ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/do
 # Copy mhsendmail to PHP
 COPY --from=mhs-builder /go/bin/mhsendmail /usr/local/bin/mhsendmail
 
-# If PHP = 7.0 | debs are archived so use those
+# If PHP = 7.0 | debs are archived so use those / --allow-unauthenticated because gpg keys are expired
 RUN if [ "${PHP_VERSION}" = "7.0" ]; \
     then printf "deb http://archive.debian.org/debian/ stretch main\ndeb-src http://archive.debian.org/debian/ stretch main" > /etc/apt/sources.list; \
     apt-get update -y; \
-    apt-get install -y --no-install-recommends \
+    apt-get install -y --no-install-recommends --allow-unauthenticated \
     python \
     python-pip; fi
 
