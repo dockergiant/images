@@ -1,10 +1,8 @@
 <?php
 
 const PHP_LATEST = '8.3';
-const PHP_VERSIONS = ['7.0', '7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3'];
+const PHP_VERSIONS = ['7.1', '7.2', '7.3', '7.4', '8.0', '8.1', '8.2', '8.3'];
 CONST PHP_VERSIONS_OS_RELEASE = [
-    '7.0' => 'stretch',
-    '7.1' => 'buster',
     '7.2' => 'buster',
     '7.3' => 'bullseye',
     '7.4' => 'bullseye',
@@ -28,5 +26,5 @@ const NODE_VERSIONS_OS_RELEASE = [
     '21' => 'bullseye'
 ];
 const EXPERIMENTAL_PHP_VERSIONS = [];
-const NOT_STABLE_XDEBUG_PHP_VERSIONS = ['7.0', '7.1', '7.2', '7.3', '7.4'];
+const NOT_STABLE_XDEBUG_PHP_VERSIONS = ['7.1', '7.2', '7.3', '7.4'];
 

@@ -61,42 +61,46 @@ RUN if [ "$(printf "8.2\n${PHP_VERSION}" | sort -g | head -n1)" != "8.2" ]; \
 
 # Install helpful utilities
 RUN set -eux; \
+    export DEBIAN_FRONTEND=noninteractive; \
     apt-get update -y; \
-    apt-get install -y --no-install-recommends \
-    jq \
-    bash \
-    patch \
-    pv \
-    procps \
-    nano \
-    vim \
-    mariadb-client \
-    sudo \
-    gettext \
-    ca-certificates \
-    git \
-    rsync \
-    bash-completion \
-    nmap  \
-    less \
-    zsh \
-    fish \
-    pwgen \
-    openssh-client \
-    unzip \
-    rsync \
-    socat \
-    oathtool \
-    wget \
-    ack  \
-    automake  \
-    autoconf \
-    cron \
-    htop \
-    chromium \
-    imagemagick \
-    graphicsmagick \
-    qrencode;
+    for i in 1 2 3 4 5; do \
+      apt-get install -y --no-install-recommends --fix-missing \
+        jq \
+        bash \
+        patch \
+        pv \
+        procps \
+        nano \
+        vim \
+        mariadb-client \
+        sudo \
+        gettext \
+        ca-certificates \
+        git \
+        rsync \
+        bash-completion \
+        nmap  \
+        less \
+        zsh \
+        fish \
+        pwgen \
+        openssh-client \
+        unzip \
+        rsync \
+        socat \
+        oathtool \
+        wget \
+        ack  \
+        automake  \
+        autoconf \
+        cron \
+        htop \
+        chromium \
+        imagemagick \
+        graphicsmagick \
+        qrencode && break || { echo "Install failed... retrying ($i/5)" >&2; sleep 10; }; \
+    done
+
 
 COPY docker-entrypoint /usr/local/bin/
 COPY etc/profile.d/*.sh /etc/profile.d/
