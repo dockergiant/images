@@ -120,9 +120,6 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer2
 RUN if [ "$(printf "7.2\n${PHP_VERSION}" | sort -g | head -n1 | awk -F"." '{print $1"."$2}')" != "7.2" ]; \
     then mv -f /usr/bin/composer2lts /usr/bin/composer2; fi
 
-# If PHP < 7.3
-RUN if [ "$(printf "7.3\n${PHP_VERSION}" | sort -g | head -n1 | awk -F"." '{print $1"."$2}')" != "7.3" ]; \
-    then apt-get install -y --no-install-recommends bind9utils; fi
 
 # If PHP >= 7.1
 RUN if [ "$(printf "7.1\n${PHP_VERSION}" | sort -g | head -n1 | awk -F"." '{print $1"."$2}')" = "7.1" ]; \
@@ -130,15 +127,25 @@ RUN if [ "$(printf "7.1\n${PHP_VERSION}" | sort -g | head -n1 | awk -F"." '{prin
     sed -i '/disable ghostscript format types/,+6d' /etc/ImageMagick-6/policy.xml; \
     if [ ! -f "/usr/bin/pip" ]; then ln -s /usr/bin/pip3 /usr/bin/pip; ln -s /usr/bin/python3 /usr/bin/python; fi; fi
 
-# If PHP >= 7.3
-RUN if [ "$(printf "7.3\n${PHP_VERSION}" | sort -g | head -n1 | awk -F"." '{print $1"."$2}')" = "7.3" ]; \
-    then apt-get install -y --no-install-recommends bind9-utils; fi
 
+# Install bind9-utils based on PHP version (with proper dependency resolution)
+RUN set -eux; \
+    export DEBIAN_FRONTEND=noninteractive; \
+    if [ "$(printf "7.3\n${PHP_VERSION}" | sort -g | head -n1 | awk -F"." '{print $1"."$2}')" != "7.3" ]; then \
+        apt-get update -y; \
+        apt-get install -y --no-install-recommends bind9utils; \
+    else \
+        apt-get update -y; \
+        apt-get install -y --no-install-recommends --fix-broken bind9-utils || \
+        apt-get install -y --no-install-recommends dnsutils; \
+    fi
+
+    
 RUN /usr/bin/pip install segno
 
 RUN mkdir -p /etc/zsh/zshrc.d  \
     && echo "autoload -U compinit; compinit" > /etc/zsh/zshrc.d/completions.zsh \
-    && ln -s /usr/bin/fish /bin/fish \
+    && ln -s /usr/bin/fish /bin/fish
 
 RUN set -eux; \
 	{ \
