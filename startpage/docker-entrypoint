@@ -1,23 +1,37 @@
 #!/bin/bash
 set -e
+set -x  # Zet bash debug aan (logt alle commando's)
+
+echo "[INFO] Startpage startup script initiated"
 
 get_latest_release() {
-  curl --silent "https://api.github.com/repos/dockergiant/rolldev/releases/latest" | # Get latest release from GitHub api
-    grep '"tag_name":' |                                            # Get tag line
-    sed -E 's/.*"([^"]+)".*/\1/'                                    # Pluck JSON value
+  curl --silent "https://api.github.com/repos/dockergiant/rolldev/releases/latest" | \
+    grep '"tag_name":' | \
+    sed -E 's/.*"([^"]+)".*/\1/'
 }
 
 ROLL_VERSION=${ROLL_VERSION:-"in-dev"}
+echo "[INFO] Fetching latest release from GitHub..."
 LATEST_RELEASE="$(get_latest_release)"
 
+echo "[INFO] Current version: $ROLL_VERSION"
+echo "[INFO] Latest release: $LATEST_RELEASE"
+
 if [[ "$ROLL_VERSION" != "$LATEST_RELEASE" ]]; then
+  echo "[INFO] Version mismatch detected. Updating version info in index.html..."
   sed -ie "s/class\=\"update hide\"/class\=\"update\"/g" /usr/share/nginx/html/index.html
   sed -ie "s/{{LATEST_RELEASE}}/${LATEST_RELEASE}/g" /usr/share/nginx/html/index.html
 fi
 
-# configure php additions.ini
+echo "[INFO] Injecting ROLL_VERSION and ROLL_SERVICE_DOMAIN..."
 sed -ie "s/{{ROLL_VERSION}}/${ROLL_VERSION}/g" /usr/share/nginx/html/index.html
 sed -ie "s/{{ROLL_SERVICE_DOMAIN}}/${ROLL_SERVICE_DOMAIN}/g" /usr/share/nginx/html/index.html
 
-# Start Nginx
+echo "[INFO] Starting fcgiwrap..."
+spawn-fcgi -s /var/run/fcgiwrap.socket -M 766 /usr/bin/fcgiwrap
+
+echo "[INFO] Fixing socket permissions..."
+chmod 766 /var/run/fcgiwrap.socket
+
+echo "[INFO] Starting nginx..."
 nginx -g 'daemon off;'
