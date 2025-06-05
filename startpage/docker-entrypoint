@@ -19,13 +19,13 @@ echo "[INFO] Latest release: $LATEST_RELEASE"
 
 if [[ "$ROLL_VERSION" != "$LATEST_RELEASE" ]]; then
   echo "[INFO] Version mismatch detected. Updating version info in index.html..."
-  sed -i -e "s/class\=\"update hide\"/class\=\"update\"/g" /usr/share/nginx/html/index.html
-  sed -i -e "s/{{LATEST_RELEASE}}/${LATEST_RELEASE}/g" /usr/share/nginx/html/index.html
+  sed -i "s/class\=\"update hide\"/class\=\"update\"/g" /usr/share/nginx/html/index.html
+  sed -i "s/{{LATEST_RELEASE}}/${LATEST_RELEASE}/g" /usr/share/nginx/html/index.html
 fi
 
 echo "[INFO] Injecting ROLL_VERSION and ROLL_SERVICE_DOMAIN..."
-  sed -i -e "s/{{ROLL_VERSION}}/${ROLL_VERSION}/g" /usr/share/nginx/html/index.html
-  sed -i -e "s/{{ROLL_SERVICE_DOMAIN}}/${ROLL_SERVICE_DOMAIN}/g" /usr/share/nginx/html/index.html
+sed -i "s/{{ROLL_VERSION}}/${ROLL_VERSION}/g" /usr/share/nginx/html/index.html
+sed -i "s/{{ROLL_SERVICE_DOMAIN}}/${ROLL_SERVICE_DOMAIN}/g" /usr/share/nginx/html/index.html
 
 echo "[INFO] Starting fcgiwrap..."
 spawn-fcgi -s /var/run/fcgiwrap.socket -M 766 /usr/bin/fcgiwrap
