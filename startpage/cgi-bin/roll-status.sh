@@ -14,6 +14,11 @@ echo "$networks" | while read -r net; do
     env_name=$(echo "$net" | jq -r '.Labels["dev.roll.environment.name"]')
     env_type=$(echo "$net" | jq -r '.Labels["dev.roll.environment.type"]')
 
+    # Skip if environment name is empty or null
+    if [[ -z "$env_name" || "$env_name" == "null" ]]; then
+        continue
+    fi
+
     # Retrieve all containers
     containers=$(curl -s --unix-socket /var/run/docker.sock http://localhost/containers/json?all=1)
 
