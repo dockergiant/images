@@ -72,7 +72,7 @@ for DIR in ${CHOWN_DIR_LIST:-}; do
   fi
 done
 
-# Add additional specified php extensions if defined on runtime
+# Add additional specified PHP extensions if defined at runtime
 if [[ "$ADD_PHP_EXT" != "" ]]; then
   /usr/local/bin/install-php-extensions "$ADD_PHP_EXT"
 fi
