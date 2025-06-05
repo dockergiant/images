@@ -348,11 +348,54 @@
             text-decoration: none;
             word-break: break-all;
             transition: color 0.2s ease;
+            margin-bottom: 0.75rem;
         }
 
         .container-url:hover {
             color: #7dd3fc;
             text-decoration: underline;
+        }
+
+        .additional-services {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #334155;
+        }
+
+        .additional-services h4 {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .services-list-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .service-link {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background-color: #334155;
+            color: #e2e8f0;
+            text-decoration: none;
+            font-size: 0.75rem;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .service-link:hover {
+            background-color: #475569;
+            border-color: #38bdf8;
+            color: #7dd3fc;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.2);
         }
 
         .loading-message, .error-message {
@@ -717,6 +760,23 @@
                 const statusClass = container.running ? 'status-running' : 'status-stopped';
                 item.classList.add(statusClass);
 
+                // Build additional services HTML
+                let additionalServicesHtml = '';
+                if (container.services && container.services.length > 0) {
+                    const serviceLinks = container.services.map(service => 
+                        `<a href="${service.url}" class="service-link" target="_blank" rel="noopener noreferrer">${service.name}</a>`
+                    ).join('');
+                    
+                    additionalServicesHtml = `
+                        <div class="additional-services">
+                            <h4>Additional Services</h4>
+                            <div class="services-list-container">
+                                ${serviceLinks}
+                            </div>
+                        </div>
+                    `;
+                }
+
                 item.innerHTML = `
                     <div class="container-item-header">
                         <span class="container-name">${container.name}</span>
@@ -724,6 +784,7 @@
                     </div>
                     <p class="container-type">Type: ${container.type}</p>
                     <a href="${container.url}" class="container-url" target="_blank" rel="noopener noreferrer">${container.url}</a>
+                    ${additionalServicesHtml}
                 `;
 
                 if (container.running) {
