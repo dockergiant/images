@@ -4,7 +4,7 @@ echo ""
 
 echo "["
 
-# Vraag alle netwerken op met een dev.roll label
+# Retrieve all networks with a dev.roll label
 networks=$(curl -s --unix-socket /var/run/docker.sock \
   http://localhost/networks | jq -c '.[] | select(.Labels."dev.roll.environment.name")')
 
@@ -14,16 +14,16 @@ echo "$networks" | while read -r net; do
     env_name=$(echo "$net" | jq -r '.Labels["dev.roll.environment.name"]')
     env_type=$(echo "$net" | jq -r '.Labels["dev.roll.environment.type"]')
 
-    # Vraag alle containers op
+    # Retrieve all containers
     containers=$(curl -s --unix-socket /var/run/docker.sock http://localhost/containers/json?all=1)
 
-    # Filter containers die aan dit netwerk hangen
+    # Filter containers attached to this network
     related_containers=$(echo "$containers" | jq -c "[.[] | select(.Labels.\"com.docker.compose.project\" == \"$env_name\")]")
 
-    # Check of minimaal één container running is
+    # Check whether at least one container is running
     is_running=$(echo "$related_containers" | jq '[.[] | select(.State == "running")] | length > 0')
 
-    # Pak de eerste container om working dir op te vragen
+    # Use the first container to get its working directory
     first_container_id=$(echo "$related_containers" | jq -r '.[0].Id // empty')
 
     # Default fallback
