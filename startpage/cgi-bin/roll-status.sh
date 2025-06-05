@@ -55,54 +55,50 @@ echo "$networks" | while read -r net; do
         fi
     fi
 
-    # Detect additional services if .env.roll exists and containers are running
+    # Detect additional services by checking running containers for this project
     additional_services="[]"
-    if [[ -n "$first_container_id" && -f "$workdir/.env.roll" ]]; then
+    if [[ -n "$env_name" ]]; then
         services_json="["
         services_first=1
         
-        # Check for ElasticVue
-        if grep -q '^ROLL_ELASTICVUE=1' "$workdir/.env.roll" 2>/dev/null; then
-            # Check if elasticvue container is running
-            elasticvue_running=$(echo "$related_containers" | jq '[.[] | select(.Names[]? | contains("elasticvue")) | select(.State == "running")] | length > 0')
-            if [[ "$elasticvue_running" == "true" ]]; then
-                [[ "$services_first" -eq 0 ]] && services_json+=","
-                services_first=0
-                services_json+="{\"name\": \"ElasticVue\", \"url\": \"https://elasticvue.${domain}\"}"
-            fi
+        # Check for ElasticVue container
+        elasticvue_running=$(echo "$related_containers" | jq "[.[] | select(.Names[]? | contains(\"elasticvue\")) | select(.State == \"running\")] | length > 0")
+        if [[ "$elasticvue_running" == "true" ]]; then
+            [[ "$services_first" -eq 0 ]] && services_json+=","
+            services_first=0
+            services_json+="{\"name\": \"ElasticVue\", \"url\": \"https://elasticvue.${domain}\"}"
         fi
         
-        # Check for RabbitMQ
-        if grep -q '^ROLL_RABBITMQ=1' "$workdir/.env.roll" 2>/dev/null; then
-            # Check if rabbitmq container is running
-            rabbitmq_running=$(echo "$related_containers" | jq '[.[] | select(.Names[]? | contains("rabbitmq")) | select(.State == "running")] | length > 0')
-            if [[ "$rabbitmq_running" == "true" ]]; then
-                [[ "$services_first" -eq 0 ]] && services_json+=","
-                services_first=0
-                services_json+="{\"name\": \"RabbitMQ\", \"url\": \"https://rabbitmq.${domain}\"}"
-            fi
+        # Check for RabbitMQ container
+        rabbitmq_running=$(echo "$related_containers" | jq "[.[] | select(.Names[]? | contains(\"rabbitmq\")) | select(.State == \"running\")] | length > 0")
+        if [[ "$rabbitmq_running" == "true" ]]; then
+            [[ "$services_first" -eq 0 ]] && services_json+=","
+            services_first=0
+            services_json+="{\"name\": \"RabbitMQ\", \"url\": \"https://rabbitmq.${domain}\"}"
         fi
         
-        # Check for Elasticsearch
-        if grep -q '^ROLL_ELASTICSEARCH=1' "$workdir/.env.roll" 2>/dev/null; then
-            # Check if elasticsearch container is running
-            elasticsearch_running=$(echo "$related_containers" | jq '[.[] | select(.Names[]? | contains("elasticsearch")) | select(.State == "running")] | length > 0')
-            if [[ "$elasticsearch_running" == "true" ]]; then
-                [[ "$services_first" -eq 0 ]] && services_json+=","
-                services_first=0
-                services_json+="{\"name\": \"Elasticsearch\", \"url\": \"https://elasticsearch.${domain}\"}"
-            fi
+        # Check for Elasticsearch container
+        elasticsearch_running=$(echo "$related_containers" | jq "[.[] | select(.Names[]? | contains(\"elasticsearch\")) | select(.State == \"running\")] | length > 0")
+        if [[ "$elasticsearch_running" == "true" ]]; then
+            [[ "$services_first" -eq 0 ]] && services_json+=","
+            services_first=0
+            services_json+="{\"name\": \"Elasticsearch\", \"url\": \"https://elasticsearch.${domain}\"}"
         fi
         
-        # Check for Redis Insight (only if Redis is enabled)
-        if grep -q '^ROLL_REDIS=1' "$workdir/.env.roll" 2>/dev/null; then
-            # Check if redisinsight container is running
-            redisinsight_running=$(echo "$related_containers" | jq '[.[] | select(.Names[]? | contains("redisinsight")) | select(.State == "running")] | length > 0')
-            if [[ "$redisinsight_running" == "true" ]]; then
-                [[ "$services_first" -eq 0 ]] && services_json+=","
-                services_first=0
-                services_json+="{\"name\": \"Redis Insight\", \"url\": \"https://redisinsight.${domain}\"}"
-            fi
+        # Check for Redis Insight container
+        redisinsight_running=$(echo "$related_containers" | jq "[.[] | select(.Names[]? | contains(\"redisinsight\")) | select(.State == \"running\")] | length > 0")
+        if [[ "$redisinsight_running" == "true" ]]; then
+            [[ "$services_first" -eq 0 ]] && services_json+=","
+            services_first=0
+            services_json+="{\"name\": \"Redis Insight\", \"url\": \"https://redisinsight.${domain}\"}"
+        fi
+        
+        # Check for Varnish container
+        varnish_running=$(echo "$related_containers" | jq "[.[] | select(.Names[]? | contains(\"varnish\")) | select(.State == \"running\")] | length > 0")
+        if [[ "$varnish_running" == "true" ]]; then
+            [[ "$services_first" -eq 0 ]] && services_json+=","
+            services_first=0
+            services_json+="{\"name\": \"Varnish\", \"url\": \"https://varnish.${domain}\"}"
         fi
         
         services_json+="]"
