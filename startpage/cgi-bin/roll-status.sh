@@ -32,9 +32,9 @@ echo "$networks" | while read -r net; do
     first_container_id=$(echo "$related_containers" | jq -r '.[0].Id // empty')
 
     # Default fallback
-    url="https://${env_name}.roll.test"
-    domain="roll.test"
-    subdomain="$env_name"
+    url="https://app.${env_name}.test"
+    domain="test"
+    subdomain="app.${env_name}"
 
     if [[ -n "$first_container_id" ]]; then
         inspect=$(curl -s --unix-socket /var/run/docker.sock http://localhost/containers/${first_container_id}/json)
