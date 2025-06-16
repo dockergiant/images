@@ -66,7 +66,7 @@ echo "$networks" | while read -r net; do
         if [[ "$elasticvue_running" == "true" ]]; then
             [[ "$services_first" -eq 0 ]] && services_json+=","
             services_first=0
-            services_json+="{\"name\": \"ElasticVue\", \"url\": \"https://elasticvue.${domain}\"}"
+            services_json+="{\"name\": \"ElasticVue\", \"url\": \"https://elasticvue.${env_name}.${domain}\"}"
         fi
         
         # Check for RabbitMQ container
@@ -74,7 +74,7 @@ echo "$networks" | while read -r net; do
         if [[ "$rabbitmq_running" == "true" ]]; then
             [[ "$services_first" -eq 0 ]] && services_json+=","
             services_first=0
-            services_json+="{\"name\": \"RabbitMQ\", \"url\": \"https://rabbitmq.${domain}\"}"
+            services_json+="{\"name\": \"RabbitMQ\", \"url\": \"https://rabbitmq.${env_name}.${domain}\"}"
         fi
         
         # Check for Elasticsearch container
@@ -82,7 +82,7 @@ echo "$networks" | while read -r net; do
         if [[ "$elasticsearch_running" == "true" ]]; then
             [[ "$services_first" -eq 0 ]] && services_json+=","
             services_first=0
-            services_json+="{\"name\": \"Elasticsearch\", \"url\": \"https://elasticsearch.${domain}\"}"
+            services_json+="{\"name\": \"Elasticsearch\", \"url\": \"https://elasticsearch.${env_name}.${domain}\"}"
         fi
         
         # Check for Redis Insight container
@@ -90,7 +90,7 @@ echo "$networks" | while read -r net; do
         if [[ "$redisinsight_running" == "true" ]]; then
             [[ "$services_first" -eq 0 ]] && services_json+=","
             services_first=0
-            services_json+="{\"name\": \"Redis Insight\", \"url\": \"https://redisinsight.${domain}\"}"
+            services_json+="{\"name\": \"Redis Insight\", \"url\": \"https://redisinsight.${env_name}.${domain}\"}"
         fi
         
         # Check for Varnish container
@@ -98,7 +98,7 @@ echo "$networks" | while read -r net; do
         if [[ "$varnish_running" == "true" ]]; then
             [[ "$services_first" -eq 0 ]] && services_json+=","
             services_first=0
-            services_json+="{\"name\": \"Varnish\", \"url\": \"https://varnish.${domain}\"}"
+            services_json+="{\"name\": \"Varnish\", \"url\": \"https://varnish.${env_name}.${domain}\"}"
         fi
         
         services_json+="]"
