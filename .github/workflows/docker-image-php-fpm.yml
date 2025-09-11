@@ -25,7 +25,7 @@ on:
         type: boolean
         default: false
   workflow_run:
-    workflows: ["Mirror PHP-FPM Base Images"]
+    workflows: ["Mirror Base Images"]
     types: [completed]
     branches: [master]
   pull_request:
@@ -126,10 +126,9 @@ jobs:
             
             ALL_PHP=$(echo "$RAW_PHP_TAGS" | \
               grep -E '^[78]\.[0-9]+-fpm-(bullseye|bookworm)$' | \
-              awk -F'-fpm-' '{print $1}' | \
-              sort -uV | \
-              awk '$1 >= "7.4"' || echo "")
-            echo "Filtered PHP versions: $ALL_PHP"
+              sort -V | \
+              awk -F'-fpm-' '$1 >= "7.4"' || echo "")
+            echo "Filtered PHP tags: $ALL_PHP"
           
             # Discover Node versions from mirrored images if available, fallback to Docker Hub
             echo "📦 Discovering Node versions..."
@@ -145,10 +144,9 @@ jobs:
             
             ALL_NODE=$(echo "$RAW_NODE_TAGS" | \
               grep -E '^[0-9]+-(bullseye|bookworm)$' | \
-              awk -F'-' '{print $1}' | \
-              sort -un | \
-              awk '$1 >= 14' || echo "")
-            echo "Filtered Node versions: $ALL_NODE"
+              sort -V | \
+              awk -F'-' '$1 >= 14' || echo "")
+            echo "Filtered Node tags: $ALL_NODE"
           
             # Select versions based on build type
             if [[ "$BUILD_TYPE" == "full" ]]; then
@@ -163,44 +161,29 @@ jobs:
             echo "🎯 Selected Node versions for $BUILD_TYPE build: $NODE_VERSIONS"
           fi
           
-          # Function to determine OS release for each PHP version
-          get_php_os() {
-            local ver=$1
-            local major=${ver%%.*}
-            local minor=${ver#*.}; minor=${minor%%.*}
-          
-            if [[ "$major" == "7" ]]; then
-              if [[ "$minor" == "1" ]] || [[ "$minor" == "2" ]]; then
-                echo "buster"
-              else
-                echo "bullseye"
-              fi
-            elif [[ "$major" == "8" ]]; then
-              echo "bullseye"
-            else
-              echo "bullseye"
-            fi
-          }
-          
-          # Generate PHP matrix
+          # Generate PHP matrix from full tags
           PHP_MATRIX='{"include":['
           FIRST=true
-          for version in ${PHP_VERSIONS//,/ }; do
-            [[ -z "$version" ]] && continue
-            os_release=$(get_php_os "$version")
+          for tag in ${PHP_VERSIONS//,/ }; do
+            [[ -z "$tag" ]] && continue
+            # Parse version and OS from tag (e.g., "8.4-fpm-bookworm")
+            version=$(echo "$tag" | awk -F'-fpm-' '{print $1}')
+            os_release=$(echo "$tag" | awk -F'-fpm-' '{print $2}')
             [[ "$FIRST" == true ]] && FIRST=false || PHP_MATRIX+=','
             PHP_MATRIX+="{\"version\":\"$version\",\"os_release\":\"$os_release\"}"
           done
           PHP_MATRIX+=']}'
           
-          # Generate Node matrix
+          # Generate Node matrix from full tags
           NODE_MATRIX='{"include":['
           FIRST=true
-          for version in ${NODE_VERSIONS//,/ }; do
-            [[ -z "$version" ]] && continue
+          for tag in ${NODE_VERSIONS//,/ }; do
+            [[ -z "$tag" ]] && continue
+            # Parse version and OS from tag (e.g., "18-bookworm")
+            version=$(echo "$tag" | awk -F'-' '{print $1}')
+            os_release=$(echo "$tag" | awk -F'-' '{print $2}')
             [[ "$FIRST" == true ]] && FIRST=false || NODE_MATRIX+=','
-            # Determine Node OS - prefer bullseye
-            NODE_MATRIX+="{\"version\":\"$version\",\"os_release\":\"bullseye\"}"
+            NODE_MATRIX+="{\"version\":\"$version\",\"os_release\":\"$os_release\"}"
           done
           NODE_MATRIX+=']}'
           
@@ -216,25 +199,32 @@ jobs:
           # Generate specialized matrix (PHP + Node combinations for xdebug, magento, etc.)
           SPECIALIZED_MATRIX='{"include":['
           FIRST=true
-          for php_version in ${PHP_VERSIONS//,/ }; do
-            [[ -z "$php_version" ]] && continue
-            php_os=$(get_php_os "$php_version")
+          for php_tag in ${PHP_VERSIONS//,/ }; do
+            [[ -z "$php_tag" ]] && continue
+            # Parse PHP version and OS from tag
+            php_version=$(echo "$php_tag" | awk -F'-fpm-' '{print $1}')
+            php_os=$(echo "$php_tag" | awk -F'-fpm-' '{print $2}')
           
-            for node_version in ${NODE_VERSIONS//,/ }; do
-              [[ -z "$node_version" ]] && continue
+            for node_tag in ${NODE_VERSIONS//,/ }; do
+              [[ -z "$node_tag" ]] && continue
+              # Parse Node version and OS from tag
+              node_version=$(echo "$node_tag" | awk -F'-' '{print $1}')
+              node_os=$(echo "$node_tag" | awk -F'-' '{print $2}')
+              
               [[ "$FIRST" == true ]] && FIRST=false || SPECIALIZED_MATRIX+=','
               # Determine if this is the latest combination
               latest_php=$(echo "${PHP_VERSIONS//,/ }" | tr ' ' '\n' | sort -V | tail -1)
-              latest_node=$(echo "${NODE_VERSIONS//,/ }" | tr ' ' '\n' | sort -n | tail -1)
-              is_latest=$([[ "$php_version" == "$latest_php" && "$node_version" == "$latest_node" ]] && echo "true" || echo "false")
+              latest_node=$(echo "${NODE_VERSIONS//,/ }" | tr ' ' '\n' | sort -V | tail -1)
+              is_latest=$([[ "$php_tag" == "$latest_php" && "$node_tag" == "$latest_node" ]] && echo "true" || echo "false")
           
-              SPECIALIZED_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"$node_version\",\"node_os_release\":\"bullseye\",\"experimental\":false,\"latest\":$is_latest,\"xdebug_type\":\"xdebug3\"}"
+              SPECIALIZED_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"$node_version\",\"node_os_release\":\"$node_os\",\"experimental\":false,\"latest\":$is_latest,\"xdebug_type\":\"xdebug3\"}"
             done
           
             # Also add PHP-only versions (node_version='x')
             [[ "$FIRST" == true ]] && FIRST=false || SPECIALIZED_MATRIX+=','
-            is_latest_php=$([[ "$php_version" == "$latest_php" ]] && echo "true" || echo "false")
-            SPECIALIZED_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"x\",\"node_os_release\":\"bullseye\",\"experimental\":false,\"latest\":$is_latest_php,\"xdebug_type\":\"xdebug3\"}"
+            latest_php=$(echo "${PHP_VERSIONS//,/ }" | tr ' ' '\n' | sort -V | tail -1)
+            is_latest_php=$([[ "$php_tag" == "$latest_php" ]] && echo "true" || echo "false")
+            SPECIALIZED_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"x\",\"node_os_release\":\"$php_os\",\"experimental\":false,\"latest\":$is_latest_php,\"xdebug_type\":\"xdebug3\"}"
           done
           SPECIALIZED_MATRIX+=']}'
           
@@ -451,7 +441,7 @@ jobs:
             ENV_SOURCE_IMAGE=${{ env.TARGET_REGISTRY }}
             PHP_VERSION=${{ matrix.php.version }}
             NODE_VERSION=${{ matrix.node.version }}
-            NODE_OS_RELEASE=${{ matrix.node.os_release }}
+            OS_RELEASE=${{ matrix.node.os_release }}
             REGISTRY_BASE=${{ needs.prepare-matrix.outputs.registry_base }}
           tags: |
             ${{ env.TARGET_REGISTRY }}:${{ matrix.php.version }}-node${{ matrix.node.version }}
