@@ -28,6 +28,34 @@ cat /usr/local/etc/php/conf.d/05-additions.ini.template \
   | envsubst '${MAILHOG_HOST} ${MAILHOG_PORT}' \
   | sudo tee /usr/local/etc/php/conf.d/05-additions.ini
 
+# Configure New Relic PHP extension conditionally
+if [ "${ROLL_NEWRELIC:-0}" = "1" ]; then
+  # Check if we have a license key (from project .env or global ~/.roll/.env)
+  if [ -n "${NEWRELIC_LICENSE_KEY}" ]; then
+    echo "Enabling New Relic PHP agent..."
+    # Create New Relic log directory
+    sudo mkdir -p /var/log/newrelic
+    sudo chown -R www-data:www-data /var/log/newrelic
+    # Auto-configure app name if not set: RollDev-LocalEnv-{ROLL_ENV_NAME}
+    if [ -z "${NEWRELIC_APP_NAME}" ]; then
+      NEWRELIC_APP_NAME="RollDev-LocalEnv-${ROLL_ENV_NAME:-Roll-App}"
+    fi
+    # Configure New Relic ini file from template
+    cat /usr/local/etc/php/conf.d/newrelic.ini.template \
+      | envsubst '${NEWRELIC_LICENSE_KEY} ${NEWRELIC_APP_NAME}' \
+      | sed "s/NEWRELIC_LICENSE_KEY_PLACEHOLDER/${NEWRELIC_LICENSE_KEY}/g" \
+      | sed "s/NEWRELIC_APP_NAME_PLACEHOLDER/${NEWRELIC_APP_NAME}/g" \
+      | sudo tee /usr/local/etc/php/conf.d/newrelic.ini > /dev/null
+    echo "New Relic PHP agent enabled for app: ${NEWRELIC_APP_NAME}"
+  else
+    echo "WARNING: ROLL_NEWRELIC=1 but NEWRELIC_LICENSE_KEY is not set. New Relic disabled."
+    sudo rm -f /usr/local/etc/php/conf.d/newrelic.ini
+  fi
+else
+  # Disable New Relic by removing configuration file
+  sudo rm -f /usr/local/etc/php/conf.d/newrelic.ini
+fi
+
 # append roll issued root ca cert to ca-bundle trusted by curl/openssl
 if [ -f /etc/ssl/roll-rootca-cert/ca.cert.pem ]; then
   sudo cp /etc/ssl/roll-rootca-cert/ca.cert.pem /usr/local/share/ca-certificates/roll-rootca-cert.pem.crt

@@ -1,0 +1,24 @@
+; New Relic PHP Agent Configuration - Optimized for Local Development
+; This file is only used when ROLL_NEWRELIC=1
+
+; Load the New Relic PHP extension
+extension=newrelic.so
+
+; License key and app name (replaced by entrypoint script)
+newrelic.license = "NEWRELIC_LICENSE_KEY_PLACEHOLDER"
+newrelic.appname = "NEWRELIC_APP_NAME_PLACEHOLDER"
+
+; Transaction tracer - optimized for local debugging
+newrelic.transaction_tracer.threshold = "1ms"
+newrelic.transaction_tracer.explain_threshold = "250ms"
+newrelic.transaction_tracer.record_sql = "raw"
+newrelic.transaction_tracer.max_segments_web = 2000
+
+; Application logging - more verbose for development
+newrelic.application_logging.forwarding.log_level = "INFO"
+
+; Disable code level metrics to reduce message size
+newrelic.code_level_metrics.enabled = false
+
+; Increase span event storage for better distributed tracing
+newrelic.span_events.max_samples_stored = 4000

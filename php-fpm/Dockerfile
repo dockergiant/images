@@ -63,6 +63,14 @@ RUN if [ "$(printf "8.2\n${PHP_VERSION}" | sort -g | head -n1)" != "8.2" ]; \
 RUN if [ "$(printf "8.2\n${PHP_VERSION}" | sort -g | head -n1)" = "8.2" ]; \
     then install-php-extensions ftp; fi
 
+# Install New Relic PHP agent (available for PHP 7.0+)
+RUN if [ "$(printf "7.0\n${PHP_VERSION}" | sort -g | head -n1)" = "7.0" ]; then \
+    # PHP 7.0+ - install New Relic using install-php-extensions
+    install-php-extensions newrelic && \
+    # Disable New Relic by default - will be enabled conditionally via entrypoint
+    rm -f /usr/local/etc/php/conf.d/docker-php-ext-newrelic.ini; \
+fi
+
 # Install helpful utilities
 RUN set -eux; \
     export DEBIAN_FRONTEND=noninteractive; \
@@ -110,6 +118,7 @@ COPY docker-entrypoint /usr/local/bin/
 COPY etc/profile.d/*.sh /etc/profile.d/
 COPY etc/php.d/*.ini /usr/local/etc/php/conf.d
 COPY etc/php.d/05-additions.ini.template /usr/local/etc/php/conf.d
+COPY etc/php.d/newrelic.ini.template /usr/local/etc/php/conf.d
 
 RUN set -eux \
     && cp ${PHP_INI_DIR}/php.ini-development ${PHP_INI_DIR}/php.ini \
