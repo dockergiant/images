@@ -138,11 +138,10 @@ RUN if [ "$(printf "7.2\n${PHP_VERSION}" | sort -g | head -n1 | awk -F"." '{prin
     then mv -f /usr/bin/composer2lts /usr/bin/composer2; fi
 
 
-# If PHP >= 7.1
-RUN if [ "$(printf "7.1\n${PHP_VERSION}" | sort -g | head -n1 | awk -F"." '{print $1"."$2}')" = "7.1" ]; \
-    then apt-get install -y --no-install-recommends libmariadb3 libmariadb-dev python3 python3-pip python2; \
+# Install Python and pip for all PHP versions
+RUN apt-get install -y --no-install-recommends libmariadb3 libmariadb-dev python3 python3-pip; \
     sed -i '/disable ghostscript format types/,+6d' /etc/ImageMagick-6/policy.xml; \
-    if [ ! -f "/usr/bin/pip" ]; then ln -s /usr/bin/pip3 /usr/bin/pip; ln -s /usr/bin/python3 /usr/bin/python; fi; fi
+    if [ ! -f "/usr/bin/pip" ]; then ln -s /usr/bin/pip3 /usr/bin/pip; ln -s /usr/bin/python3 /usr/bin/python; fi
 
 
 # Install bind9-utils based on PHP version (with proper dependency resolution)
@@ -158,7 +157,7 @@ RUN set -eux; \
     fi
 
     
-RUN /usr/bin/pip install segno
+RUN if command -v pip >/dev/null 2>&1; then pip install segno; else echo "pip not found, skipping segno installation"; fi
 
 RUN mkdir -p /etc/zsh/zshrc.d  \
     && echo "autoload -U compinit; compinit" > /etc/zsh/zshrc.d/completions.zsh \
