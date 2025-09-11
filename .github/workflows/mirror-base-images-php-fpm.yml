@@ -14,7 +14,7 @@ on:
 
 env:
   GHCR_REGISTRY: ghcr.io
-  GHCR_BASE: ghcr.io/${{ github.repository_owner }}/php-fpm-base-images
+  GHCR_BASE: ghcr.io/${{ github.repository_owner }}
 
 jobs:
   mirror-images:
@@ -88,7 +88,7 @@ jobs:
               fi
             fi
             
-            TARGET="${{ env.GHCR_BASE }}/php:${TAG}"
+            TARGET="${{ env.GHCR_BASE }}/base-php:${TAG}"
             
             # Check if already mirrored
             if crane manifest "$TARGET" >/dev/null 2>&1 && [[ "${{ inputs.force_mirror }}" != "true" ]]; then
@@ -134,7 +134,7 @@ jobs:
               fi
             fi
             
-            TARGET="${{ env.GHCR_BASE }}/node:${TAG}"
+            TARGET="${{ env.GHCR_BASE }}/base-node:${TAG}"
             
             # Check if already mirrored
             if crane manifest "$TARGET" >/dev/null 2>&1 && [[ "${{ inputs.force_mirror }}" != "true" ]]; then
@@ -151,7 +151,7 @@ jobs:
           
           for VERSION in 1 2 2.2; do
             SOURCE="composer:${VERSION}"
-            TARGET="${{ env.GHCR_BASE }}/composer:${VERSION}"
+            TARGET="${{ env.GHCR_BASE }}/base-composer:${VERSION}"
             
             if crane manifest "$TARGET" >/dev/null 2>&1 && [[ "${{ inputs.force_mirror }}" != "true" ]]; then
               echo "✓ Composer ${VERSION} already mirrored"
@@ -166,6 +166,6 @@ jobs:
           echo "🎉 PHP-FPM Mirror job completed!"
           echo ""
           echo "Mirrored images are available at:"
-          echo "  PHP-FPM: ${{ env.GHCR_BASE }}/php:*"
-          echo "  Node: ${{ env.GHCR_BASE }}/node:*"
-          echo "  Composer: ${{ env.GHCR_BASE }}/composer:*"
+          echo "  PHP-FPM: ${{ env.GHCR_BASE }}/base-php:*"
+          echo "  Node: ${{ env.GHCR_BASE }}/base-node:*"
+          echo "  Composer: ${{ env.GHCR_BASE }}/base-composer:*"
