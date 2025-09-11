@@ -61,7 +61,14 @@ jobs:
       build_needed: ${{ steps.matrix.outputs.build_needed }}
       php_build_matrix: ${{ steps.check-images.outputs.php_build_matrix }}
       node_build_matrix: ${{ steps.check-images.outputs.node_build_matrix }}
-      specialized_matrix: ${{ steps.matrix.outputs.specialized_matrix }}
+      specialized_build_matrix: ${{ steps.check-images.outputs.specialized_build_matrix }}
+      xdebug_matrix: ${{ steps.check-images.outputs.xdebug_matrix }}
+      magento1_matrix: ${{ steps.check-images.outputs.magento1_matrix }}
+      magento2_matrix: ${{ steps.check-images.outputs.magento2_matrix }}
+      wordpress_matrix: ${{ steps.check-images.outputs.wordpress_matrix }}
+      magento1_xdebug_matrix: ${{ steps.check-images.outputs.magento1_xdebug_matrix }}
+      magento2_xdebug_matrix: ${{ steps.check-images.outputs.magento2_xdebug_matrix }}
+      wordpress_xdebug_matrix: ${{ steps.check-images.outputs.wordpress_xdebug_matrix }}
       registry_base: ${{ steps.registry.outputs.registry_base }}
     steps:
       - name: Checkout
@@ -411,25 +418,21 @@ jobs:
           SPECIALIZED_BUILD_MATRIX+=']}'
           
           # Create specific matrices from the specialized build matrix
-          {
-            echo "specialized_build_matrix<<EOF" >> $GITHUB_OUTPUT
-            echo "$SPECIALIZED_BUILD_MATRIX" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-          }
+          echo "specialized_build_matrix=$SPECIALIZED_BUILD_MATRIX" >> $GITHUB_OUTPUT
           
           # Filter by variant for each specialized matrix (separate regular from xdebug)
           # Generic XDebug matrix - for standalone xdebug builds
-          XDEBUG_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(has("xdebug_type") and (has("variant") | not))]}')
+          XDEBUG_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq -c '{include: [.include[] | select(has("xdebug_type") and (has("variant") | not))]}')
           
           # Regular variant matrices (without xdebug)
-          MAGENTO1_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(.variant == "magento1")]}')
-          MAGENTO2_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(.variant == "magento2")]}')
-          WORDPRESS_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(.variant == "wordpress")]}')
+          MAGENTO1_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq -c '{include: [.include[] | select(.variant == "magento1")]}')
+          MAGENTO2_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq -c '{include: [.include[] | select(.variant == "magento2")]}')
+          WORDPRESS_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq -c '{include: [.include[] | select(.variant == "wordpress")]}')
           
           # Separate xdebug-specific matrices
-          MAGENTO1_XDEBUG_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(.variant == "magento1-xdebug")]}')
-          MAGENTO2_XDEBUG_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(.variant == "magento2-xdebug")]}')
-          WORDPRESS_XDEBUG_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(.variant == "wordpress-xdebug")]}')
+          MAGENTO1_XDEBUG_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq -c '{include: [.include[] | select(.variant == "magento1-xdebug")]}')
+          MAGENTO2_XDEBUG_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq -c '{include: [.include[] | select(.variant == "magento2-xdebug")]}')
+          WORDPRESS_XDEBUG_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq -c '{include: [.include[] | select(.variant == "wordpress-xdebug")]}')
           
           echo "xdebug_matrix=$XDEBUG_MATRIX" >> $GITHUB_OUTPUT
           echo "magento1_matrix=$MAGENTO1_MATRIX" >> $GITHUB_OUTPUT
