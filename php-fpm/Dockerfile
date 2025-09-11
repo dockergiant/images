@@ -168,7 +168,7 @@ RUN if command -v pip >/dev/null 2>&1; then \
 
 RUN mkdir -p /etc/zsh/zshrc.d  \
     && echo "autoload -U compinit; compinit" > /etc/zsh/zshrc.d/completions.zsh \
-    && ln -s /usr/bin/fish /bin/fish
+    && { [ -e /bin/fish ] || ln -s /usr/bin/fish /bin/fish; }
 
 RUN set -eux; \
 	{ \

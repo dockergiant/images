@@ -230,6 +230,43 @@ jobs:
           
           echo "specialized_matrix=$SPECIALIZED_MATRIX" >> $GITHUB_OUTPUT
           
+          # Create separate matrices for each specialized variant
+          # Generic XDebug matrix (all combinations)
+          echo "xdebug_matrix=$SPECIALIZED_MATRIX" >> $GITHUB_OUTPUT
+          
+          # Application-specific matrices (only need PHP+Node combinations, not xdebug variants)
+          APP_MATRIX='{"include":['
+          FIRST=true
+          for php_tag in ${PHP_VERSIONS//,/ }; do
+            [[ -z "$php_tag" ]] && continue
+            php_version=$(echo "$php_tag" | awk -F'-fpm-' '{print $1}')
+            php_os=$(echo "$php_tag" | awk -F'-fpm-' '{print $2}')
+          
+            for node_tag in ${NODE_VERSIONS//,/ }; do
+              [[ -z "$node_tag" ]] && continue
+              node_version=$(echo "$node_tag" | awk -F'-' '{print $1}')
+              node_os=$(echo "$node_tag" | awk -F'-' '{print $2}')
+              
+              [[ "$FIRST" == true ]] && FIRST=false || APP_MATRIX+=','
+              latest_php=$(echo "${PHP_VERSIONS//,/ }" | tr ' ' '\n' | sort -V | tail -1)
+              latest_node=$(echo "${NODE_VERSIONS//,/ }" | tr ' ' '\n' | sort -V | tail -1)
+              is_latest=$([[ "$php_tag" == "$latest_php" && "$node_tag" == "$latest_node" ]] && echo "true" || echo "false")
+          
+              APP_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"$node_version\",\"node_os_release\":\"$node_os\",\"experimental\":false,\"latest\":$is_latest}"
+            done
+          
+            # Also add PHP-only versions
+            [[ "$FIRST" == true ]] && FIRST=false || APP_MATRIX+=','
+            latest_php=$(echo "${PHP_VERSIONS//,/ }" | tr ' ' '\n' | sort -V | tail -1)
+            is_latest_php=$([[ "$php_tag" == "$latest_php" ]] && echo "true" || echo "false")
+            APP_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"x\",\"node_os_release\":\"$php_os\",\"experimental\":false,\"latest\":$is_latest_php}"
+          done
+          APP_MATRIX+=']}'
+          
+          echo "magento1_matrix=$APP_MATRIX" >> $GITHUB_OUTPUT
+          echo "magento2_matrix=$APP_MATRIX" >> $GITHUB_OUTPUT  
+          echo "wordpress_matrix=$APP_MATRIX" >> $GITHUB_OUTPUT
+          
           # Determine if build is needed
           if [[ -z "$PHP_VERSIONS" ]]; then
             echo "build_needed=false" >> $GITHUB_OUTPUT
@@ -463,7 +500,7 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.specialized_matrix) }}
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.xdebug_matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -532,7 +569,7 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.specialized_matrix) }}
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento1_matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
@@ -619,7 +656,7 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.specialized_matrix) }}
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento1_matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -643,7 +680,7 @@ jobs:
           context: php-fpm/context
           platforms: linux/amd64,linux/arm64
           build-args: |
-            ENV_SOURCE_IMAGE=${{ env.TARGET_REGISTRY }}
+            ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
@@ -659,7 +696,7 @@ jobs:
           context: php-fpm/context
           platforms: linux/amd64,linux/arm64
           build-args: |
-            ENV_SOURCE_IMAGE=${{ env.TARGET_REGISTRY }}
+            ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1
             PHP_VERSION=${{ matrix.php_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
@@ -675,7 +712,7 @@ jobs:
           context: php-fpm/context
           platforms: linux/amd64,linux/arm64
           build-args: |
-            ENV_SOURCE_IMAGE=${{ env.TARGET_REGISTRY }}
+            ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1
             PHP_VERSION=${{ matrix.php_version }}-node${{ matrix.node_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
@@ -691,7 +728,7 @@ jobs:
           context: php-fpm/context
           platforms: linux/amd64,linux/arm64
           build-args: |
-            ENV_SOURCE_IMAGE=${{ env.TARGET_REGISTRY }}
+            ENV_SOURCE_IMAGE=ghcr.io/${{ github.repository_owner }}/php-fpm-magento1
             PHP_VERSION=${{ matrix.php_version }}
             XDEBUG_TYPE=${{ matrix.xdebug_type }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
@@ -714,7 +751,7 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.specialized_matrix) }}
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento2_matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -793,11 +830,11 @@ jobs:
   magento2-xdebug:
     name: Magento 2 PHP-FPM ${{ matrix.php_version }} + XDebug - Node ${{ matrix.node_version }}
     runs-on: ubuntu-latest
-    needs: [prepare-matrix, php-node]
+    needs: [prepare-matrix, magento2]
     if: |
       always() && 
-      needs.prepare-matrix.outputs.build_needed == 'true' && 
-      (needs.php-node.result == 'success' || needs.php-node.result == 'skipped')
+      contains(needs.prepare-matrix.outputs.variant_images, 'magento2-xdebug') &&
+      (needs.magento2.result == 'success' || needs.magento2.result == 'skipped')
     permissions:
       packages: write
       contents: read
@@ -805,7 +842,7 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.specialized_matrix) }}
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento2_matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
@@ -888,7 +925,7 @@ jobs:
     needs: [prepare-matrix, php-node]
     if: |
       always() && 
-      needs.prepare-matrix.outputs.build_needed == 'true' && 
+      contains(needs.prepare-matrix.outputs.variant_images, 'wordpress') &&
       (needs.php-node.result == 'success' || needs.php-node.result == 'skipped')
     permissions:
       packages: write
@@ -897,7 +934,7 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.specialized_matrix) }}
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.wordpress_matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
@@ -973,11 +1010,11 @@ jobs:
   wordpress-xdebug:
     name: Wordpress PHP-FPM ${{ matrix.php_version }} + XDebug - Node ${{ matrix.node_version }}
     runs-on: ubuntu-latest
-    needs: [prepare-matrix, php-node]
+    needs: [prepare-matrix, wordpress]
     if: |
       always() && 
-      needs.prepare-matrix.outputs.build_needed == 'true' && 
-      (needs.php-node.result == 'success' || needs.php-node.result == 'skipped')
+      contains(needs.prepare-matrix.outputs.variant_images, 'wordpress-xdebug') &&
+      (needs.wordpress.result == 'success' || needs.wordpress.result == 'skipped')
     permissions:
       packages: write
       contents: read
@@ -985,7 +1022,7 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.specialized_matrix) }}
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.wordpress_matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
