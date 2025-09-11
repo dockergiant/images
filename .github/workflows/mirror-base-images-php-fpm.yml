@@ -1,4 +1,4 @@
-name: Mirror PHP-FPM Base Images
+name: Mirror Base Images
 
 on:
   workflow_dispatch:
@@ -9,12 +9,12 @@ on:
         type: boolean
         default: false
   schedule:
-    # Run weekly on Sunday at 2 AM UTC
-    - cron: '0 2 * * 0'
+    # Run weekly on Sunday at 1 AM UTC
+    - cron: '0 1 * * 0'
 
 env:
   GHCR_REGISTRY: ghcr.io
-  GHCR_BASE: ghcr.io/${{ github.repository_owner }}
+  GHCR_BASE: ghcr.io/${{ github.repository_owner }}/base-images
 
 jobs:
   mirror-images:
@@ -43,53 +43,49 @@ jobs:
             local ver=$1
             local major=${ver%%.*}
             local minor=${ver#*.}; minor=${minor%%.*}
-            
+          
             if [[ "$major" == "7" ]]; then
-              if [[ "$minor" == "1" ]] || [[ "$minor" == "2" ]]; then
-                echo "buster"   # 7.1, 7.2 use buster
-              else
-                echo "bullseye" # 7.3, 7.4 use bullseye
-              fi
+              echo "bullseye"  # 7.4 uses bullseye
             elif [[ "$major" == "8" ]]; then
-              echo "bullseye"   # 8.x uses bullseye
+              [[ "$minor" == "0" ]] && echo "bullseye" || echo "bookworm"
             else
-              echo "bullseye"   # default to bullseye
+              echo "bookworm"
             fi
           }
           
-          # Get unique PHP-FPM versions from Docker Hub (7.1+ only)
+          # Get unique PHP versions from Docker Hub
           PHP_VERSIONS=$(crane ls php 2>/dev/null | \
-            grep -E '^[78]\.[0-9]+-fpm-(buster|bullseye|bookworm)$' | \
-            sed 's/-fpm-.*//' | sort -uV | \
-            awk '$1 >= "7.1"')
+            grep -E '^[78]\.[0-9]+-cli-(bullseye|bookworm)$' | \
+            sed 's/-cli-.*//' | sort -uV | \
+            awk '$1 >= "7.4"')
           
           for VERSION in $PHP_VERSIONS; do
             # Determine the preferred OS for this version
             PREFERRED_OS=$(get_preferred_php_os "$VERSION")
-            
+          
             # Try preferred OS first, fallback to any available
-            TAG="${VERSION}-fpm-${PREFERRED_OS}"
+            TAG="${VERSION}-cli-${PREFERRED_OS}"
             SOURCE="php:${TAG}"
-            
+          
             # Check if preferred OS exists on Docker Hub
             if ! crane manifest "$SOURCE" >/dev/null 2>&1; then
               # Fallback to any available OS
               AVAILABLE_TAG=$(crane ls php 2>/dev/null | \
-                grep "^${VERSION}-fpm-" | \
-                grep -E '(buster|bullseye|bookworm)$' | \
+                grep "^${VERSION}-cli-" | \
+                grep -E '(bullseye|bookworm)$' | \
                 head -1)
               if [[ -n "$AVAILABLE_TAG" ]]; then
                 TAG="$AVAILABLE_TAG"
                 SOURCE="php:${TAG}"
                 echo "⚠️ PHP ${VERSION}: Using ${TAG} (preferred ${PREFERRED_OS} not found)"
               else
-                echo "❌ PHP ${VERSION}: No suitable PHP-FPM image found"
+                echo "❌ PHP ${VERSION}: No suitable image found"
                 continue
               fi
             fi
-            
-            TARGET="${{ env.GHCR_BASE }}/base-php:${TAG}"
-            
+          
+            TARGET="${{ env.GHCR_BASE }}/php:${TAG}"
+          
             # Check if already mirrored
             if crane manifest "$TARGET" >/dev/null 2>&1 && [[ "${{ inputs.force_mirror }}" != "true" ]]; then
               echo "✓ PHP ${VERSION} (${TAG}) already mirrored"
@@ -103,39 +99,32 @@ jobs:
         run: |
           echo "📦 Discovering and mirroring Node images..."
           
-          # Get unique Node versions from Docker Hub (10+)
+          # Get unique Node versions from Docker Hub (14+)
           NODE_VERSIONS=$(crane ls node 2>/dev/null | \
-            grep -E '^[0-9]+-(buster|bullseye|bookworm)$' | \
+            grep -E '^[0-9]+-(bullseye|bookworm)$' | \
             sed 's/-.*//' | sort -un | \
-            awk '$1 >= 10')
+            awk '$1 >= 14')
           
           for VERSION in $NODE_VERSIONS; do
-            # Prefer bullseye for most versions, with fallbacks
-            PREFERRED_OS="bullseye"
+            # Prefer bookworm for all Node versions
+            PREFERRED_OS="bookworm"
             TAG="${VERSION}-${PREFERRED_OS}"
             SOURCE="node:${TAG}"
-            
+          
             # Check if preferred OS exists on Docker Hub
             if ! crane manifest "$SOURCE" >/dev/null 2>&1; then
-              # Try bookworm
-              TAG="${VERSION}-bookworm"
+              # Fallback to bullseye
+              TAG="${VERSION}-bullseye"
               SOURCE="node:${TAG}"
               if ! crane manifest "$SOURCE" >/dev/null 2>&1; then
-                # Fallback to buster for older versions
-                TAG="${VERSION}-buster"
-                SOURCE="node:${TAG}"
-                if ! crane manifest "$SOURCE" >/dev/null 2>&1; then
-                  echo "❌ Node ${VERSION}: No suitable image found"
-                  continue
-                fi
-                echo "⚠️ Node ${VERSION}: Using buster (bullseye/bookworm not found)"
-              else
-                echo "⚠️ Node ${VERSION}: Using bookworm (bullseye not found)"
+                echo "❌ Node ${VERSION}: No suitable image found"
+                continue
               fi
+              echo "⚠️ Node ${VERSION}: Using bullseye (bookworm not found)"
             fi
-            
-            TARGET="${{ env.GHCR_BASE }}/base-node:${TAG}"
-            
+          
+            TARGET="${{ env.GHCR_BASE }}/node:${TAG}"
+          
             # Check if already mirrored
             if crane manifest "$TARGET" >/dev/null 2>&1 && [[ "${{ inputs.force_mirror }}" != "true" ]]; then
               echo "✓ Node ${VERSION} (${TAG}) already mirrored"
@@ -149,10 +138,10 @@ jobs:
         run: |
           echo "📦 Mirroring Composer images..."
           
-          for VERSION in 1 2 2.2; do
+          for VERSION in 1 2; do
             SOURCE="composer:${VERSION}"
-            TARGET="${{ env.GHCR_BASE }}/base-composer:${VERSION}"
-            
+            TARGET="${{ env.GHCR_BASE }}/composer:${VERSION}"
+          
             if crane manifest "$TARGET" >/dev/null 2>&1 && [[ "${{ inputs.force_mirror }}" != "true" ]]; then
               echo "✓ Composer ${VERSION} already mirrored"
             else
@@ -161,11 +150,26 @@ jobs:
             fi
           done
 
+      - name: Mirror PhantomJS image
+        run: |
+          echo "📦 Mirroring PhantomJS image..."
+          
+          SOURCE="rollupdev/phantomjs:latest"
+          TARGET="${{ env.GHCR_BASE }}/phantomjs:latest"
+          
+          if crane manifest "$TARGET" >/dev/null 2>&1 && [[ "${{ inputs.force_mirror }}" != "true" ]]; then
+            echo "✓ PhantomJS already mirrored"
+          else
+            echo "🔄 Mirroring ${SOURCE} to ${TARGET}..."
+            crane copy "$SOURCE" "$TARGET" && echo "✅ Mirrored PhantomJS" || echo "❌ Failed to mirror PhantomJS"
+          fi
+
       - name: Summary
         run: |
-          echo "🎉 PHP-FPM Mirror job completed!"
+          echo "🎉 Mirror job completed!"
           echo ""
           echo "Mirrored images are available at:"
-          echo "  PHP-FPM: ${{ env.GHCR_BASE }}/base-php:*"
-          echo "  Node: ${{ env.GHCR_BASE }}/base-node:*"
-          echo "  Composer: ${{ env.GHCR_BASE }}/base-composer:*"
+          echo "  PHP: ${{ env.GHCR_BASE }}/php:*"
+          echo "  Node: ${{ env.GHCR_BASE }}/node:*"
+          echo "  Composer: ${{ env.GHCR_BASE }}/composer:*"
+          echo "  PhantomJS: ${{ env.GHCR_BASE }}/phantomjs:latest"
