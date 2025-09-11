@@ -2,11 +2,13 @@ ARG ENV_SOURCE_IMAGE
 ARG PHP_VERSION
 ARG OS_RELEASE=bookworm
 ARG NODE_VERSION
-ARG REGISTRY_BASE
+ARG REGISTRY_BASE=ghcr.io/dockergiant/base-images
 
 FROM ${REGISTRY_BASE}/node:${NODE_VERSION}-${OS_RELEASE} AS node
 RUN npm install -g grunt-cli gulp
 RUN mv /opt/yarn* /opt/yarn
+
+FROM ${REGISTRY_BASE}/phantomjs:latest AS phantomjs
 
 FROM ${ENV_SOURCE_IMAGE}:${PHP_VERSION}
 USER root
@@ -18,7 +20,7 @@ COPY --from=node /opt /opt
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 
 # Copy PhantomJS
-COPY --from=${REGISTRY_BASE}/phantomjs:latest /usr/local/bin/phantomjs /usr/local/bin/phantomjs
+COPY --from=phantomjs /usr/local/bin/phantomjs /usr/local/bin/phantomjs
 
 RUN ln -s /usr/local/bin/node /usr/local/bin/nodejs \
     && ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
