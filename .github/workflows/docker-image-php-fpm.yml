@@ -24,6 +24,11 @@ on:
         required: false
         type: boolean
         default: false
+      force_rebuild_all:
+        description: 'Force rebuild all images except base PHP-FPM (useful for updating specialized variants)'
+        required: false
+        type: boolean
+        default: false
   workflow_run:
     workflows: ["Mirror Base Images"]
     types: [completed]
@@ -196,86 +201,6 @@ jobs:
           echo "php_matrix=$PHP_MATRIX" >> $GITHUB_OUTPUT
           echo "node_matrix=$NODE_MATRIX" >> $GITHUB_OUTPUT
           
-          # Generate specialized matrix (PHP + Node combinations for xdebug, magento, etc.)
-          SPECIALIZED_MATRIX='{"include":['
-          FIRST=true
-          for php_tag in ${PHP_VERSIONS//,/ }; do
-            [[ -z "$php_tag" ]] && continue
-            # Parse PHP version and OS from tag
-            php_version=$(echo "$php_tag" | awk -F'-fpm-' '{print $1}')
-            php_os=$(echo "$php_tag" | awk -F'-fpm-' '{print $2}')
-          
-            for node_tag in ${NODE_VERSIONS//,/ }; do
-              [[ -z "$node_tag" ]] && continue
-              # Parse Node version and OS from tag
-              node_version=$(echo "$node_tag" | awk -F'-' '{print $1}')
-              node_os=$(echo "$node_tag" | awk -F'-' '{print $2}')
-              
-              [[ "$FIRST" == true ]] && FIRST=false || SPECIALIZED_MATRIX+=','
-              # Determine if this is the latest combination
-              latest_php=$(echo "${PHP_VERSIONS//,/ }" | tr ' ' '\n' | sort -V | tail -1)
-              latest_node=$(echo "${NODE_VERSIONS//,/ }" | tr ' ' '\n' | sort -V | tail -1)
-              is_latest=$([[ "$php_tag" == "$latest_php" && "$node_tag" == "$latest_node" ]] && echo "true" || echo "false")
-          
-              SPECIALIZED_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"$node_version\",\"node_os_release\":\"$node_os\",\"experimental\":false,\"latest\":$is_latest,\"xdebug_type\":\"xdebug3\"}"
-            done
-          
-            # Also add PHP-only versions (node_version='x')
-            [[ "$FIRST" == true ]] && FIRST=false || SPECIALIZED_MATRIX+=','
-            latest_php=$(echo "${PHP_VERSIONS//,/ }" | tr ' ' '\n' | sort -V | tail -1)
-            is_latest_php=$([[ "$php_tag" == "$latest_php" ]] && echo "true" || echo "false")
-            SPECIALIZED_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"x\",\"node_os_release\":\"$php_os\",\"experimental\":false,\"latest\":$is_latest_php,\"xdebug_type\":\"xdebug3\"}"
-          done
-          SPECIALIZED_MATRIX+=']}'
-          
-          echo "specialized_matrix=$SPECIALIZED_MATRIX" >> $GITHUB_OUTPUT
-          
-          # Create separate matrices for each specialized variant
-          # Generic XDebug matrix (all combinations)
-          echo "xdebug_matrix=$SPECIALIZED_MATRIX" >> $GITHUB_OUTPUT
-          
-          # Application-specific matrices (only need PHP+Node combinations, not xdebug variants)
-          APP_MATRIX='{"include":['
-          FIRST=true
-          for php_tag in ${PHP_VERSIONS//,/ }; do
-            [[ -z "$php_tag" ]] && continue
-            php_version=$(echo "$php_tag" | awk -F'-fpm-' '{print $1}')
-            php_os=$(echo "$php_tag" | awk -F'-fpm-' '{print $2}')
-          
-            for node_tag in ${NODE_VERSIONS//,/ }; do
-              [[ -z "$node_tag" ]] && continue
-              node_version=$(echo "$node_tag" | awk -F'-' '{print $1}')
-              node_os=$(echo "$node_tag" | awk -F'-' '{print $2}')
-              
-              [[ "$FIRST" == true ]] && FIRST=false || APP_MATRIX+=','
-              latest_php=$(echo "${PHP_VERSIONS//,/ }" | tr ' ' '\n' | sort -V | tail -1)
-              latest_node=$(echo "${NODE_VERSIONS//,/ }" | tr ' ' '\n' | sort -V | tail -1)
-              is_latest=$([[ "$php_tag" == "$latest_php" && "$node_tag" == "$latest_node" ]] && echo "true" || echo "false")
-          
-              APP_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"$node_version\",\"node_os_release\":\"$node_os\",\"experimental\":false,\"latest\":$is_latest}"
-            done
-          
-            # Also add PHP-only versions
-            [[ "$FIRST" == true ]] && FIRST=false || APP_MATRIX+=','
-            latest_php=$(echo "${PHP_VERSIONS//,/ }" | tr ' ' '\n' | sort -V | tail -1)
-            is_latest_php=$([[ "$php_tag" == "$latest_php" ]] && echo "true" || echo "false")
-            APP_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"x\",\"node_os_release\":\"$php_os\",\"experimental\":false,\"latest\":$is_latest_php}"
-          done
-          APP_MATRIX+=']}'
-          
-          echo "magento1_matrix=$APP_MATRIX" >> $GITHUB_OUTPUT
-          echo "magento2_matrix=$APP_MATRIX" >> $GITHUB_OUTPUT  
-          echo "wordpress_matrix=$APP_MATRIX" >> $GITHUB_OUTPUT
-          
-          # If no PHP versions found, ensure matrices are empty but valid JSON
-          if [[ -z "$PHP_VERSIONS" ]]; then
-            echo "⚠️ No PHP versions found, setting empty matrices"
-            echo "specialized_matrix={\"include\":[]}" >> $GITHUB_OUTPUT
-            echo "xdebug_matrix={\"include\":[]}" >> $GITHUB_OUTPUT
-            echo "magento1_matrix={\"include\":[]}" >> $GITHUB_OUTPUT
-            echo "magento2_matrix={\"include\":[]}" >> $GITHUB_OUTPUT  
-            echo "wordpress_matrix={\"include\":[]}" >> $GITHUB_OUTPUT
-          fi
           
           # Determine if build is needed
           if [[ -z "$PHP_VERSIONS" ]]; then
@@ -290,6 +215,12 @@ jobs:
         id: check-images
         run: |
           echo "📦 Checking for existing images..."
+          echo "📋 Configuration:"
+          echo "  Build Type: ${{ inputs.build_type }}"
+          echo "  Force Build Base: ${{ inputs.force_build_base }}"
+          echo "  Force Rebuild All: ${{ inputs.force_rebuild_all }}"
+          [[ "${{ inputs.force_rebuild_all }}" == "true" ]] && echo "  ⚠️  Will force rebuild ALL images except base PHP-FPM"
+          echo ""
           
           # Parse the matrices
           PHP_MATRIX='${{ steps.matrix.outputs.php_matrix }}'
@@ -305,10 +236,28 @@ jobs:
             fi
           }
           
+          # Function to determine if image should be rebuilt based on FORCE_REBUILD_ALL
+          should_force_rebuild() {
+            local image_tag=$1
+            
+            # Never force rebuild base PHP images unless FORCE_BUILD_BASE is true
+            if [[ "$image_tag" =~ ghcr\.io/.*/php-fpm:[0-9]+\.[0-9]+$ ]]; then
+              return 1  # Don't force rebuild base images
+            fi
+            
+            # Force rebuild all other images if FORCE_REBUILD_ALL is true
+            if [[ "$FORCE_REBUILD_ALL" == "true" ]]; then
+              return 0  # Force rebuild non-base images
+            fi
+            
+            return 1  # Don't force rebuild
+          }
+          
           # Check PHP base images
           PHP_BUILD_MATRIX='{"include":['
           PHP_FIRST=true
           FORCE_BASE="${{ inputs.force_build_base }}"
+          FORCE_REBUILD_ALL="${{ inputs.force_rebuild_all }}"
           
           for item in $(echo "$PHP_MATRIX" | jq -c '.include[]'); do
             version=$(echo "$item" | jq -r '.version')
@@ -343,8 +292,9 @@ jobs:
               node_version=$(echo "$node_item" | jq -r '.version')
               node_os=$(echo "$node_item" | jq -r '.os_release')
           
-              # Build node image if: force rebuild, node image doesn't exist, OR dependent PHP image is being rebuilt
-              if [[ "$FORCE_BASE" == "true" ]] || ! check_image_exists "${{ env.TARGET_REGISTRY }}:${php_version}-node${node_version}" || [[ "$php_needs_rebuild" == "true" ]]; then
+              # Build node image if: force rebuild, node image doesn't exist, OR dependent PHP image is being rebuilt, OR FORCE_REBUILD_ALL
+              node_image="${{ env.TARGET_REGISTRY }}:${php_version}-node${node_version}"
+              if [[ "$FORCE_BASE" == "true" ]] || ! check_image_exists "$node_image" || [[ "$php_needs_rebuild" == "true" ]] || should_force_rebuild "$node_image"; then
                 [[ "$NODE_FIRST" == true ]] && NODE_FIRST=false || NODE_BUILD_MATRIX+=','
                 NODE_BUILD_MATRIX+="{\"php\":{\"version\":\"$php_version\",\"os_release\":\"$php_os\"},\"node\":{\"version\":\"$node_version\",\"os_release\":\"$node_os\"}}"
                 if [[ "$php_needs_rebuild" == "true" ]]; then
@@ -359,6 +309,132 @@ jobs:
           done
           NODE_BUILD_MATRIX+=']}'
           
+          # Check specialized images and build them if needed
+          SPECIALIZED_BUILD_MATRIX='{"include":['
+          SPEC_FIRST=true
+          
+          # Get all available combinations from the original matrix for specialized builds
+          ALL_PHP='${{ steps.matrix.outputs.php_matrix }}'
+          ALL_NODE='${{ steps.matrix.outputs.node_matrix }}'
+          
+          for php_item in $(echo "$ALL_PHP" | jq -c '.include[]'); do
+            php_version=$(echo "$php_item" | jq -r '.version')
+            php_os=$(echo "$php_item" | jq -r '.os_release')
+            
+            # Check standalone xdebug images for this PHP version
+            xdebug_image="ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${php_version}"
+            if ! check_image_exists "$xdebug_image" || should_force_rebuild "$xdebug_image"; then
+              [[ "$SPEC_FIRST" == true ]] && SPEC_FIRST=false || SPECIALIZED_BUILD_MATRIX+=','
+              latest_php=$(echo "$ALL_PHP" | jq -r '.include[].version' | sort -V | tail -1)
+              is_latest=$([[ "$php_version" == "$latest_php" ]] && echo "true" || echo "false")
+              SPECIALIZED_BUILD_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"x\",\"node_os_release\":\"$php_os\",\"experimental\":false,\"latest\":$is_latest,\"xdebug_type\":\"xdebug3\"}"
+              echo "🔨 Will build standalone xdebug image: PHP $php_version"
+            else
+              echo "✅ Standalone xdebug image exists: PHP $php_version (skipping)"
+            fi
+            
+            # Check specialized images for this PHP version
+            for variant in "magento1" "magento2" "wordpress"; do
+              # Check PHP-only variant
+              variant_image="ghcr.io/${{ github.repository_owner }}/php-fpm-${variant}:${php_version}"
+              if ! check_image_exists "$variant_image" || should_force_rebuild "$variant_image"; then
+                [[ "$SPEC_FIRST" == true ]] && SPEC_FIRST=false || SPECIALIZED_BUILD_MATRIX+=','
+                latest_php=$(echo "$ALL_PHP" | jq -r '.include[].version' | sort -V | tail -1)
+                is_latest=$([[ "$php_version" == "$latest_php" ]] && echo "true" || echo "false")
+                SPECIALIZED_BUILD_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"x\",\"node_os_release\":\"$php_os\",\"experimental\":false,\"latest\":$is_latest,\"variant\":\"$variant\"}"
+                echo "🔨 Will build $variant image: PHP $php_version"
+              else
+                echo "✅ $variant image exists: PHP $php_version (skipping)"
+              fi
+              
+              # Check xdebug variant
+              variant_xdebug_image="ghcr.io/${{ github.repository_owner }}/php-fpm-${variant}-debug:${php_version}"
+              if ! check_image_exists "$variant_xdebug_image" || should_force_rebuild "$variant_xdebug_image"; then
+                [[ "$SPEC_FIRST" == true ]] && SPEC_FIRST=false || SPECIALIZED_BUILD_MATRIX+=','
+                latest_php=$(echo "$ALL_PHP" | jq -r '.include[].version' | sort -V | tail -1)
+                is_latest=$([[ "$php_version" == "$latest_php" ]] && echo "true" || echo "false")
+                SPECIALIZED_BUILD_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"x\",\"node_os_release\":\"$php_os\",\"experimental\":false,\"latest\":$is_latest,\"xdebug_type\":\"xdebug3\",\"variant\":\"${variant}-xdebug\"}"
+                echo "🔨 Will build ${variant}-xdebug image: PHP $php_version"
+              else
+                echo "✅ ${variant}-xdebug image exists: PHP $php_version (skipping)"
+              fi
+            done
+            
+            # Check node combinations for specialized images
+            for node_item in $(echo "$ALL_NODE" | jq -c '.include[]'); do
+              node_version=$(echo "$node_item" | jq -r '.version')
+              node_os=$(echo "$node_item" | jq -r '.os_release')
+              
+              # Check standalone xdebug with node
+              xdebug_node_image="ghcr.io/${{ github.repository_owner }}/php-fpm-debug:${php_version}-node${node_version}"
+              if ! check_image_exists "$xdebug_node_image" || should_force_rebuild "$xdebug_node_image"; then
+                [[ "$SPEC_FIRST" == true ]] && SPEC_FIRST=false || SPECIALIZED_BUILD_MATRIX+=','
+                latest_php=$(echo "$ALL_PHP" | jq -r '.include[].version' | sort -V | tail -1)
+                latest_node=$(echo "$ALL_NODE" | jq -r '.include[].version' | sort -V | tail -1)
+                is_latest=$([[ "$php_version" == "$latest_php" && "$node_version" == "$latest_node" ]] && echo "true" || echo "false")
+                SPECIALIZED_BUILD_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"$node_version\",\"node_os_release\":\"$node_os\",\"experimental\":false,\"latest\":$is_latest,\"xdebug_type\":\"xdebug3\"}"
+                echo "🔨 Will build standalone xdebug image: PHP $php_version + Node $node_version"
+              else
+                echo "✅ Standalone xdebug image exists: PHP $php_version + Node $node_version (skipping)"
+              fi
+              
+              for variant in "magento1" "magento2" "wordpress"; do
+                # Check PHP+Node variant
+                variant_node_image="ghcr.io/${{ github.repository_owner }}/php-fpm-${variant}:${php_version}-node${node_version}"
+                if ! check_image_exists "$variant_node_image" || should_force_rebuild "$variant_node_image"; then
+                  [[ "$SPEC_FIRST" == true ]] && SPEC_FIRST=false || SPECIALIZED_BUILD_MATRIX+=','
+                  latest_php=$(echo "$ALL_PHP" | jq -r '.include[].version' | sort -V | tail -1)
+                  latest_node=$(echo "$ALL_NODE" | jq -r '.include[].version' | sort -V | tail -1)
+                  is_latest=$([[ "$php_version" == "$latest_php" && "$node_version" == "$latest_node" ]] && echo "true" || echo "false")
+                  SPECIALIZED_BUILD_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"$node_version\",\"node_os_release\":\"$node_os\",\"experimental\":false,\"latest\":$is_latest,\"variant\":\"$variant\"}"
+                  echo "🔨 Will build $variant image: PHP $php_version + Node $node_version"
+                else
+                  echo "✅ $variant image exists: PHP $php_version + Node $node_version (skipping)"
+                fi
+                
+                # Check xdebug variant with node
+                variant_xdebug_node_image="ghcr.io/${{ github.repository_owner }}/php-fpm-${variant}-debug:${php_version}-node${node_version}"
+                if ! check_image_exists "$variant_xdebug_node_image" || should_force_rebuild "$variant_xdebug_node_image"; then
+                  [[ "$SPEC_FIRST" == true ]] && SPEC_FIRST=false || SPECIALIZED_BUILD_MATRIX+=','
+                  latest_php=$(echo "$ALL_PHP" | jq -r '.include[].version' | sort -V | tail -1)
+                  latest_node=$(echo "$ALL_NODE" | jq -r '.include[].version' | sort -V | tail -1)
+                  is_latest=$([[ "$php_version" == "$latest_php" && "$node_version" == "$latest_node" ]] && echo "true" || echo "false")
+                  SPECIALIZED_BUILD_MATRIX+="{\"php_version\":\"$php_version\",\"php_os_release\":\"$php_os\",\"node_version\":\"$node_version\",\"node_os_release\":\"$node_os\",\"experimental\":false,\"latest\":$is_latest,\"xdebug_type\":\"xdebug3\",\"variant\":\"${variant}-xdebug\"}"
+                  echo "🔨 Will build ${variant}-xdebug image: PHP $php_version + Node $node_version"
+                else
+                  echo "✅ ${variant}-xdebug image exists: PHP $php_version + Node $node_version (skipping)"
+                fi
+              done
+            done
+          done
+          
+          SPECIALIZED_BUILD_MATRIX+=']}'
+          
+          # Create specific matrices from the specialized build matrix
+          echo "specialized_build_matrix=$SPECIALIZED_BUILD_MATRIX" >> $GITHUB_OUTPUT
+          
+          # Filter by variant for each specialized matrix (separate regular from xdebug)
+          # Generic XDebug matrix - for standalone xdebug builds
+          XDEBUG_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(has("xdebug_type") and (has("variant") | not))]}')
+          
+          # Regular variant matrices (without xdebug)
+          MAGENTO1_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(.variant == "magento1")]}')
+          MAGENTO2_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(.variant == "magento2")]}')
+          WORDPRESS_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(.variant == "wordpress")]}')
+          
+          # Separate xdebug-specific matrices
+          MAGENTO1_XDEBUG_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(.variant == "magento1-xdebug")]}')
+          MAGENTO2_XDEBUG_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(.variant == "magento2-xdebug")]}')
+          WORDPRESS_XDEBUG_MATRIX=$(echo "$SPECIALIZED_BUILD_MATRIX" | jq '{include: [.include[] | select(.variant == "wordpress-xdebug")]}')
+          
+          echo "xdebug_matrix=$XDEBUG_MATRIX" >> $GITHUB_OUTPUT
+          echo "magento1_matrix=$MAGENTO1_MATRIX" >> $GITHUB_OUTPUT
+          echo "magento2_matrix=$MAGENTO2_MATRIX" >> $GITHUB_OUTPUT
+          echo "wordpress_matrix=$WORDPRESS_MATRIX" >> $GITHUB_OUTPUT
+          echo "magento1_xdebug_matrix=$MAGENTO1_XDEBUG_MATRIX" >> $GITHUB_OUTPUT
+          echo "magento2_xdebug_matrix=$MAGENTO2_XDEBUG_MATRIX" >> $GITHUB_OUTPUT
+          echo "wordpress_xdebug_matrix=$WORDPRESS_XDEBUG_MATRIX" >> $GITHUB_OUTPUT
+          
           # Output the build matrices
           echo "php_build_matrix=$PHP_BUILD_MATRIX" >> $GITHUB_OUTPUT
           echo "node_build_matrix=$NODE_BUILD_MATRIX" >> $GITHUB_OUTPUT
@@ -366,6 +442,7 @@ jobs:
           # Debug output
           echo "PHP build matrix: $PHP_BUILD_MATRIX"
           echo "Node build matrix: $NODE_BUILD_MATRIX"
+          echo "Specialized build matrix: $SPECIALIZED_BUILD_MATRIX"
 
   php-fpm:
     name: Build PHP-FPM ${{ matrix.version }}
@@ -502,6 +579,7 @@ jobs:
     if: |
       always() && 
       needs.prepare-matrix.outputs.build_needed == 'true' && 
+      needs.prepare-matrix.outputs.xdebug_matrix != '{"include":[]}' &&
       (needs.php-node.result == 'success' || needs.php-node.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:
@@ -658,6 +736,7 @@ jobs:
     if: |
       always() && 
       needs.prepare-matrix.outputs.build_needed == 'true' && 
+      needs.prepare-matrix.outputs.magento1_xdebug_matrix != '{"include":[]}' &&
       (needs.magento1.result == 'success' || needs.magento1.result == 'skipped')
     permissions:
       packages: write
@@ -666,7 +745,7 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento1_matrix) }}
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento1_xdebug_matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -843,7 +922,8 @@ jobs:
     needs: [prepare-matrix, magento2]
     if: |
       always() && 
-      contains(needs.prepare-matrix.outputs.variant_images, 'magento2-xdebug') &&
+      needs.prepare-matrix.outputs.build_needed == 'true' && 
+      needs.prepare-matrix.outputs.magento2_xdebug_matrix != '{"include":[]}' &&
       (needs.magento2.result == 'success' || needs.magento2.result == 'skipped')
     permissions:
       packages: write
@@ -852,7 +932,7 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento2_matrix) }}
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento2_xdebug_matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
@@ -935,7 +1015,7 @@ jobs:
     needs: [prepare-matrix, php-node]
     if: |
       always() && 
-      contains(needs.prepare-matrix.outputs.variant_images, 'wordpress') &&
+      needs.prepare-matrix.outputs.wordpress_matrix != '{"include":[]}' &&
       (needs.php-node.result == 'success' || needs.php-node.result == 'skipped')
     permissions:
       packages: write
@@ -1023,7 +1103,8 @@ jobs:
     needs: [prepare-matrix, wordpress]
     if: |
       always() && 
-      contains(needs.prepare-matrix.outputs.variant_images, 'wordpress-xdebug') &&
+      needs.prepare-matrix.outputs.build_needed == 'true' && 
+      needs.prepare-matrix.outputs.wordpress_xdebug_matrix != '{"include":[]}' &&
       (needs.wordpress.result == 'success' || needs.wordpress.result == 'skipped')
     permissions:
       packages: write
@@ -1032,7 +1113,7 @@ jobs:
     strategy:
       fail-fast: false
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
-      matrix: ${{ fromJson(needs.prepare-matrix.outputs.wordpress_matrix) }}
+      matrix: ${{ fromJson(needs.prepare-matrix.outputs.wordpress_xdebug_matrix) }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
