@@ -411,7 +411,11 @@ jobs:
           SPECIALIZED_BUILD_MATRIX+=']}'
           
           # Create specific matrices from the specialized build matrix
-          echo "specialized_build_matrix=$SPECIALIZED_BUILD_MATRIX" >> $GITHUB_OUTPUT
+          {
+            echo "specialized_build_matrix<<EOF"
+            echo "$SPECIALIZED_BUILD_MATRIX"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
           
           # Filter by variant for each specialized matrix (separate regular from xdebug)
           # Generic XDebug matrix - for standalone xdebug builds
