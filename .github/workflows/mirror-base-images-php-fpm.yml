@@ -55,8 +55,8 @@ jobs:
           
           # Get unique PHP versions from Docker Hub
           PHP_VERSIONS=$(crane ls php 2>/dev/null | \
-            grep -E '^[78]\.[0-9]+-cli-(bullseye|bookworm)$' | \
-            sed 's/-cli-.*//' | sort -uV | \
+            grep -E '^[78]\.[0-9]+-fpm-(bullseye|bookworm)$' | \
+            sed 's/-fpm-.*//' | sort -uV | \
             awk '$1 >= "7.4"')
           
           for VERSION in $PHP_VERSIONS; do
@@ -64,14 +64,14 @@ jobs:
             PREFERRED_OS=$(get_preferred_php_os "$VERSION")
           
             # Try preferred OS first, fallback to any available
-            TAG="${VERSION}-cli-${PREFERRED_OS}"
+            TAG="${VERSION}-fpm-${PREFERRED_OS}"
             SOURCE="php:${TAG}"
           
             # Check if preferred OS exists on Docker Hub
             if ! crane manifest "$SOURCE" >/dev/null 2>&1; then
               # Fallback to any available OS
               AVAILABLE_TAG=$(crane ls php 2>/dev/null | \
-                grep "^${VERSION}-cli-" | \
+                grep "^${VERSION}-fpm-" | \
                 grep -E '(bullseye|bookworm)$' | \
                 head -1)
               if [[ -n "$AVAILABLE_TAG" ]]; then
