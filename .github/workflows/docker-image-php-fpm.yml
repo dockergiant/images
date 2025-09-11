@@ -69,7 +69,8 @@ jobs:
         id: registry
         run: |
           # Use mirrored images if available, fallback to Docker Hub
-          if crane manifest "${{ env.GHCR_BASE }}/php:8.3-fpm-bullseye" >/dev/null 2>&1; then
+          # Check if the mirror registry has any PHP images at all
+          if crane ls "${{ env.GHCR_BASE }}/php" >/dev/null 2>&1; then
             echo "registry_base=${{ env.GHCR_BASE }}/" >> $GITHUB_OUTPUT
             echo "✅ Using mirrored images from GHCR"
           else
