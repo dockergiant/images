@@ -5,7 +5,7 @@ ARG NODE_VERSION
 ARG NODE_OS_RELEASE
 ARG REGISTRY_BASE
 
-FROM ${REGISTRY_BASE}node:${NODE_VERSION}-${NODE_OS_RELEASE:-${OS_RELEASE:-bullseye}} AS node
+FROM ${REGISTRY_BASE}/node:${NODE_VERSION}-${NODE_OS_RELEASE:-${OS_RELEASE:-bookworm}} AS node
 RUN npm install -g grunt-cli gulp
 RUN mv /opt/yarn* /opt/yarn
 
@@ -19,7 +19,7 @@ COPY --from=node /opt /opt
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 
 # Copy PhantomJS
-COPY --from=99designs/phantomjs:2.1.1 /usr/local/bin/phantomjs /usr/local/bin/phantomjs
+COPY --from=${REGISTRY_BASE}/phantomjs:latest /usr/local/bin/phantomjs /usr/local/bin/phantomjs
 
 RUN ln -s /usr/local/bin/node /usr/local/bin/nodejs \
     && ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \

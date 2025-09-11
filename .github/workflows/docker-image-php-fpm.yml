@@ -43,7 +43,7 @@ on:
 
 env:
   GHCR_REGISTRY: ghcr.io
-  GHCR_BASE: ghcr.io/${{ github.repository_owner }}/php-fpm-base-images
+  GHCR_BASE: ghcr.io/${{ github.repository_owner }}
   TARGET_REGISTRY: ghcr.io/${{ github.repository_owner }}/php-fpm
 
 jobs:
@@ -69,9 +69,9 @@ jobs:
         id: registry
         run: |
           # Use mirrored images if available, fallback to Docker Hub
-          # Check if the mirror registry has any PHP images at all
-          if crane ls "${{ env.GHCR_BASE }}/php" >/dev/null 2>&1; then
-            echo "registry_base=${{ env.GHCR_BASE }}/" >> $GITHUB_OUTPUT
+          # Check if the mirror registry has any php images at all
+          if crane ls "${{ env.GHCR_BASE }}/base-images/php" >/dev/null 2>&1; then
+            echo "registry_base=${{ env.GHCR_BASE }}/base-images" >> $GITHUB_OUTPUT
             echo "✅ Using mirrored images from GHCR"
           else
             echo "registry_base=" >> $GITHUB_OUTPUT
@@ -112,44 +112,43 @@ jobs:
             PHP_VERSIONS="${{ inputs.php_versions }}"
             NODE_VERSIONS="${{ inputs.node_versions }}"
           else
-            # Discover PHP versions from GHCR mirror (7.1+ only)
-            echo "📦 Discovering PHP versions from GHCR..."
+            # Discover PHP versions from mirrored images if available, fallback to Docker Hub
+            echo "📦 Discovering PHP versions..."
             if [[ -n "${{ steps.registry.outputs.registry_base }}" ]]; then
-              ALL_PHP=$(crane ls ${{ env.GHCR_BASE }}/php 2>/dev/null | \
-                grep -E '^[78]\.[0-9]+-fpm-(buster|bullseye|bookworm)$' | \
-                awk -F'-fpm-' '{print $1}' | \
-                sort -uV | \
-                awk '$1 >= "7.1"' || echo "")
+              echo "🔍 Listing all tags from mirrored images: ${{ steps.registry.outputs.registry_base }}/php..."
+              RAW_PHP_TAGS=$(crane ls "${{ steps.registry.outputs.registry_base }}/php" 2>/dev/null || echo "")
+              echo "Raw PHP tags found from mirrors: $(echo $RAW_PHP_TAGS | wc -w) total tags"
+            else
+              echo "🔍 Listing all tags from Docker Hub php..."
+              RAW_PHP_TAGS=$(crane ls php 2>/dev/null || echo "")
+              echo "Raw PHP tags found from Docker Hub: $(echo $RAW_PHP_TAGS | wc -w) total tags"
             fi
+            
+            ALL_PHP=$(echo "$RAW_PHP_TAGS" | \
+              grep -E '^[78]\.[0-9]+-fpm-(bullseye|bookworm)$' | \
+              awk -F'-fpm-' '{print $1}' | \
+              sort -uV | \
+              awk '$1 >= "7.4"' || echo "")
+            echo "Filtered PHP versions: $ALL_PHP"
           
-            # Fallback to Docker Hub if GHCR is empty
-            if [[ -z "$ALL_PHP" ]]; then
-              echo "⚠️ GHCR empty, discovering from Docker Hub..."
-              ALL_PHP=$(crane ls php 2>/dev/null | \
-                grep -E '^[78]\.[0-9]+-fpm-(buster|bullseye|bookworm)$' | \
-                awk -F'-fpm-' '{print $1}' | \
-                sort -uV | \
-                awk '$1 >= "7.1"' || echo "")
-            fi
-          
-            # Discover Node versions
+            # Discover Node versions from mirrored images if available, fallback to Docker Hub
             echo "📦 Discovering Node versions..."
             if [[ -n "${{ steps.registry.outputs.registry_base }}" ]]; then
-              ALL_NODE=$(crane ls ${{ env.GHCR_BASE }}/node 2>/dev/null | \
-                grep -E '^[0-9]+-(buster|bullseye|bookworm)$' | \
-                awk -F'-' '{print $1}' | \
-                sort -un | \
-                awk '$1 >= 10' || echo "")
+              echo "🔍 Listing all tags from mirrored images: ${{ steps.registry.outputs.registry_base }}/node..."
+              RAW_NODE_TAGS=$(crane ls "${{ steps.registry.outputs.registry_base }}/node" 2>/dev/null || echo "")
+              echo "Raw Node tags found from mirrors: $(echo $RAW_NODE_TAGS | wc -w) total tags"
+            else
+              echo "🔍 Listing all tags from Docker Hub node..."
+              RAW_NODE_TAGS=$(crane ls node 2>/dev/null || echo "")
+              echo "Raw Node tags found from Docker Hub: $(echo $RAW_NODE_TAGS | wc -w) total tags"
             fi
-          
-            if [[ -z "$ALL_NODE" ]]; then
-              echo "⚠️ GHCR empty, discovering from Docker Hub..."
-              ALL_NODE=$(crane ls node 2>/dev/null | \
-                grep -E '^[0-9]+-(buster|bullseye|bookworm)$' | \
-                awk -F'-' '{print $1}' | \
-                sort -un | \
-                awk '$1 >= 10' || echo "")
-            fi
+            
+            ALL_NODE=$(echo "$RAW_NODE_TAGS" | \
+              grep -E '^[0-9]+-(bullseye|bookworm)$' | \
+              awk -F'-' '{print $1}' | \
+              sort -un | \
+              awk '$1 >= 14' || echo "")
+            echo "Filtered Node versions: $ALL_NODE"
           
             # Select versions based on build type
             if [[ "$BUILD_TYPE" == "full" ]]; then
@@ -159,6 +158,9 @@ jobs:
               PHP_VERSIONS=$(echo "$ALL_PHP" | tail -1)
               NODE_VERSIONS=$(echo "$ALL_NODE" | tail -2 | tr '\n' ',' | sed 's/,$//')
             fi
+            
+            echo "🎯 Selected PHP versions for $BUILD_TYPE build: $PHP_VERSIONS"
+            echo "🎯 Selected Node versions for $BUILD_TYPE build: $NODE_VERSIONS"
           fi
           
           # Function to determine OS release for each PHP version
@@ -204,6 +206,9 @@ jobs:
           
           echo "PHP versions: $PHP_VERSIONS"
           echo "Node versions: $NODE_VERSIONS"
+          
+          echo "📋 Generated PHP matrix: $PHP_MATRIX"
+          echo "📋 Generated Node matrix: $NODE_MATRIX"
           
           echo "php_matrix=$PHP_MATRIX" >> $GITHUB_OUTPUT
           echo "node_matrix=$NODE_MATRIX" >> $GITHUB_OUTPUT
