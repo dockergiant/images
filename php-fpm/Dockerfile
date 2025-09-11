@@ -7,9 +7,13 @@ FROM golang:bullseye AS mhs-builder
 RUN go install github.com/mailhog/mhsendmail@latest
 
 
-FROM ${ENV_SOURCE_IMAGE:-${REGISTRY_BASE}/php}:${PHP_VERSION}-fmp-${OS_RELEASE:-bookworm}
-USER root
+ARG ENV_SOURCE_IMAGE
+ARG REGISTRY_BASE
 ARG PHP_VERSION
+ARG OS_RELEASE=bookworm
+
+FROM ${ENV_SOURCE_IMAGE:-${REGISTRY_BASE}/php:${PHP_VERSION}-fpm-${OS_RELEASE}}
+USER root
 
 ENV MAILHOG_HOST    mailhog
 ENV MAILHOG_PORT    1025
