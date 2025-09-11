@@ -656,6 +656,7 @@ jobs:
     if: |
       always() && 
       needs.prepare-matrix.outputs.build_needed == 'true' && 
+      needs.prepare-matrix.outputs.magento1_matrix != '{"include":[]}' &&
       (needs.php-node.result == 'success' || needs.php-node.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:
@@ -839,6 +840,7 @@ jobs:
     if: |
       always() && 
       needs.prepare-matrix.outputs.build_needed == 'true' && 
+      needs.prepare-matrix.outputs.magento2_matrix != '{"include":[]}' &&
       (needs.php-node.result == 'success' || needs.php-node.result == 'skipped')
     permissions:
       packages: write
@@ -1022,6 +1024,7 @@ jobs:
     needs: [prepare-matrix, php-node]
     if: |
       always() && 
+      needs.prepare-matrix.outputs.build_needed == 'true' && 
       needs.prepare-matrix.outputs.wordpress_matrix != '{"include":[]}' &&
       (needs.php-node.result == 'success' || needs.php-node.result == 'skipped')
     permissions:
