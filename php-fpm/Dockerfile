@@ -157,7 +157,14 @@ RUN set -eux; \
     fi
 
     
-RUN if command -v pip >/dev/null 2>&1; then pip install segno; else echo "pip not found, skipping segno installation"; fi
+RUN if command -v pip >/dev/null 2>&1; then \
+      # Try apt package first, fallback to pip with --break-system-packages
+      apt-get update && apt-get install -y python3-segno 2>/dev/null || \
+      pip install segno --break-system-packages 2>/dev/null || \
+      echo "segno installation failed, continuing without it"; \
+    else \
+      echo "pip not found, skipping segno installation"; \
+    fi
 
 RUN mkdir -p /etc/zsh/zshrc.d  \
     && echo "autoload -U compinit; compinit" > /etc/zsh/zshrc.d/completions.zsh \
