@@ -154,7 +154,7 @@ jobs:
         run: |
           echo "📦 Mirroring PhantomJS image..."
           
-          SOURCE="rollupdev/phantomjs:latest"
+          SOURCE="99designs/phantomjs:2.1.1"
           TARGET="${{ env.GHCR_BASE }}/phantomjs:latest"
           
           if crane manifest "$TARGET" >/dev/null 2>&1 && [[ "${{ inputs.force_mirror }}" != "true" ]]; then

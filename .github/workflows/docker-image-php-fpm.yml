@@ -267,6 +267,16 @@ jobs:
           echo "magento2_matrix=$APP_MATRIX" >> $GITHUB_OUTPUT  
           echo "wordpress_matrix=$APP_MATRIX" >> $GITHUB_OUTPUT
           
+          # If no PHP versions found, ensure matrices are empty but valid JSON
+          if [[ -z "$PHP_VERSIONS" ]]; then
+            echo "⚠️ No PHP versions found, setting empty matrices"
+            echo "specialized_matrix={\"include\":[]}" >> $GITHUB_OUTPUT
+            echo "xdebug_matrix={\"include\":[]}" >> $GITHUB_OUTPUT
+            echo "magento1_matrix={\"include\":[]}" >> $GITHUB_OUTPUT
+            echo "magento2_matrix={\"include\":[]}" >> $GITHUB_OUTPUT  
+            echo "wordpress_matrix={\"include\":[]}" >> $GITHUB_OUTPUT
+          fi
+          
           # Determine if build is needed
           if [[ -z "$PHP_VERSIONS" ]]; then
             echo "build_needed=false" >> $GITHUB_OUTPUT
