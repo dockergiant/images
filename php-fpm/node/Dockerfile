@@ -2,8 +2,10 @@ ARG ENV_SOURCE_IMAGE
 ARG PHP_VERSION
 ARG OS_RELEASE
 ARG NODE_VERSION
+ARG NODE_OS_RELEASE
+ARG REGISTRY_BASE
 
-FROM node:${NODE_VERSION}-${OS_RELEASE:-bullseye} AS node
+FROM ${REGISTRY_BASE}node:${NODE_VERSION}-${NODE_OS_RELEASE:-${OS_RELEASE:-bullseye}} AS node
 RUN npm install -g grunt-cli gulp
 RUN mv /opt/yarn* /opt/yarn
 

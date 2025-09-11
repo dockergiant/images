@@ -1,12 +1,13 @@
 ARG ENV_SOURCE_IMAGE
 ARG PHP_VERSION
 ARG OS_RELEASE
+ARG REGISTRY_BASE
 
 FROM golang:bullseye AS mhs-builder
 RUN go install github.com/mailhog/mhsendmail@latest
 
 
-FROM ${ENV_SOURCE_IMAGE:-php}:${PHP_VERSION}-fpm-${OS_RELEASE:-bullseye}
+FROM ${ENV_SOURCE_IMAGE:-${REGISTRY_BASE}php}:${PHP_VERSION}-fpm-${OS_RELEASE:-bullseye}
 USER root
 ARG PHP_VERSION
 
@@ -125,9 +126,9 @@ RUN set -eux \
     && perl -pi -e 's/memory_limit(.*)/memory_limit=-1/g' ${PHP_INI_DIR}/php.ini
 
 # Install Composer
-COPY --from=composer:1 /usr/bin/composer /usr/bin/composer1
-COPY --from=composer:2.2 /usr/bin/composer /usr/bin/composer2lts
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer2
+COPY --from=${REGISTRY_BASE}composer:1 /usr/bin/composer /usr/bin/composer1
+COPY --from=${REGISTRY_BASE}composer:2.2 /usr/bin/composer /usr/bin/composer2lts
+COPY --from=${REGISTRY_BASE}composer:2 /usr/bin/composer /usr/bin/composer2
 
 # If PHP < 7.2
 RUN if [ "$(printf "7.2\n${PHP_VERSION}" | sort -g | head -n1 | awk -F"." '{print $1"."$2}')" != "7.2" ]; \

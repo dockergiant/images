@@ -1,0 +1,171 @@
+name: Mirror PHP-FPM Base Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_mirror:
+        description: 'Force re-mirror all images'
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    # Run weekly on Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+env:
+  GHCR_REGISTRY: ghcr.io
+  GHCR_BASE: ghcr.io/${{ github.repository_owner }}/php-fpm-base-images
+
+jobs:
+  mirror-images:
+    name: Mirror Docker Hub Images to GHCR
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Setup crane
+        uses: imjasonh/setup-crane@v0.4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Mirror PHP images
+        run: |
+          echo "📦 Discovering and mirroring PHP images..."
+          
+          # Function to determine preferred OS for PHP version
+          get_preferred_php_os() {
+            local ver=$1
+            local major=${ver%%.*}
+            local minor=${ver#*.}; minor=${minor%%.*}
+            
+            if [[ "$major" == "7" ]]; then
+              if [[ "$minor" == "1" ]] || [[ "$minor" == "2" ]]; then
+                echo "buster"   # 7.1, 7.2 use buster
+              else
+                echo "bullseye" # 7.3, 7.4 use bullseye
+              fi
+            elif [[ "$major" == "8" ]]; then
+              echo "bullseye"   # 8.x uses bullseye
+            else
+              echo "bullseye"   # default to bullseye
+            fi
+          }
+          
+          # Get unique PHP-FPM versions from Docker Hub (7.1+ only)
+          PHP_VERSIONS=$(crane ls php 2>/dev/null | \
+            grep -E '^[78]\.[0-9]+-fpm-(buster|bullseye|bookworm)$' | \
+            sed 's/-fpm-.*//' | sort -uV | \
+            awk '$1 >= "7.1"')
+          
+          for VERSION in $PHP_VERSIONS; do
+            # Determine the preferred OS for this version
+            PREFERRED_OS=$(get_preferred_php_os "$VERSION")
+            
+            # Try preferred OS first, fallback to any available
+            TAG="${VERSION}-fpm-${PREFERRED_OS}"
+            SOURCE="php:${TAG}"
+            
+            # Check if preferred OS exists on Docker Hub
+            if ! crane manifest "$SOURCE" >/dev/null 2>&1; then
+              # Fallback to any available OS
+              AVAILABLE_TAG=$(crane ls php 2>/dev/null | \
+                grep "^${VERSION}-fpm-" | \
+                grep -E '(buster|bullseye|bookworm)$' | \
+                head -1)
+              if [[ -n "$AVAILABLE_TAG" ]]; then
+                TAG="$AVAILABLE_TAG"
+                SOURCE="php:${TAG}"
+                echo "⚠️ PHP ${VERSION}: Using ${TAG} (preferred ${PREFERRED_OS} not found)"
+              else
+                echo "❌ PHP ${VERSION}: No suitable PHP-FPM image found"
+                continue
+              fi
+            fi
+            
+            TARGET="${{ env.GHCR_BASE }}/php:${TAG}"
+            
+            # Check if already mirrored
+            if crane manifest "$TARGET" >/dev/null 2>&1 && [[ "${{ inputs.force_mirror }}" != "true" ]]; then
+              echo "✓ PHP ${VERSION} (${TAG}) already mirrored"
+            else
+              echo "🔄 Mirroring ${SOURCE} to ${TARGET}..."
+              crane copy "$SOURCE" "$TARGET" && echo "✅ Mirrored PHP ${VERSION}" || echo "❌ Failed to mirror PHP ${VERSION}"
+            fi
+          done
+
+      - name: Mirror Node images
+        run: |
+          echo "📦 Discovering and mirroring Node images..."
+          
+          # Get unique Node versions from Docker Hub (10+)
+          NODE_VERSIONS=$(crane ls node 2>/dev/null | \
+            grep -E '^[0-9]+-(buster|bullseye|bookworm)$' | \
+            sed 's/-.*//' | sort -un | \
+            awk '$1 >= 10')
+          
+          for VERSION in $NODE_VERSIONS; do
+            # Prefer bullseye for most versions, with fallbacks
+            PREFERRED_OS="bullseye"
+            TAG="${VERSION}-${PREFERRED_OS}"
+            SOURCE="node:${TAG}"
+            
+            # Check if preferred OS exists on Docker Hub
+            if ! crane manifest "$SOURCE" >/dev/null 2>&1; then
+              # Try bookworm
+              TAG="${VERSION}-bookworm"
+              SOURCE="node:${TAG}"
+              if ! crane manifest "$SOURCE" >/dev/null 2>&1; then
+                # Fallback to buster for older versions
+                TAG="${VERSION}-buster"
+                SOURCE="node:${TAG}"
+                if ! crane manifest "$SOURCE" >/dev/null 2>&1; then
+                  echo "❌ Node ${VERSION}: No suitable image found"
+                  continue
+                fi
+                echo "⚠️ Node ${VERSION}: Using buster (bullseye/bookworm not found)"
+              else
+                echo "⚠️ Node ${VERSION}: Using bookworm (bullseye not found)"
+              fi
+            fi
+            
+            TARGET="${{ env.GHCR_BASE }}/node:${TAG}"
+            
+            # Check if already mirrored
+            if crane manifest "$TARGET" >/dev/null 2>&1 && [[ "${{ inputs.force_mirror }}" != "true" ]]; then
+              echo "✓ Node ${VERSION} (${TAG}) already mirrored"
+            else
+              echo "🔄 Mirroring ${SOURCE} to ${TARGET}..."
+              crane copy "$SOURCE" "$TARGET" && echo "✅ Mirrored Node ${VERSION}" || echo "❌ Failed to mirror Node ${VERSION}"
+            fi
+          done
+
+      - name: Mirror Composer images
+        run: |
+          echo "📦 Mirroring Composer images..."
+          
+          for VERSION in 1 2 2.2; do
+            SOURCE="composer:${VERSION}"
+            TARGET="${{ env.GHCR_BASE }}/composer:${VERSION}"
+            
+            if crane manifest "$TARGET" >/dev/null 2>&1 && [[ "${{ inputs.force_mirror }}" != "true" ]]; then
+              echo "✓ Composer ${VERSION} already mirrored"
+            else
+              echo "🔄 Mirroring ${SOURCE} to ${TARGET}..."
+              crane copy "$SOURCE" "$TARGET" && echo "✅ Mirrored Composer ${VERSION}" || echo "❌ Failed to mirror Composer ${VERSION}"
+            fi
+          done
+
+      - name: Summary
+        run: |
+          echo "🎉 PHP-FPM Mirror job completed!"
+          echo ""
+          echo "Mirrored images are available at:"
+          echo "  PHP-FPM: ${{ env.GHCR_BASE }}/php:*"
+          echo "  Node: ${{ env.GHCR_BASE }}/node:*"
+          echo "  Composer: ${{ env.GHCR_BASE }}/composer:*"
