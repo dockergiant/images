@@ -295,16 +295,26 @@ jobs:
           for php_item in $(echo "$PHP_MATRIX" | jq -c '.include[]'); do
             php_version=$(echo "$php_item" | jq -r '.version')
             php_os=$(echo "$php_item" | jq -r '.os_release')
+            
+            # Check if this PHP version is being rebuilt (force or doesn't exist)
+            php_needs_rebuild=false
+            if [[ "$FORCE_BASE" == "true" ]] || ! check_image_exists "${{ env.TARGET_REGISTRY }}:$php_version"; then
+              php_needs_rebuild=true
+            fi
           
             for node_item in $(echo "$NODE_MATRIX" | jq -c '.include[]'); do
               node_version=$(echo "$node_item" | jq -r '.version')
               node_os=$(echo "$node_item" | jq -r '.os_release')
           
-              # Check if image exists
-              if ! check_image_exists "${{ env.TARGET_REGISTRY }}:${php_version}-node${node_version}"; then
+              # Build node image if: force rebuild, node image doesn't exist, OR dependent PHP image is being rebuilt
+              if [[ "$FORCE_BASE" == "true" ]] || ! check_image_exists "${{ env.TARGET_REGISTRY }}:${php_version}-node${node_version}" || [[ "$php_needs_rebuild" == "true" ]]; then
                 [[ "$NODE_FIRST" == true ]] && NODE_FIRST=false || NODE_BUILD_MATRIX+=','
                 NODE_BUILD_MATRIX+="{\"php\":{\"version\":\"$php_version\",\"os_release\":\"$php_os\"},\"node\":{\"version\":\"$node_version\",\"os_release\":\"$node_os\"}}"
-                echo "🔨 Will build node image: PHP $php_version + Node $node_version"
+                if [[ "$php_needs_rebuild" == "true" ]]; then
+                  echo "🔨 Will build node image: PHP $php_version + Node $node_version (PHP base rebuilding)"
+                else
+                  echo "🔨 Will build node image: PHP $php_version + Node $node_version"
+                fi
               else
                 echo "✅ Node image exists: PHP $php_version + Node $node_version (skipping)"
               fi
