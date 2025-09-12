@@ -1,5 +1,5 @@
-ARG ENV_SOURCE_IMAGE
-ARG PHP_VERSION
+ARG ENV_SOURCE_IMAGE=ghcr.io/dockergiant/php-fpm
+ARG PHP_VERSION=8.4
 ARG OS_RELEASE=bookworm
 ARG REGISTRY_BASE=ghcr.io/dockergiant/base-images
 
@@ -14,12 +14,12 @@ FROM ${REGISTRY_BASE}/composer:2 AS composer2
 FROM ${REGISTRY_BASE}/php:${PHP_VERSION}-fpm-${OS_RELEASE}
 USER root
 
-ENV MAILHOG_HOST    mailhog
-ENV MAILHOG_PORT    1025
-ENV USER_ID         501
-ENV GROUP_ID        20
-ENV OSTYPE          darwin220
-ENV ADD_PHP_EXT     ""
+ENV MAILHOG_HOST=mailhog
+ENV MAILHOG_PORT=1025
+ENV USER_ID=501
+ENV GROUP_ID=20
+ENV OSTYPE=darwin220
+ENV ADD_PHP_EXT=""
 
 # PHP Extension Installer
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
@@ -67,13 +67,25 @@ RUN if [ "$(printf "8.2\n${PHP_VERSION}" | sort -g | head -n1)" != "8.2" ]; \
 RUN if [ "$(printf "8.2\n${PHP_VERSION}" | sort -g | head -n1)" = "8.2" ]; \
     then install-php-extensions ftp; fi
 
-# Install New Relic PHP agent (available for PHP 7.0+)
-RUN if [ "$(printf "7.0\n${PHP_VERSION}" | sort -g | head -n1)" = "7.0" ]; then \
-    # PHP 7.0+ - install New Relic using install-php-extensions
-    install-php-extensions newrelic && \
-    # Disable New Relic by default - will be enabled conditionally via entrypoint
-    rm -f /usr/local/etc/php/conf.d/docker-php-ext-newrelic.ini; \
-fi
+# Install New Relic PHP agent
+# - PHP 7.0+ on AMD64/x86_64
+# - PHP 8.0+ on ARM64/aarch64
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ] && [ "$(printf "7.0\n${PHP_VERSION}" | sort -g | head -n1)" = "7.0" ]; then \
+        # x86_64/AMD64: PHP 7.0+ supported
+        echo "Installing New Relic for x86_64 architecture with PHP ${PHP_VERSION}..." && \
+        install-php-extensions newrelic && \
+        # Disable New Relic by default - will be enabled conditionally via entrypoint
+        sed -i 's/newrelic.enabled = true/newrelic.enabled = false/' /usr/local/etc/php/conf.d/newrelic.ini || true; \
+    elif [ "$ARCH" = "aarch64" ] && [ "$(printf "8.0\n${PHP_VERSION}" | sort -g | head -n1)" = "8.0" ]; then \
+        # aarch64/ARM64: PHP 8.0+ supported
+        echo "Installing New Relic for aarch64 architecture with PHP ${PHP_VERSION}..." && \
+        install-php-extensions newrelic && \
+        # Disable New Relic by default - will be enabled conditionally via entrypoint
+        sed -i 's/newrelic.enabled = true/newrelic.enabled = false/' /usr/local/etc/php/conf.d/newrelic.ini || true; \
+    else \
+        echo "Skipping New Relic installation: Not supported for $ARCH with PHP ${PHP_VERSION}"; \
+    fi
 
 # Install helpful utilities
 RUN set -eux; \
