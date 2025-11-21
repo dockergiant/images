@@ -72,7 +72,7 @@ jobs:
       registry_base: ${{ steps.registry.outputs.registry_base }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup crane
         uses: imjasonh/setup-crane@v0.4
@@ -464,7 +464,7 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.php_build_matrix) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
@@ -523,7 +523,7 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.node_build_matrix) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup crane
         uses: imjasonh/setup-crane@v0.4
@@ -600,7 +600,7 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.xdebug_matrix) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
@@ -671,7 +671,7 @@ jobs:
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento1_matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
         with:
@@ -764,7 +764,7 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento1_xdebug_matrix) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
       - name: Setup Docker Buildx
@@ -864,7 +864,7 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento2_matrix) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v3
       - name: Setup Docker Buildx
@@ -959,7 +959,7 @@ jobs:
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento2_xdebug_matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
         with:
@@ -1056,7 +1056,7 @@ jobs:
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.wordpress_matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
         with:
@@ -1149,7 +1149,7 @@ jobs:
       max-parallel: ${{ github.ref == 'refs/heads/master' && 2 || 0 }}
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.wordpress_xdebug_matrix) }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
         with:
