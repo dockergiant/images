@@ -19,6 +19,9 @@ COPY etc/nginx/fastcgi_params /etc/nginx/fastcgi_params.template
 COPY etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.template
 COPY etc/nginx/available.d/*.conf /etc/nginx/available.d/
 
+# Create directory for project-specific nginx config (mounted via roll-env.yml)
+RUN mkdir -p /etc/nginx/default.d && touch /etc/nginx/default.d/empty.map
+
 RUN chown -R www-data:www-data /var/www/autologin/
 
 CMD envsubst '${NGINX_UPSTREAM_HOST} ${NGINX_UPSTREAM_PORT} \
