@@ -488,7 +488,7 @@ jobs:
           [[ "${{ matrix.version }}" == "$LATEST" ]] && echo "is_latest=true" >> $GITHUB_OUTPUT || echo "is_latest=false" >> $GITHUB_OUTPUT
 
       - name: Build and push PHP base image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           file: php-fpm/Dockerfile
           context: php-fpm/context
@@ -563,7 +563,7 @@ jobs:
           fi
 
       - name: Build and push Node variant
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           file: php-fpm/node/Dockerfile
           context: php-fpm/context
@@ -617,7 +617,7 @@ jobs:
         if: ${{ !env.ACT }}
 
       - name: Build and push XDebug variant with Node
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version != 'x' }}
         with:
           file: php-fpm/xdebug3/Dockerfile
@@ -636,7 +636,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push XDebug variant without Node
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version == 'x' }}
         with:
           file: php-fpm/xdebug3/Dockerfile
@@ -686,7 +686,7 @@ jobs:
         if: ${{ !env.ACT }}
 
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' }}
         with:
           file: php-fpm/magento1/Dockerfile
@@ -701,7 +701,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' }}
         with:
           file: php-fpm/magento1/Dockerfile
@@ -716,7 +716,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' && matrix.latest }}
         with:
           file: php-fpm/magento1/Dockerfile
@@ -731,7 +731,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' && matrix.latest }}
         with:
           file: php-fpm/magento1/Dockerfile
@@ -778,7 +778,7 @@ jobs:
         if: ${{ !env.ACT }}
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' }}
         with:
           file: php-fpm/magento1/xdebug3/Dockerfile
@@ -795,7 +795,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push (no node)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' }}
         with:
           file: php-fpm/magento1/xdebug3/Dockerfile
@@ -812,7 +812,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push (latest with node)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' && matrix.latest }}
         with:
           file: php-fpm/magento1/xdebug3/Dockerfile
@@ -829,7 +829,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push (latest no node)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' && matrix.latest }}
         with:
           file: php-fpm/magento1/xdebug3/Dockerfile
@@ -878,7 +878,7 @@ jobs:
         if: ${{ !env.ACT }}
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' }}
         with:
           file: php-fpm/magento2/Dockerfile
@@ -894,7 +894,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push (no node)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' }}
         with:
           file: php-fpm/magento2/Dockerfile
@@ -910,7 +910,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push (latest with node)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' && matrix.latest }}
         with:
           file: php-fpm/magento2/Dockerfile
@@ -926,7 +926,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push (latest no node)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' && matrix.latest }}
         with:
           file: php-fpm/magento2/Dockerfile
@@ -974,7 +974,7 @@ jobs:
         if: ${{ !env.ACT }}
 
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' }}
         with:
           file: php-fpm/magento2/xdebug3/Dockerfile
@@ -990,7 +990,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' }}
         with:
           file: php-fpm/magento2/xdebug3/Dockerfile
@@ -1006,7 +1006,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' && matrix.latest }}
         with:
           file: php-fpm/magento2/xdebug3/Dockerfile
@@ -1022,7 +1022,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' && matrix.latest }}
         with:
           file: php-fpm/magento2/xdebug3/Dockerfile
@@ -1071,7 +1071,7 @@ jobs:
         if: ${{ !env.ACT }}
 
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' }}
         with:
           file: php-fpm/wordpress/Dockerfile
@@ -1086,7 +1086,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' }}
         with:
           file: php-fpm/wordpress/Dockerfile
@@ -1101,7 +1101,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' && matrix.latest }}
         with:
           file: php-fpm/wordpress/Dockerfile
@@ -1116,7 +1116,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' && matrix.latest }}
         with:
           file: php-fpm/wordpress/Dockerfile
@@ -1164,7 +1164,7 @@ jobs:
         if: ${{ !env.ACT }}
 
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' }}
         with:
           file: php-fpm/wordpress/xdebug3/Dockerfile
@@ -1180,7 +1180,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' }}
         with:
           file: php-fpm/wordpress/xdebug3/Dockerfile
@@ -1196,7 +1196,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' && matrix.latest }}
         with:
           file: php-fpm/wordpress/xdebug3/Dockerfile
@@ -1212,7 +1212,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' && matrix.latest }}
         with:
           file: php-fpm/wordpress/xdebug3/Dockerfile
