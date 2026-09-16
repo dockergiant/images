@@ -9,7 +9,9 @@ ENV VARNISHD_PARAMS -p default_ttl=3600 -p default_grace=3600 \
     -p feature=+esi_ignore_https -p feature=+esi_disable_xml_check -p http_resp_hdr_len=32k
 
 COPY default.vcl /etc/varnish/default.vcl.template
-RUN apk add --no-cache gettext
+# Varnish 9 only ships Debian images, older versions build from the Alpine tags.
+RUN if command -v apk >/dev/null; then apk add --no-cache gettext; \
+    else apt-get update && apt-get install -y --no-install-recommends gettext-base && rm -rf /var/lib/apt/lists/*; fi
 RUN chown -R varnish:varnish /etc/varnish
 
 ENV BACKEND_HOST    nginx

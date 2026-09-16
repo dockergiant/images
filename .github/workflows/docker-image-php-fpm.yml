@@ -75,7 +75,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup crane
-        uses: imjasonh/setup-crane@v0.4
+        uses: imjasonh/setup-crane@v0.5
 
       - name: Determine registry base
         id: registry
@@ -467,13 +467,13 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -488,7 +488,7 @@ jobs:
           [[ "${{ matrix.version }}" == "$LATEST" ]] && echo "is_latest=true" >> $GITHUB_OUTPUT || echo "is_latest=false" >> $GITHUB_OUTPUT
 
       - name: Build and push PHP base image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           file: php-fpm/Dockerfile
           context: php-fpm/context
@@ -526,16 +526,16 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup crane
-        uses: imjasonh/setup-crane@v0.4
+        uses: imjasonh/setup-crane@v0.5
 
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -563,7 +563,7 @@ jobs:
           fi
 
       - name: Build and push Node variant
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           file: php-fpm/node/Dockerfile
           context: php-fpm/context
@@ -584,9 +584,10 @@ jobs:
 
   xdebug:
     name: PHP-FPM ${{ matrix.php_version }} + XDebug - Node ${{ matrix.node_version }}
-    needs: [prepare-matrix, php-node]
+    needs: [prepare-matrix, php-fpm, php-node]
     if: |
       always() && 
+      !contains(needs.*.result, 'failure') &&
       needs.prepare-matrix.outputs.build_needed == 'true' && 
       needs.prepare-matrix.outputs.xdebug_matrix != '{"include":[]}' &&
       (needs.php-node.result == 'success' || needs.php-node.result == 'skipped')
@@ -603,13 +604,13 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -617,7 +618,7 @@ jobs:
         if: ${{ !env.ACT }}
 
       - name: Build and push XDebug variant with Node
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version != 'x' }}
         with:
           file: php-fpm/xdebug3/Dockerfile
@@ -636,7 +637,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push XDebug variant without Node
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version == 'x' }}
         with:
           file: php-fpm/xdebug3/Dockerfile
@@ -656,9 +657,10 @@ jobs:
 
   magento1:
     name: Magento 1 PHP-FPM ${{ matrix.php_version }} - Node ${{ matrix.node_version }}
-    needs: [prepare-matrix, php-node]
+    needs: [prepare-matrix, php-fpm, php-node]
     if: |
       always() && 
+      !contains(needs.*.result, 'failure') &&
       needs.prepare-matrix.outputs.build_needed == 'true' && 
       needs.prepare-matrix.outputs.magento1_matrix != '{"include":[]}' &&
       (needs.php-node.result == 'success' || needs.php-node.result == 'skipped')
@@ -672,13 +674,13 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento1_matrix) }}
     steps:
       - uses: actions/checkout@v6
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
         with:
           driver-opts: |
             image=moby/buildkit:v0.10.6
       - name: Login to Github Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -686,7 +688,7 @@ jobs:
         if: ${{ !env.ACT }}
 
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' }}
         with:
           file: php-fpm/magento1/Dockerfile
@@ -701,7 +703,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' }}
         with:
           file: php-fpm/magento1/Dockerfile
@@ -716,7 +718,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' && matrix.latest }}
         with:
           file: php-fpm/magento1/Dockerfile
@@ -731,7 +733,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' && matrix.latest }}
         with:
           file: php-fpm/magento1/Dockerfile
@@ -748,9 +750,10 @@ jobs:
   magento1-xdebug:
     name: Magento 1 PHP-FPM ${{ matrix.php_version }} + XDebug - Node ${{ matrix.node_version }}
     runs-on: ubuntu-latest
-    needs: [prepare-matrix, magento1]
+    needs: [prepare-matrix, php-fpm, php-node, magento1]
     if: |
       always() && 
+      !contains(needs.*.result, 'failure') &&
       needs.prepare-matrix.outputs.build_needed == 'true' && 
       needs.prepare-matrix.outputs.magento1_xdebug_matrix != '{"include":[]}' &&
       (needs.magento1.result == 'success' || needs.magento1.result == 'skipped')
@@ -766,11 +769,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -778,7 +781,7 @@ jobs:
         if: ${{ !env.ACT }}
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' }}
         with:
           file: php-fpm/magento1/xdebug3/Dockerfile
@@ -795,7 +798,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push (no node)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' }}
         with:
           file: php-fpm/magento1/xdebug3/Dockerfile
@@ -812,7 +815,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push (latest with node)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' && matrix.latest }}
         with:
           file: php-fpm/magento1/xdebug3/Dockerfile
@@ -829,7 +832,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push (latest no node)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' && matrix.latest }}
         with:
           file: php-fpm/magento1/xdebug3/Dockerfile
@@ -848,9 +851,10 @@ jobs:
   magento2:
     name: Magento 2 PHP-FPM ${{ matrix.php_version }} - Node ${{ matrix.node_version }}
     runs-on: ubuntu-latest
-    needs: [prepare-matrix, php-node]
+    needs: [prepare-matrix, php-fpm, php-node]
     if: |
       always() && 
+      !contains(needs.*.result, 'failure') &&
       needs.prepare-matrix.outputs.build_needed == 'true' && 
       needs.prepare-matrix.outputs.magento2_matrix != '{"include":[]}' &&
       (needs.php-node.result == 'success' || needs.php-node.result == 'skipped')
@@ -866,11 +870,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Setup QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -878,7 +882,7 @@ jobs:
         if: ${{ !env.ACT }}
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' }}
         with:
           file: php-fpm/magento2/Dockerfile
@@ -894,7 +898,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push (no node)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' }}
         with:
           file: php-fpm/magento2/Dockerfile
@@ -910,7 +914,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push (latest with node)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' && matrix.latest }}
         with:
           file: php-fpm/magento2/Dockerfile
@@ -926,7 +930,7 @@ jobs:
           # cache-to: type=gha,mode=max
 
       - name: Build and push (latest no node)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' && matrix.latest }}
         with:
           file: php-fpm/magento2/Dockerfile
@@ -944,9 +948,10 @@ jobs:
   magento2-xdebug:
     name: Magento 2 PHP-FPM ${{ matrix.php_version }} + XDebug - Node ${{ matrix.node_version }}
     runs-on: ubuntu-latest
-    needs: [prepare-matrix, magento2]
+    needs: [prepare-matrix, php-fpm, php-node, magento2]
     if: |
       always() && 
+      !contains(needs.*.result, 'failure') &&
       needs.prepare-matrix.outputs.build_needed == 'true' && 
       needs.prepare-matrix.outputs.magento2_xdebug_matrix != '{"include":[]}' &&
       (needs.magento2.result == 'success' || needs.magento2.result == 'skipped')
@@ -960,13 +965,13 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.magento2_xdebug_matrix) }}
     steps:
       - uses: actions/checkout@v6
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
         with:
           driver-opts: |
             image=moby/buildkit:v0.10.6
       - name: Login to Github Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -974,7 +979,7 @@ jobs:
         if: ${{ !env.ACT }}
 
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' }}
         with:
           file: php-fpm/magento2/xdebug3/Dockerfile
@@ -990,7 +995,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' }}
         with:
           file: php-fpm/magento2/xdebug3/Dockerfile
@@ -1006,7 +1011,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' && matrix.latest }}
         with:
           file: php-fpm/magento2/xdebug3/Dockerfile
@@ -1022,7 +1027,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' && matrix.latest }}
         with:
           file: php-fpm/magento2/xdebug3/Dockerfile
@@ -1041,9 +1046,10 @@ jobs:
   wordpress:
     name: Wordpress PHP-FPM ${{ matrix.php_version }} - Node ${{ matrix.node_version }}
     runs-on: ubuntu-latest
-    needs: [prepare-matrix, php-node]
+    needs: [prepare-matrix, php-fpm, php-node]
     if: |
       always() && 
+      !contains(needs.*.result, 'failure') &&
       needs.prepare-matrix.outputs.build_needed == 'true' && 
       needs.prepare-matrix.outputs.wordpress_matrix != '{"include":[]}' &&
       (needs.php-node.result == 'success' || needs.php-node.result == 'skipped')
@@ -1057,13 +1063,13 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.wordpress_matrix) }}
     steps:
       - uses: actions/checkout@v6
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
         with:
           driver-opts: |
             image=moby/buildkit:v0.10.6
       - name: Login to Github Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -1071,7 +1077,7 @@ jobs:
         if: ${{ !env.ACT }}
 
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' }}
         with:
           file: php-fpm/wordpress/Dockerfile
@@ -1086,7 +1092,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' }}
         with:
           file: php-fpm/wordpress/Dockerfile
@@ -1101,7 +1107,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' && matrix.latest }}
         with:
           file: php-fpm/wordpress/Dockerfile
@@ -1116,7 +1122,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' && matrix.latest }}
         with:
           file: php-fpm/wordpress/Dockerfile
@@ -1134,9 +1140,10 @@ jobs:
   wordpress-xdebug:
     name: Wordpress PHP-FPM ${{ matrix.php_version }} + XDebug - Node ${{ matrix.node_version }}
     runs-on: ubuntu-latest
-    needs: [prepare-matrix, wordpress]
+    needs: [prepare-matrix, php-fpm, php-node, wordpress]
     if: |
       always() && 
+      !contains(needs.*.result, 'failure') &&
       needs.prepare-matrix.outputs.build_needed == 'true' && 
       needs.prepare-matrix.outputs.wordpress_xdebug_matrix != '{"include":[]}' &&
       (needs.wordpress.result == 'success' || needs.wordpress.result == 'skipped')
@@ -1150,13 +1157,13 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-matrix.outputs.wordpress_xdebug_matrix) }}
     steps:
       - uses: actions/checkout@v6
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
         with:
           driver-opts: |
             image=moby/buildkit:v0.10.6
       - name: Login to Github Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -1164,7 +1171,7 @@ jobs:
         if: ${{ !env.ACT }}
 
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' }}
         with:
           file: php-fpm/wordpress/xdebug3/Dockerfile
@@ -1180,7 +1187,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' }}
         with:
           file: php-fpm/wordpress/xdebug3/Dockerfile
@@ -1196,7 +1203,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version!='x' && matrix.latest }}
         with:
           file: php-fpm/wordpress/xdebug3/Dockerfile
@@ -1212,7 +1219,7 @@ jobs:
           # cache-from: type=gha
           # cache-to: type=gha,mode=max
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         if: ${{ matrix.node_version=='x' && matrix.latest }}
         with:
           file: php-fpm/wordpress/xdebug3/Dockerfile

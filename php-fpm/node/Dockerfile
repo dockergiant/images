@@ -6,7 +6,9 @@ ARG REGISTRY_BASE=ghcr.io/dockergiant/base-images
 
 FROM ${REGISTRY_BASE}/node:${NODE_VERSION}-${OS_RELEASE} AS node
 RUN npm install -g grunt-cli gulp
-RUN mv /opt/yarn* /opt/yarn
+# Official Node images no longer bundle Yarn from Node 26 on.
+RUN if ls -d /opt/yarn* >/dev/null 2>&1; then mv /opt/yarn* /opt/yarn; \
+    else npm install -g --prefix /opt/yarn yarn; fi
 
 FROM ${REGISTRY_BASE}/phantomjs:latest AS phantomjs
 

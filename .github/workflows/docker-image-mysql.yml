@@ -27,7 +27,7 @@ jobs:
         uses: imjasonh/setup-crane@v0.5
 
       - name: Login to GHCR (for digest check)
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -37,7 +37,8 @@ jobs:
       - name: Discover MySQL versions
         id: discover
         run: |
-          FORCE_REBUILD="${{ inputs.force_rebuild }}"
+          # A push changes the build context, which the base digest check cannot see.
+          FORCE_REBUILD="${{ inputs.force_rebuild || github.event_name == 'push' }}"
           GHCR_BASE="ghcr.io/${{ github.repository_owner }}/mysql"
 
           # Discover modern versions >= 9.0 from Docker Hub
@@ -76,25 +77,25 @@ jobs:
             echo "MySQL ${VERSION} -> ${FULL_VERSION}"
 
             # Check if rebuild is needed
+            UPSTREAM_DIGEST=$(crane digest "mysql:${FULL_VERSION}" 2>/dev/null || echo "")
             NEEDS_BUILD=false
             if [ "$FORCE_REBUILD" = "true" ]; then
               NEEDS_BUILD=true
               echo "  🔄 Force rebuild requested"
             else
-              # Get upstream digest
-              UPSTREAM_DIGEST=$(crane digest "mysql:${FULL_VERSION}" 2>/dev/null || echo "")
-              # Get our GHCR digest
-              GHCR_DIGEST=$(crane digest "${GHCR_BASE}:${VERSION}" 2>/dev/null || echo "")
+              # Our image never shares the upstream digest, so compare the base digest recorded at build time.
+              GHCR_BASE_DIGEST=$(crane config --platform linux/amd64 "${GHCR_BASE}:${VERSION}" 2>/dev/null \
+                | jq -r '.config.Labels["org.opencontainers.image.base.digest"] // empty' || echo "")
 
-              if [ -z "$GHCR_DIGEST" ]; then
+              if [ -z "$GHCR_BASE_DIGEST" ]; then
                 NEEDS_BUILD=true
-                echo "  🆕 Not yet on GHCR"
+                echo "  🆕 Not on GHCR or no base digest label"
               elif [ -z "$UPSTREAM_DIGEST" ]; then
                 echo "  ⚠️  Could not get upstream digest, skipping"
                 continue
-              elif [ "$UPSTREAM_DIGEST" != "$GHCR_DIGEST" ]; then
+              elif [ "$UPSTREAM_DIGEST" != "$GHCR_BASE_DIGEST" ]; then
                 NEEDS_BUILD=true
-                echo "  🔄 Digest changed (upstream: ${UPSTREAM_DIGEST:0:20}... vs ghcr: ${GHCR_DIGEST:0:20}...)"
+                echo "  🔄 Digest changed (upstream: ${UPSTREAM_DIGEST:0:20}... vs ghcr: ${GHCR_BASE_DIGEST:0:20}...)"
               else
                 echo "  ✅ Up to date"
               fi
@@ -102,7 +103,7 @@ jobs:
 
             if [ "$NEEDS_BUILD" = "true" ]; then
               [ "$FIRST" = true ] && FIRST=false || MATRIX+=','
-              MATRIX+="{\"version\":\"${VERSION}\",\"full_version\":\"${FULL_VERSION}\"}"
+              MATRIX+="{\"version\":\"${VERSION}\",\"full_version\":\"${FULL_VERSION}\",\"base_digest\":\"${UPSTREAM_DIGEST}\"}"
             fi
           done
           MATRIX+=']}'
@@ -126,11 +127,11 @@ jobs:
       matrix: ${{ fromJson(needs.discover-versions.outputs.modern_matrix) }}
     steps:
       - uses: actions/checkout@v6
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
 
       - name: Login to Github Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -138,19 +139,20 @@ jobs:
         if: ${{ !env.ACT }}
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
         if: ${{ !env.ACT }}
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: mysql
           platforms: linux/amd64,linux/arm64
           build-args: MYSQL_VERSION=${{ matrix.full_version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
           tags: ghcr.io/${{ github.repository_owner }}/mysql:${{ matrix.version }}
+          labels: org.opencontainers.image.base.digest=${{ matrix.base_digest }}
         if: ${{ !env.ACT && github.ref == 'refs/heads/master'}}
 
   mysql-legacy:
@@ -165,11 +167,11 @@ jobs:
           - "5.7"
     steps:
       - uses: actions/checkout@v6
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
 
       - name: Login to Github Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -177,7 +179,7 @@ jobs:
         if: ${{ !env.ACT }}
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
@@ -192,7 +194,7 @@ jobs:
           )
           echo "MYSQL_VERSION=${MYSQL_VERSION}" | tee /dev/stderr >> $GITHUB_ENV
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: mysql
           platforms: linux/amd64

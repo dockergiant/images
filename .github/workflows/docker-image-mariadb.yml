@@ -29,7 +29,7 @@ jobs:
         uses: imjasonh/setup-crane@v0.5
 
       - name: Login to GHCR (for digest check)
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -39,7 +39,8 @@ jobs:
       - name: Discover MariaDB versions
         id: discover
         run: |
-          FORCE_REBUILD="${{ inputs.force_rebuild }}"
+          # A push changes the build context, which the base digest check cannot see.
+          FORCE_REBUILD="${{ inputs.force_rebuild || github.event_name == 'push' }}"
           GHCR_BASE="ghcr.io/${{ github.repository_owner }}/mariadb"
 
           ALL_TAGS=$(crane ls mariadb 2>/dev/null || echo "")
@@ -75,21 +76,23 @@ jobs:
           STABLE_MATRIX='{"include":['
           FIRST=true
           for VERSION in $STABLE_VERSIONS; do
+            UPSTREAM_DIGEST=$(crane digest "mariadb:${VERSION}" 2>/dev/null || echo "")
             NEEDS_BUILD=false
             if [ "$FORCE_REBUILD" = "true" ]; then
               NEEDS_BUILD=true
               echo "🔄 MariaDB ${VERSION}: Force rebuild"
             else
-              UPSTREAM_DIGEST=$(crane digest "mariadb:${VERSION}" 2>/dev/null || echo "")
-              GHCR_DIGEST=$(crane digest "${GHCR_BASE}:${VERSION}" 2>/dev/null || echo "")
+              # Our image never shares the upstream digest, so compare the base digest recorded at build time.
+              GHCR_BASE_DIGEST=$(crane config --platform linux/amd64 "${GHCR_BASE}:${VERSION}" 2>/dev/null \
+                | jq -r '.config.Labels["org.opencontainers.image.base.digest"] // empty' || echo "")
 
-              if [ -z "$GHCR_DIGEST" ]; then
+              if [ -z "$GHCR_BASE_DIGEST" ]; then
                 NEEDS_BUILD=true
-                echo "🆕 MariaDB ${VERSION}: Not yet on GHCR"
+                echo "🆕 MariaDB ${VERSION}: Not on GHCR or no base digest label"
               elif [ -z "$UPSTREAM_DIGEST" ]; then
                 echo "⚠️  MariaDB ${VERSION}: Could not get upstream digest, skipping"
                 continue
-              elif [ "$UPSTREAM_DIGEST" != "$GHCR_DIGEST" ]; then
+              elif [ "$UPSTREAM_DIGEST" != "$GHCR_BASE_DIGEST" ]; then
                 NEEDS_BUILD=true
                 echo "🔄 MariaDB ${VERSION}: Digest changed"
               else
@@ -99,7 +102,7 @@ jobs:
 
             if [ "$NEEDS_BUILD" = "true" ]; then
               [ "$FIRST" = true ] && FIRST=false || STABLE_MATRIX+=','
-              STABLE_MATRIX+="{\"version\":\"${VERSION}\"}"
+              STABLE_MATRIX+="{\"version\":\"${VERSION}\",\"base_digest\":\"${UPSTREAM_DIGEST}\"}"
             fi
           done
           STABLE_MATRIX+=']}'
@@ -108,21 +111,23 @@ jobs:
           RC_MATRIX='{"include":['
           FIRST=true
           for VERSION in $FILTERED_RC; do
+            UPSTREAM_DIGEST=$(crane digest "mariadb:${VERSION}" 2>/dev/null || echo "")
             NEEDS_BUILD=false
             if [ "$FORCE_REBUILD" = "true" ]; then
               NEEDS_BUILD=true
               echo "🔄 MariaDB ${VERSION}: Force rebuild"
             else
-              UPSTREAM_DIGEST=$(crane digest "mariadb:${VERSION}" 2>/dev/null || echo "")
-              GHCR_DIGEST=$(crane digest "${GHCR_BASE}:${VERSION}" 2>/dev/null || echo "")
+              # Our image never shares the upstream digest, so compare the base digest recorded at build time.
+              GHCR_BASE_DIGEST=$(crane config --platform linux/amd64 "${GHCR_BASE}:${VERSION}" 2>/dev/null \
+                | jq -r '.config.Labels["org.opencontainers.image.base.digest"] // empty' || echo "")
 
-              if [ -z "$GHCR_DIGEST" ]; then
+              if [ -z "$GHCR_BASE_DIGEST" ]; then
                 NEEDS_BUILD=true
-                echo "🆕 MariaDB ${VERSION}: Not yet on GHCR"
+                echo "🆕 MariaDB ${VERSION}: Not on GHCR or no base digest label"
               elif [ -z "$UPSTREAM_DIGEST" ]; then
                 echo "⚠️  MariaDB ${VERSION}: Could not get upstream digest, skipping"
                 continue
-              elif [ "$UPSTREAM_DIGEST" != "$GHCR_DIGEST" ]; then
+              elif [ "$UPSTREAM_DIGEST" != "$GHCR_BASE_DIGEST" ]; then
                 NEEDS_BUILD=true
                 echo "🔄 MariaDB ${VERSION}: Digest changed"
               else
@@ -132,7 +137,7 @@ jobs:
 
             if [ "$NEEDS_BUILD" = "true" ]; then
               [ "$FIRST" = true ] && FIRST=false || RC_MATRIX+=','
-              RC_MATRIX+="{\"version\":\"${VERSION}\"}"
+              RC_MATRIX+="{\"version\":\"${VERSION}\",\"base_digest\":\"${UPSTREAM_DIGEST}\"}"
             fi
           done
           RC_MATRIX+=']}'
@@ -165,11 +170,11 @@ jobs:
       matrix: ${{ fromJson(needs.discover-versions.outputs.stable_matrix) }}
     steps:
       - uses: actions/checkout@v6
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
 
       - name: Login to Github Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -177,19 +182,20 @@ jobs:
         if: ${{ !env.ACT }}
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
         if: ${{ !env.ACT }}
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: mariadb
           platforms: linux/amd64,linux/arm64
           build-args: MARIADB_VERSION=${{ matrix.version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
           tags: ghcr.io/${{ github.repository_owner }}/mariadb:${{ matrix.version }}
+          labels: org.opencontainers.image.base.digest=${{ matrix.base_digest }}
         if: ${{ !env.ACT && github.ref == 'refs/heads/master'}}
 
   mariadb-rc:
@@ -203,11 +209,11 @@ jobs:
       matrix: ${{ fromJson(needs.discover-versions.outputs.rc_matrix) }}
     steps:
       - uses: actions/checkout@v6
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
 
       - name: Login to Github Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
@@ -215,17 +221,18 @@ jobs:
         if: ${{ !env.ACT }}
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
         if: ${{ !env.ACT }}
 
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: mariadb
           platforms: linux/amd64,linux/arm64
           build-args: MARIADB_VERSION=${{ matrix.version }}
           push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
           tags: ghcr.io/${{ github.repository_owner }}/mariadb:${{ matrix.version }}
+          labels: org.opencontainers.image.base.digest=${{ matrix.base_digest }}
         if: ${{ !env.ACT && github.ref == 'refs/heads/master'}}
