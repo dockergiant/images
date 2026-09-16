@@ -9,13 +9,13 @@ on:
 
 jobs:
   magepack:
-    name: Magepack
-    runs-on: ubuntu-latest
+    name: Magepack ${{ matrix.version }} (${{ matrix.platform }})
+    runs-on: ${{ matrix.platform == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
 
     strategy:
       fail-fast: false
       matrix:
-        version:
+        version: &versions
           - "2.3"
           - "2.4"
           - "2.5"
@@ -25,10 +25,12 @@ jobs:
           - "2.9"
           - "2.10"
           - "2.11"
+        platform:
+          - amd64
+          - arm64
 
     steps:
       - uses: actions/checkout@v6
-      - uses: docker/setup-qemu-action@v4
       - uses: docker/setup-buildx-action@v4
 
       - name: Login to Github Container Registry
@@ -46,11 +48,75 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
         if: ${{ !env.ACT }}
 
-      - uses: docker/build-push-action@v7
+      - id: build
+        uses: docker/build-push-action@v7
         with:
           context: magepack
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/${{ matrix.platform }}
           build-args: MAGEPACK_VERSION=${{ matrix.version }}
-          push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
-          tags: ghcr.io/${{ github.repository_owner }}/magepack:${{ matrix.version }}
+          outputs: type=image,name=ghcr.io/${{ github.repository_owner }}/magepack,push-by-digest=true,name-canonical=true,push=true
         if: ${{ !env.ACT && github.ref == 'refs/heads/master'}}
+
+      - name: Export digest
+        run: |
+          mkdir -p "${{ runner.temp }}/digests"
+          DIGEST="${{ steps.build.outputs.digest }}"
+          touch "${{ runner.temp }}/digests/${DIGEST#sha256:}"
+        if: ${{ !env.ACT && github.ref == 'refs/heads/master'}}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: digests-${{ matrix.version }}-${{ matrix.platform }}
+          path: ${{ runner.temp }}/digests/*
+          if-no-files-found: error
+          retention-days: 1
+        if: ${{ !env.ACT && github.ref == 'refs/heads/master'}}
+
+  merge:
+    name: Magepack ${{ matrix.version }}
+    needs: magepack
+    if: ${{ !cancelled() && github.ref == 'refs/heads/master' }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version: *versions
+
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: ${{ runner.temp }}/digests
+          pattern: digests-${{ matrix.version }}-*
+          merge-multiple: true
+        if: ${{ !env.ACT }}
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ !env.ACT }}
+
+      - name: Create multi-platform tag
+        run: |
+          IMAGE="ghcr.io/${{ github.repository_owner }}/magepack"
+          mkdir -p "${{ runner.temp }}/digests"
+          cd "${{ runner.temp }}/digests"
+
+          set --
+          for DIGEST in *; do
+            [ -e "$DIGEST" ] && set -- "$@" "${IMAGE}@sha256:${DIGEST}"
+          done
+
+          # Publishing one platform alone would replace the existing multi-platform tag.
+          if [ "$#" -ne 2 ]; then
+            echo "::error::Magepack ${{ matrix.version }} needs an amd64 and an arm64 digest, found $#: $*"
+            exit 1
+          fi
+
+          docker buildx imagetools create -t "${IMAGE}:${{ matrix.version }}" "$@"
+        if: ${{ !env.ACT }}
