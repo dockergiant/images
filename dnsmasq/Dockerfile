@@ -1,11 +1,11 @@
-FROM golang:bullseye AS builder
+FROM golang:trixie AS builder
 RUN apt-get update  \
   && apt-get install git \
   && mkdir -p /root/gocode \
   && export GOPATH=/root/gocode \
   && go install github.com/jpillora/webproc@v0.4.0
 
-FROM debian:bullseye-slim
+FROM debian:trixie-slim
 LABEL maintainer="rick@dockergiant.com"
 # webproc release settings
 COPY --from=builder /root/gocode/bin/webproc /usr/local/bin

@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # color-ls initialization
 
 # Skip all for noninteractive shells.

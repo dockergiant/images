@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # color-grep initialization
 
 alias grep='grep --color=auto' 2>/dev/null
