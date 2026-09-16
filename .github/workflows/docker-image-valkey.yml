@@ -1,0 +1,131 @@
+name: Docker Image Valkey
+on:
+  workflow_dispatch:
+    inputs:
+      force_rebuild:
+        description: 'Force rebuild all images (ignore digest check)'
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    - cron: '30 4 * * 0'
+  push:
+    paths:
+      - .trigger
+      - valkey/**
+      - .github/workflows/*valkey*
+
+jobs:
+  discover-versions:
+    name: Discover Valkey Versions
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.discover.outputs.matrix }}
+      build_needed: ${{ steps.discover.outputs.build_needed }}
+    steps:
+      - name: Setup crane
+        uses: imjasonh/setup-crane@v0.5
+
+      - name: Login to GHCR (for digest check)
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ !env.ACT }}
+
+      - name: Discover Valkey versions
+        id: discover
+        run: |
+          # A push changes the build context, which the base digest check cannot see.
+          FORCE_REBUILD="${{ inputs.force_rebuild || github.event_name == 'push' }}"
+          GHCR_BASE="ghcr.io/${{ github.repository_owner }}/valkey"
+
+          # Discover bare major.minor tags >= 8.0
+          VERSIONS=$(crane ls valkey/valkey 2>/dev/null \
+            | grep -E '^[0-9]+\.[0-9]+$' \
+            | awk -F'.' '$1 >= 8' \
+            | sort -V)
+
+          echo "Discovered Valkey versions: $VERSIONS"
+
+          MATRIX='{"include":['
+          FIRST=true
+          for VERSION in $VERSIONS; do
+            UPSTREAM_DIGEST=$(crane digest "valkey/valkey:${VERSION}" 2>/dev/null || echo "")
+            NEEDS_BUILD=false
+            if [ "$FORCE_REBUILD" = "true" ]; then
+              NEEDS_BUILD=true
+              echo "🔄 Valkey ${VERSION}: Force rebuild"
+            else
+              # Our image never shares the upstream digest, so compare the base digest recorded at build time.
+              GHCR_BASE_DIGEST=$(crane config --platform linux/amd64 "${GHCR_BASE}:${VERSION}" 2>/dev/null \
+                | jq -r '.config.Labels["org.opencontainers.image.base.digest"] // empty' || echo "")
+
+              if [ -z "$GHCR_BASE_DIGEST" ]; then
+                NEEDS_BUILD=true
+                echo "🆕 Valkey ${VERSION}: Not on GHCR or no base digest label"
+              elif [ -z "$UPSTREAM_DIGEST" ]; then
+                echo "⚠️  Valkey ${VERSION}: Could not get upstream digest, skipping"
+                continue
+              elif [ "$UPSTREAM_DIGEST" != "$GHCR_BASE_DIGEST" ]; then
+                NEEDS_BUILD=true
+                echo "🔄 Valkey ${VERSION}: Digest changed"
+              else
+                echo "✅ Valkey ${VERSION}: Up to date"
+              fi
+            fi
+
+            if [ "$NEEDS_BUILD" = "true" ]; then
+              [ "$FIRST" = true ] && FIRST=false || MATRIX+=','
+              MATRIX+="{\"version\":\"${VERSION}\",\"base_digest\":\"${UPSTREAM_DIGEST}\"}"
+            fi
+          done
+          MATRIX+=']}'
+
+          echo "Matrix: $MATRIX"
+
+          if [ "$MATRIX" = '{"include":[]}' ]; then
+            echo "build_needed=false" >> $GITHUB_OUTPUT
+          else
+            echo "build_needed=true" >> $GITHUB_OUTPUT
+          fi
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
+  valkey:
+    name: Valkey ${{ matrix.version }}
+    needs: discover-versions
+    if: needs.discover-versions.outputs.build_needed == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover-versions.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ !env.ACT }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+        if: ${{ !env.ACT }}
+
+      - uses: docker/build-push-action@v7
+        with:
+          context: valkey
+          platforms: linux/amd64,linux/arm64
+          build-args: VALKEY_VERSION=${{ matrix.version }}
+          push: ${{ github.ref == 'refs/heads/master' && !env.ACT }}
+          tags: ghcr.io/${{ github.repository_owner }}/valkey:${{ matrix.version }}
+          labels: org.opencontainers.image.base.digest=${{ matrix.base_digest }}
+        if: ${{ !env.ACT && github.ref == 'refs/heads/master'}}

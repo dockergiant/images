@@ -18,6 +18,10 @@ updates:
     schedule:
       interval: "daily"
   - package-ecosystem: "docker"
+    directory: "/valkey"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "docker"
     directory: "/rabbitmq"
     schedule:
       interval: "daily"
