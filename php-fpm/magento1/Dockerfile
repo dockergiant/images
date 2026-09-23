@@ -3,8 +3,13 @@ ARG PHP_VERSION
 FROM ${ENV_SOURCE_IMAGE}:${PHP_VERSION}
 USER root
 
-ADD https://files.magerun.net/n98-magerun.phar /usr/local/bin/n98-magerun
-RUN chmod +rx /usr/local/bin/n98-magerun \
+# n98-magerun is archived upstream and the 3.0.1 phar does not start, so stay on 2.3.0. On PHP 8.1+
+# it raises deprecations that Magento turns into exceptions in developer mode, hence the wrapper.
+ADD https://files.magerun.net/n98-magerun-2.3.0.phar /usr/local/lib/n98-magerun.phar
+RUN chmod +r /usr/local/lib/n98-magerun.phar \
+    && printf '#!/bin/sh\nexec php -d "error_reporting=E_ALL & ~E_DEPRECATED" /usr/local/lib/n98-magerun.phar "$@"\n' \
+        > /usr/local/bin/n98-magerun \
+    && chmod +rx /usr/local/bin/n98-magerun \
     && ln -s /usr/local/bin/n98-magerun /usr/local/bin/magerun \
     && ln -s /usr/local/bin/n98-magerun /usr/local/bin/mr
 
