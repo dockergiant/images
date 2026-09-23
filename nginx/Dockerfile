@@ -15,6 +15,7 @@ ENV XDEBUG_CONNECT_BACK_HOST      '""'
 RUN mkdir -p /var/www/autologin
 
 COPY etc/magento2/auto-login.js /var/www/autologin/auto-login.js
+COPY etc/magento1/auto-login.js /var/www/autologin/magento1/auto-login.js
 COPY etc/nginx/fastcgi_params /etc/nginx/fastcgi_params.template
 COPY etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.template
 COPY etc/nginx/available.d/*.conf /etc/nginx/available.d/
