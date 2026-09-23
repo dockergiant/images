@@ -13,7 +13,7 @@ There is almost no application code here: each top-level directory is a service 
 | Service | Dockerfile(s) | Base image | Notes |
 |---------|---------------|-----------|-------|
 | **php-fpm** | `Dockerfile` (+ 5 variant subdirs) | `${REGISTRY_BASE}/php:${PHP_VERSION}-fpm-${OS_RELEASE}` | Most complex image; full variant tree below |
-| **nginx** | `Dockerfile` | `nginx:${NGINX_VERSION}` | Ships 10 platform configs in `etc/nginx/available.d/` |
+| **nginx** | `Dockerfile` | `nginx:${NGINX_VERSION}` | Ships 12 platform configs in `etc/nginx/available.d/` |
 | **varnish** | `Dockerfile`, `Dockerfile.lts`, `Dockerfile.legacy` | Alpine / Debian / CentOS | Magento-optimized `default.vcl` |
 | **mysql** | `Dockerfile` | `mysql:${MYSQL_VERSION}` | Adds `skip-bin-log.cnf` |
 | **mariadb** | `Dockerfile` | `mariadb:${MARIADB_VERSION}` | Symlinks `mariadb*`→`mysql*` for 11.4+ compat |
@@ -97,12 +97,17 @@ docker build -t rabbitmq:3.13 --build-arg RABBITMQ_VERSION=3.13 rabbitmq/
 php-fpm (base)                         # FROM ${REGISTRY_BASE}/php:${PHP_VERSION}-fpm-${OS_RELEASE}
 ├── node/        (+ Node.js, npm, yarn, gulp, grunt, PhantomJS)   # FROM base + node + phantomjs stages
 ├── xdebug3/     (+ Xdebug 3, IDE integration)
-├── magento1/    (+ n98-magerun)        ├── blackfire/   └── xdebug3/
-├── magento2/    (+ n98-magerun2, cache-clean)  ├── blackfire/   └── xdebug3/
+├── magento1/    (+ n98-magerun 2.3.0)  ├── blackfire/   └── xdebug3/
+├── magento2/    (+ n98-magerun2 pinned per PHP, cache-clean)  ├── blackfire/   └── xdebug3/
 └── wordpress/   (+ WP-CLI)             ├── blackfire/   └── xdebug3/
 ```
 
 Variants build `FROM ${ENV_SOURCE_IMAGE}:${PHP_VERSION}` (the published base), so the base must exist before variants build. The `node` and base Dockerfiles are multi-stage and pull `composer`, `node`, `phantomjs`, and `mhsendmail` from helper stages / the mirror registry.
+
+**Magerun pins.** In a variant's `RUN` lines `${PHP_VERSION}` is the base image env (e.g. `8.4.12`); the build arg can carry a `-nodeXX` suffix, so compare `${PHP_VERSION%.*}`.
+
+- `magento1/` pins `n98-magerun-2.3.0.phar`. n98-magerun is archived upstream and the 3.0.1 phar does not start (netz98/n98-magerun#1647). On PHP 8.1+ 2.3.0 raises deprecations that Magento turns into exceptions in developer mode, so `n98-magerun`, `magerun` and `mr` are a wrapper that runs the phar with `E_DEPRECATED` off.
+- `magento2/` pins the newest n98-magerun2 per PHP minor: 7.0-7.2 → 4.7.0, 7.3 → 6.1.1, 7.4 → 7.5.0, 8.0 → 8.1.1, 8.1 → 9.5.1, 8.2+ → 10.0.2. Check the `require.php` of a new release before moving a pin.
 
 ### Base build args (`php-fpm/Dockerfile`)
 
@@ -159,8 +164,10 @@ xdebug.file_link_format=phpstorm://open?file=%f&line=%l
 
 ## Nginx
 
-10 platform templates in `etc/nginx/available.d/` — selected at runtime via `NGINX_TEMPLATE`:
-`application.conf` (default), `magento2.conf`, `magento2-dev.conf`, `magento2-autologin.conf`, `magento2-dev-autologin.conf`, `magento1.conf`, `magento1-dev.conf`, `laravel.conf`, `typo3.conf`, `vuejs.conf`.
+12 platform templates in `etc/nginx/available.d/` — selected at runtime via `NGINX_TEMPLATE`:
+`application.conf` (default), `magento2.conf`, `magento2-dev.conf`, `magento2-autologin.conf`, `magento2-dev-autologin.conf`, `magento1.conf`, `magento1-dev.conf`, `magento1-autologin.conf`, `magento1-dev-autologin.conf`, `laravel.conf`, `typo3.conf`, `vuejs.conf`.
+
+The `*-autologin.conf` templates inject `/auto-login.js` before `</head>` with `sub_filter`. Magento 2 gets `etc/magento2/auto-login.js` (served from `/var/www/autologin`), Magento 1 gets `etc/magento1/auto-login.js` (from `/var/www/autologin/magento1`, via an exact `location =` match because the Magento 1 templates have a regex location for `*.js`). Both sign in as `localadmin` / `admin123`.
 
 Key env vars: `NGINX_TEMPLATE`, `NGINX_ROOT=/var/www/html`, `NGINX_PUBLIC=/pub`, `NGINX_UPSTREAM_HOST=php-fpm`, `NGINX_UPSTREAM_PORT=9000`, `NGINX_UPSTREAM_DEBUG_HOST=php-debug`, `NGINX_UPSTREAM_BLACKFIRE_HOST=php-blackfire`.
 
