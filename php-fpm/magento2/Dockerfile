@@ -5,16 +5,17 @@ USER root
 
 # Magerun
 
-ADD https://files.magerun.net/n98-magerun2.phar /usr/local/bin/n98-magerun2
-
-# overwrite n98-magerun2 for specific version of PHP if needed
-# If PHP = 7.3
-RUN if [ "${PHP_VERSION}" = "7.3" ]; \
-    then curl https://files.magerun.net/n98-magerun2-6.1.1.phar -o /usr/local/bin/n98-magerun2; fi
-
-# If PHP < 7.3
-RUN if [ "$(printf "7.3\n${PHP_VERSION}" | sort -g | head -n1 | awk -F"." '{print $1"."$2}')" != "7.3" ]; \
-    then curl https://files.magerun.net/n98-magerun2-4.7.0.phar -o /usr/local/bin/n98-magerun2; fi
+# PHP_VERSION here is the base image env (e.g. 8.4.12), not the build arg, which can carry a -nodeXX
+# suffix. Each pin is the newest n98-magerun2 release that runs on that PHP version.
+RUN case "${PHP_VERSION%.*}" in \
+        7.0|7.1|7.2) MAGERUN2_VERSION=4.7.0 ;; \
+        7.3) MAGERUN2_VERSION=6.1.1 ;; \
+        7.4) MAGERUN2_VERSION=7.5.0 ;; \
+        8.0) MAGERUN2_VERSION=8.1.1 ;; \
+        8.1) MAGERUN2_VERSION=9.5.1 ;; \
+        *) MAGERUN2_VERSION=10.0.2 ;; \
+    esac \
+    && curl -fsSL "https://files.magerun.net/n98-magerun2-${MAGERUN2_VERSION}.phar" -o /usr/local/bin/n98-magerun2
 
 RUN chmod +rx /usr/local/bin/n98-magerun2 \
     && ln -s /usr/local/bin/n98-magerun2 /usr/local/bin/n98-magerun \
