@@ -15,7 +15,8 @@ RUN case "${PHP_VERSION%.*}" in \
         8.1) MAGERUN2_VERSION=9.5.1 ;; \
         *) MAGERUN2_VERSION=10.0.2 ;; \
     esac \
-    && curl -fsSL "https://files.magerun.net/n98-magerun2-${MAGERUN2_VERSION}.phar" -o /usr/local/bin/n98-magerun2
+    && curl -fsSL --retry 5 --retry-all-errors --retry-delay 3 \
+        "https://files.magerun.net/n98-magerun2-${MAGERUN2_VERSION}.phar" -o /usr/local/bin/n98-magerun2
 
 RUN chmod +rx /usr/local/bin/n98-magerun2 \
     && ln -s /usr/local/bin/n98-magerun2 /usr/local/bin/n98-magerun \
