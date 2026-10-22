@@ -97,6 +97,30 @@ RUN ARCH=$(uname -m) && \
         echo "Skipping New Relic installation: Not supported for $ARCH with PHP ${PHP_VERSION}"; \
     fi
 
+# dd-trace-php and Excimer for Roll Inspector; roll-inspector-ini switches them on
+# datadog-setup.php instead of install-php-extensions ddtrace: the latter compiles Rust and fails on missing libclang
+ARG DD_TRACE_VERSION=1.26.0
+ARG DD_SETUP_SHA256=bcbd77c289596023ff2ee9858037cd5fe38b56c99213e26e05c15b5aa8bce20c
+# First PHP line the pinned dd-trace-php does not support; a download or install failure below it must fail the build
+ARG DD_TRACE_PHP_BELOW=8.6
+RUN set -eux; \
+    curl -fsSL --retry 5 --retry-all-errors -o /tmp/datadog-setup.php \
+      "https://github.com/DataDog/dd-trace-php/releases/download/${DD_TRACE_VERSION}/datadog-setup.php"; \
+    echo "${DD_SETUP_SHA256}  /tmp/datadog-setup.php" | sha256sum -c -; \
+    if [ "$(printf "${DD_TRACE_PHP_BELOW}\n${PHP_VERSION}" | sort -g | head -n1)" != "${DD_TRACE_PHP_BELOW}" ]; then \
+      php /tmp/datadog-setup.php --php-bin=all; \
+      ext_dir="$(php -r 'echo ini_get("extension_dir");')"; \
+      rm -f "$ext_dir/ddappsec.so" "$ext_dir/datadog-profiling.so"; \
+      rm -rf /opt/datadog/dd-library/*/etc; \
+      sed -i '/^extension = ddappsec.so/d' /usr/local/etc/php/conf.d/98-ddtrace.ini; \
+      mv /usr/local/etc/php/conf.d/98-ddtrace.ini /usr/local/etc/php/conf.d/98-ddtrace.ini.template; \
+    else \
+      echo "Skipping dd-trace-php ${DD_TRACE_VERSION}: not supported on PHP ${PHP_VERSION}"; \
+      rm -f /usr/local/etc/php/conf.d/98-ddtrace.ini /usr/local/etc/php/conf.d/98-ddtrace.ini.template; \
+    fi; \
+    rm -f /tmp/datadog-setup.php; \
+    install-php-extensions excimer
+
 # Install helpful utilities
 RUN set -eux; \
     export DEBIAN_FRONTEND=noninteractive; \
@@ -145,6 +169,10 @@ COPY etc/profile.d/*.sh /etc/profile.d/
 COPY etc/php.d/*.ini /usr/local/etc/php/conf.d
 COPY etc/php.d/05-additions.ini.template /usr/local/etc/php/conf.d
 COPY etc/php.d/newrelic.ini.template /usr/local/etc/php/conf.d
+COPY etc/inspector/inspector-prepend.php /usr/local/etc/php/inspector-prepend.php
+RUN php -l /usr/local/etc/php/inspector-prepend.php
+COPY etc/inspector/roll-inspector-ini /usr/local/bin/roll-inspector-ini
+RUN chmod 0755 /usr/local/bin/roll-inspector-ini
 
 RUN set -eux \
     && cp ${PHP_INI_DIR}/php.ini-development ${PHP_INI_DIR}/php.ini \

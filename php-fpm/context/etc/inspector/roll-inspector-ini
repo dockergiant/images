@@ -1,0 +1,47 @@
+#!/bin/sh
+set -e
+dir=/usr/local/etc/php/conf.d
+
+case "$1" in
+  on)
+    if [ ! -f "$dir/98-ddtrace.ini.template" ]; then
+      echo "roll-inspector-ini: this image has no ddtrace" >&2
+      exit 1
+    fi
+    cp "$dir/98-ddtrace.ini.template" "$dir/98-ddtrace.ini"
+    # Below PHP 8.3 dd-trace defaults to a background thread that flushes every 5 s or 10 requests and
+    # ignores the flush settings; the sidecar sender (the 8.3+ default) flushes within about a second
+    cat > "$dir/99-inspector-ddtrace.ini" <<INI
+datadog.trace.enabled=1
+datadog.trace.cli_enabled=0
+datadog.trace.agent_url=http://inspector:8126
+datadog.service=${ROLL_ENV_NAME:-roll}
+datadog.trace.spans_limit=20000
+datadog.trace.header_tags=x-varnish:varnish.xid
+datadog.code_origin_for_spans_enabled=0
+datadog.instrumentation_telemetry_enabled=0
+datadog.remote_config_enabled=0
+datadog.trace.sidecar_connection_mode=subprocess
+datadog.trace.sidecar_trace_sender=1
+INI
+    case "${ROLL_INSPECTOR_TRACE_DETAIL:-full}" in
+      full) ;;
+      # lean keeps the request, SQL, cache, HTTP and search spans and drops
+      # the Magento block, event and plugin spans, which cost the most
+      lean) echo "datadog.trace.magento_enabled=0" >> "$dir/99-inspector-ddtrace.ini" ;;
+      *) echo "roll-inspector-ini: ROLL_INSPECTOR_TRACE_DETAIL=${ROLL_INSPECTOR_TRACE_DETAIL} is not full or lean; using full" >&2 ;;
+    esac
+    if [ "${ROLL_INSPECTOR_PROFILE:-off}" = "excimer" ]; then
+      echo "auto_prepend_file=/usr/local/etc/php/inspector-prepend.php" > "$dir/99-inspector-profile.ini"
+    else
+      rm -f "$dir/99-inspector-profile.ini"
+    fi
+    ;;
+  off)
+    rm -f "$dir/98-ddtrace.ini" "$dir/99-inspector-ddtrace.ini" "$dir/99-inspector-profile.ini"
+    ;;
+  *)
+    echo "usage: roll-inspector-ini on|off" >&2
+    exit 2
+    ;;
+esac

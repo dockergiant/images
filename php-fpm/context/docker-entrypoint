@@ -56,6 +56,23 @@ else
   sudo rm -f /usr/local/etc/php/conf.d/newrelic.ini
 fi
 
+# Roll Inspector tracing and profiling
+if [ -x /usr/local/bin/roll-inspector-ini ]; then
+  if [ "${ROLL_INSPECTOR_TRACE:-0}" = "1" ]; then
+    # A PHP line without dd-trace support has no template; tracing must not keep FPM from starting
+    if roll-inspector-ini on; then
+      echo "Roll Inspector tracing enabled (detail: ${ROLL_INSPECTOR_TRACE_DETAIL:-full}), sending to http://inspector:8126"
+    else
+      echo "WARNING: Roll Inspector tracing is not available in this image; continuing without it"
+    fi
+  else
+    roll-inspector-ini off
+    if [ "${ROLL_INSPECTOR_PROFILE:-off}" = "excimer" ]; then
+      echo "WARNING: ROLL_INSPECTOR_PROFILE=excimer needs ROLL_INSPECTOR_TRACE=1; profiling disabled"
+    fi
+  fi
+fi
+
 # append roll issued root ca cert to ca-bundle trusted by curl/openssl
 if [ -f /etc/ssl/roll-rootca-cert/ca.cert.pem ]; then
   sudo cp /etc/ssl/roll-rootca-cert/ca.cert.pem /usr/local/share/ca-certificates/roll-rootca-cert.pem.crt
