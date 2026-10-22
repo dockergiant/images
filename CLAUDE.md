@@ -28,6 +28,7 @@ There is almost no application code here: each top-level directory is a service 
 | **mailhog** | `Dockerfile` | multi-stage `golang` → `alpine` | builds MailHog; SMTP 1025 / HTTP 8025 |
 | **dnsmasq** | `Dockerfile` | multi-stage `golang` → `debian` | dnsmasq + `webproc` v0.4.0 config UI |
 | **startpage** | `Dockerfile` | `nginx:alpine` | dashboard with `roll-status.sh` CGI |
+| **inspector** | `Dockerfile` | multi-stage `golang` → `alpine` | Roll Inspector, one container per project: Go binary with embedded UI on `:8080`, Datadog trace intake on `:8126` (the php-fpm tracer posts here, and the healthcheck calls `/info`), OTLP/HTTP on `:4318`. The Dockerfile also builds the UI (Tailwind standalone CLI stage with pinned checksums, shared `ui/build.sh`). The UI fonts (IBM Plex Sans, Plex Sans Condensed, JetBrains Mono) are vendored as woff2 in `ui/src/fonts/` with pinned sources and sha256 in `SOURCES.md`, because the CSP blocks Google Fonts. `clients/` holds the userscript and DevTools extension the binary serves. Locally, `inspector/scripts/go`, `scripts/ui` and `scripts/integration` run Go, the UI build and the integration test in Docker. `ui/dist` is build output and stays out of git (`inspector/.gitignore`), so `ui/embed.go` only compiles after a UI build. CI runs `scripts/ui`, then `go vet ./...`, `go test ./...` and `node --test ui/test/*.test.js`, tags `latest` and `sha-<short>`, and pushes from master only |
 
 ---
 
@@ -127,6 +128,7 @@ Version/arch-conditional (pattern: `printf "X.Y\n${PHP_VERSION}" | sort -g | hea
 - `mcrypt` — PHP < 8.2
 - `ftp` — PHP ≥ 8.2
 - `newrelic` — x86_64 PHP ≥ 7.0, arm64 PHP ≥ 8.0
+- `ddtrace` and `excimer` — installed but switched off, see "php-fpm tracing" below
 
 Tools baked in: composer (v1/v2/v2.2-LTS, switchable), `mhsendmail`, git, vim, nano, htop, jq, rsync, imagemagick/graphicsmagick, chromium, socat, cron, zsh/fish, mariadb-client, python3.
 
@@ -135,13 +137,17 @@ Tools baked in: composer (v1/v2/v2.2-LTS, switchable), `mhsendmail`, git, vim, n
 Runs in order on container start:
 1. **User/group remap** — on Linux, remap `www-data` to host `USER_ID:GROUP_ID` (defaults `501:20` for macOS parity).
 2. **MailHog** — `envsubst` `${MAILHOG_HOST}`/`${MAILHOG_PORT}` into `05-additions.ini` (sets `sendmail_path` → `mhsendmail`).
-3. **New Relic** — if `ROLL_NEWRELIC=1` + `NEWRELIC_LICENSE_KEY`; app named `RollDev-LocalEnv-${ROLL_ENV_NAME}`; arch-aware.
+3. **New Relic** — if `ROLL_NEWRELIC=1` + `NEWRELIC_LICENSE_KEY`; app named `RollDev-LocalEnv-${ROLL_ENV_NAME}`; arch-aware. Then **Roll Inspector tracing** via `roll-inspector-ini on|off` from `ROLL_INSPECTOR_TRACE`.
 4. **SSL CA** — install Roll root CA from `/etc/ssl/roll-rootca-cert/ca.cert.pem` into system trust.
 5. **SSH agent forwarding** — `socat` bridge to host `/run/host-services/ssh-auth.sock`.
 6. **Cron** — start `service cron` in background.
 7. **Composer version** — symlink `/usr/bin/composer` per `COMPOSER_VERSION`.
 8. **Volume perms** — chown dirs listed in `CHOWN_DIR_LIST`.
 9. **Runtime extensions** — `install-php-extensions $ADD_PHP_EXT`.
+
+### php-fpm tracing (Roll Inspector)
+
+The base image installs dd-trace-php (`datadog-setup.php`, pinned by `DD_TRACE_VERSION` and a checksum; `install-php-extensions ddtrace` does not build) and Excimer. Both are off: the ddtrace ini is parked as `conf.d/98-ddtrace.ini.template`, and `ddappsec` and the profiling extension are removed to save space. `roll-inspector-ini on|off` (in `/usr/local/bin`) renders or removes `98-ddtrace.ini`, `99-inspector-ddtrace.ini` (agent URL `http://inspector:8126`, service `ROLL_ENV_NAME`) and `99-inspector-profile.ini` (`auto_prepend_file` pointing at `/usr/local/etc/php/inspector-prepend.php`, only with `ROLL_INSPECTOR_PROFILE=excimer`). `ROLL_INSPECTOR_TRACE_DETAIL=lean` adds `datadog.trace.magento_enabled=0`, which drops the Magento block, event and plugin spans. The entrypoint calls it from `ROLL_INSPECTOR_TRACE`; `roll inspector trace on|off` calls it at runtime. The prepend samples traced FPM requests with Excimer and posts the speedscope JSON to `inspector:8126/profiles/<trace id>`. Never set `DD_*` variables on php-fpm: they override the ini. Existing registry images only get this after a full rebuild: dispatch Docker Image PHP-FPM with `build_type=full`, `force_build_base=true` and `force_rebuild_all=true`. `force_build_base` alone rebuilds only the base and `-node` tags of the newest PHP line; the magento1, magento2 and wordpress variants and every `-debug` tag are skipped while they exist, and `force_rebuild_all` alone rebuilds them on the old base. A full rebuild runs about 290 jobs. PHP 7.4, 8.0, 8.1, 8.2, 8.3, 8.4 and 8.5 all pass `inspector/scripts/php-matrix` (full, lean, off and debug runs; see `roll-docker-stack/docs/inspector/how-it-works.md`, "Supported PHP versions"). Below PHP 8.3 `roll-inspector-ini` sets `datadog.trace.sidecar_trace_sender=1`, because the default sender delays the last trace by up to 5 s, and the Dockerfile patches PEAR to HTTP/1.0 because pecl.php.net answers HTTP/1.1 with chunked bodies that PEAR cannot decode.
 
 ### Config files
 
@@ -196,6 +202,7 @@ Env: `VCL_CONFIG=/etc/varnish/default.vcl`, `CACHE_SIZE=256m`, `BACKEND_HOST=ngi
 **Dynamic discovery (crane-based):**
 - `docker-image-php-fpm.yml` — inputs `build_type` (latest-only/full/custom), `php_versions`, `node_versions`, `force_build_base`, `force_rebuild_all`. Builds base + all variants.
 - `docker-image-nginx.yml` — input `force_rebuild`.
+- `docker-image-inspector.yml` — no inputs; runs on `inspector/**` changes or `workflow_dispatch`. Tests first, then builds amd64 and arm64 and pushes only from master.
 
 **Static matrix (one version list per service):**
 - `docker-image-varnish.yml` (7.1/7.4/7.6/6.0/6.5)
