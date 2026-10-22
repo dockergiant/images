@@ -1,0 +1,299 @@
+@import "tailwindcss";
+@import "./styles/shell.css" layer(components);
+@import "./styles/charts.css" layer(components);
+@import "./styles/traces.css" layer(components);
+@import "./styles/services.css" layer(components);
+@import "./styles/connect.css" layer(components);
+@import "./styles/dashboards.css" layer(components);
+@import "./styles/performance.css" layer(components);
+
+/*
+  The page runs under style-src 'self': inline style="" attributes and Alpine's
+  string form of :style are blocked. Use classes, or :style with a method that
+  returns an object, which Alpine applies through el.style.
+
+  Every design value is a custom property on :root below; Tailwind reads them
+  through @theme inline, so bg-plate, text-fog or border-seam follow a change
+  here. Area styles go in styles/<area>.css, never in this file.
+*/
+
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/ibm-plex-sans-latin-400-normal.woff2) format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/ibm-plex-sans-latin-500-normal.woff2) format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(fonts/ibm-plex-sans-latin-600-normal.woff2) format("woff2");
+}
+@font-face {
+  font-family: "IBM Plex Sans Condensed";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(fonts/ibm-plex-sans-condensed-latin-600-normal.woff2) format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/jetbrains-mono-latin-400-normal.woff2) format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/jetbrains-mono-latin-500-normal.woff2) format("woff2");
+}
+
+:root {
+  color-scheme: dark;
+
+  --ground: #101418;
+  --plate: #171D23;
+  --plate-raised: #1E252D;
+  --seam: #28313B;
+  --chalk: #E4E8EC;
+  --fog: #8B96A3;
+
+  /* Not in the spec's table; the existing views need a recessed well for code
+     and inputs, a quieter rule between rows, a firmer edge for controls and a
+     text step between chalk and fog. */
+  --well: #0C1014;
+  --seam-soft: #20272F;
+  --seam-strong: #36414C;
+  --soft: #C3CAD2;
+  --backdrop: #05070A;
+
+  --varnish: #F5B544;
+  --valkey: #6CB6FF;
+  --opensearch: #C79BFF;
+  --rabbitmq: #7EE2A8;
+  --php: #FF9BC1;
+
+  /* Chart categorical slots: the reference palette's dark steps, validated on
+     --plate. Assigned in fixed order and never cycled; a ninth series folds
+     into "other". The service hues above name a service, they are not a chart
+     palette. */
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
+  --chart-6: #008300;
+  --chart-7: #9085e9;
+  --chart-8: #e66767;
+
+  /* Sequential blue for magnitude. On --plate, 600 is the darkest step that
+     still reads as a mark. */
+  --seq-100: #cde2fb;
+  --seq-200: #9ec5f4;
+  --seq-300: #6da7ec;
+  --seq-400: #3987e5;
+  --seq-500: #256abf;
+  --seq-600: #184f95;
+
+  /* Cost categories in stack order. */
+  --cat-sql: var(--chart-1);
+  --cat-cache: var(--chart-2);
+  --cat-search: var(--chart-3);
+  --cat-http: var(--chart-4);
+  --cat-php: var(--chart-5);
+
+  --heat-1: #3A2A22;
+  --heat-2: #7A3B26;
+  --heat-3: #C2502E;
+  --heat-4: #FF6A3D;
+
+  --ok: #7EE2A8;
+  --warn: #FFB86B;
+  --error: #FF8A8A;
+  --probable: #E8C547;
+
+  --rail-w: 232px;
+  --topbar-h: 48px;
+
+  --accent: var(--chalk);
+  --accent-tint: var(--plate-raised);
+  --accent-bar: #3A4352;
+}
+
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-condensed: "IBM Plex Sans Condensed", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --text-2xs: 11px;
+  --text-2xs--line-height: 1.4;
+  --text-xs: 12px;
+  --text-xs--line-height: 1.45;
+  --text-sm: 13px;
+  --text-sm--line-height: 1.5;
+  --text-base: 15px;
+  --text-base--line-height: 1.45;
+  --text-lg: 20px;
+  --text-lg--line-height: 1.25;
+  --text-xl: 28px;
+  --text-xl--line-height: 1.1;
+
+  --color-varnish-tint: #2A2314;
+  --color-redis-tint: #142233;
+  --color-search-tint: #241B33;
+  --color-rabbitmq-tint: #13281D;
+  --color-php-tint: #2A1621;
+
+  --color-varnish-bar: #5C4520;
+  --color-redis-bar: #24527F;
+  --color-search-bar: #5B4385;
+  --color-rabbitmq-bar: #2B6B4A;
+  --color-php-bar: #5A2F45;
+  --color-neutral-bar: #3A4352;
+
+  --color-info: #9AA4B2;
+  --color-warn-tint: #241A0E;
+  --color-warn-line: #6B4A1E;
+  --color-danger: #FFB4B4;
+  --color-danger-strong: #FFD0D0;
+  --color-danger-tint: #2A1515;
+  --color-danger-fill: #4A1C1C;
+  --color-danger-line: #5A2A2A;
+  --color-danger-edge: #7A3333;
+  --color-danger-frame: #3A2626;
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-plate: var(--plate);
+  --color-plate-raised: var(--plate-raised);
+  --color-seam: var(--seam);
+  --color-chalk: var(--chalk);
+  --color-fog: var(--fog);
+  --color-well: var(--well);
+  --color-seam-soft: var(--seam-soft);
+  --color-seam-strong: var(--seam-strong);
+  --color-soft: var(--soft);
+  --color-backdrop: var(--backdrop);
+
+  /* Names the views were written against, kept as aliases of the tokens. */
+  --color-panel: var(--plate);
+  --color-raised: var(--plate-raised);
+  --color-select: var(--plate-raised);
+  --color-line: var(--seam);
+  --color-line-strong: var(--seam-strong);
+  --color-row: var(--seam-soft);
+  --color-ink: var(--chalk);
+  --color-muted: var(--fog);
+  --color-faint: var(--fog);
+
+  --color-varnish: var(--varnish);
+  --color-redis: var(--valkey);
+  --color-valkey: var(--valkey);
+  --color-search: var(--opensearch);
+  --color-opensearch: var(--opensearch);
+  --color-rabbitmq: var(--rabbitmq);
+  --color-php: var(--php);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+
+  --color-seq-100: var(--seq-100);
+  --color-seq-200: var(--seq-200);
+  --color-seq-300: var(--seq-300);
+  --color-seq-400: var(--seq-400);
+  --color-seq-500: var(--seq-500);
+  --color-seq-600: var(--seq-600);
+
+  --color-cat-sql: var(--cat-sql);
+  --color-cat-cache: var(--cat-cache);
+  --color-cat-search: var(--cat-search);
+  --color-cat-http: var(--cat-http);
+  --color-cat-php: var(--cat-php);
+
+  --color-heat-1: var(--heat-1);
+  --color-heat-2: var(--heat-2);
+  --color-heat-3: var(--heat-3);
+  --color-heat-4: var(--heat-4);
+
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-error: var(--error);
+  --color-probable: var(--probable);
+
+  --color-accent: var(--accent);
+  --color-accent-tint: var(--accent-tint);
+  --color-accent-bar: var(--accent-bar);
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--chalk);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--chalk);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: #2B4766;
+  }
+
+  [x-cloak] {
+    display: none !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

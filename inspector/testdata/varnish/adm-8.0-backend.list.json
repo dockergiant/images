@@ -1,0 +1,11 @@
+[ 3, ["backend.list", "-j"], 1792527805.738,
+  {
+    "boot.default": {
+      "type": "backend",
+      "admin_health": "healthy",
+      "probe_message": [0, 0, "healthy"],
+      "last_change": 1792526319.493
+    }
+  }
+]
+

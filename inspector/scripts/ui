@@ -1,0 +1,26 @@
+#!/bin/sh
+set -e
+root=$(cd "$(dirname "$0")/.." && pwd)
+exec docker run --rm -i \
+  -v "$root":/src -w /src \
+  -v roll-inspector-tailwind:/cache \
+  -e TAILWIND_VERSION="${TAILWIND_VERSION:-4.3.3}" \
+  -e TAILWIND_SHA256="${TAILWIND_SHA256:-}" \
+  alpine:3 sh -eu -c '
+case "$(uname -m)" in
+  aarch64|arm64) arch=arm64; sha=71ea4be79c9de9827545682df3e040053fb535d37c71ed2cfdedf9385a0868e0 ;;
+  x86_64|amd64) arch=x64; sha=a04d34ceacc8f52cbe8920ad846cdeb61d3d0021dba32db0d1f77c9d9fad7a6c ;;
+  *) echo "unsupported arch $(uname -m)" >&2; exit 1 ;;
+esac
+apk add --no-cache curl libstdc++ libgcc >/dev/null
+bin=/cache/tailwindcss-$TAILWIND_VERSION-linux-$arch-musl
+if [ ! -x "$bin" ]; then
+  sha=${TAILWIND_SHA256:-$sha}
+  [ "$TAILWIND_VERSION" = 4.3.3 ] || [ -n "${TAILWIND_SHA256:-}" ] || { echo "set TAILWIND_SHA256 for TAILWIND_VERSION=$TAILWIND_VERSION" >&2; exit 1; }
+  curl -fsSL --retry 5 --retry-all-errors --retry-delay 3 -o "$bin.part" "https://github.com/tailwindlabs/tailwindcss/releases/download/v$TAILWIND_VERSION/tailwindcss-linux-$arch-musl"
+  echo "$sha  $bin.part" | sha256sum -c -
+  chmod +x "$bin.part"
+  mv "$bin.part" "$bin"
+fi
+exec sh ui/build.sh "$bin"
+'

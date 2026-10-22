@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Roll Inspector",
+  "version": "1.0.0",
+  "description": "A DevTools panel with Roll Inspector's answer for each request of the inspected shop page: Varnish result, cost strip and bottlenecks.",
+  "minimum_chrome_version": "110",
+  "devtools_page": "devtools.html",
+  "options_page": "options.html",
+  "permissions": ["storage"],
+  "host_permissions": ["https://*.test/*"],
+  "optional_host_permissions": ["<all_urls>"]
+}

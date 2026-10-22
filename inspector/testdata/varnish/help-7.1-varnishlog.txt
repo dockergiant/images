@@ -1,0 +1,31 @@
+Usage: varnishlog <options>
+
+Options:
+ [-a]                      Append to file
+ [-A]                      Text output
+ [-b]                      Only display backend records
+ [-c]                      Only display client records
+ [-C]                      Caseless regular expressions
+ [-d]                      Process old log entries and exit
+ [-D]                      Daemonize
+ [-E]                      Display ESI transactions
+ [-g <session|request|vxid|raw>] Grouping mode (default: vxid)
+ [-h]                      Usage help
+ [-i <taglist>]            Include tags
+ [-I <[taglist:]regex>]    Include by regex
+ [-k <num>]                Limit transactions
+ [-L <limit>]              Incomplete transaction limit
+ [-n <dir>]                varnishd working directory
+ [-P <file>]               PID file
+ [-Q <file>]               VSL query file
+ [-q <query>]              VSL query
+ [-r <filename>]           Binary file input
+ [-R <limit[/duration]>]   Output rate limit
+ [-t <seconds|off>]        VSM connection timeout
+ [-T <seconds>]            Transaction end timeout
+ [-u]                      Unbuffered output
+ [-v]                      Verbose record printing
+ [-V]                      Version
+ [-w <filename>]           Output filename
+ [-x <taglist>]            Exclude tags
+ [-X <[taglist:]regex>]    Exclude by regex

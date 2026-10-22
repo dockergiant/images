@@ -1,0 +1,267 @@
+/*
+  Performance (#/performance) and its top-bar pill. Imported by ../styles.css
+  after dashboards.css: the cost section reuses .dash, .dash-kpis and the chart
+  cards, so this file only adds the switches, the benchmark and the pill.
+*/
+
+.perf-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 76ch;
+}
+.perf-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.perf-lede,
+.perf-text {
+  margin: 0;
+  color: var(--soft);
+  max-width: 76ch;
+}
+
+.perf-switches {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.perf-switch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 12px;
+}
+.perf-card {
+  gap: 4px;
+}
+.perf-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-bottom: 4px;
+}
+.perf-card-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--chalk);
+}
+.perf-env {
+  font-size: 12px;
+  color: var(--fog);
+}
+.perf-why {
+  font-size: 12px;
+  color: var(--warn);
+}
+
+/* One row per switch: what it does on the left, the control on the right. */
+.perf-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 6px 0;
+  border-top: 1px solid var(--seam-soft);
+}
+.perf-control-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.perf-control-label {
+  font-weight: 500;
+  color: var(--chalk);
+}
+.perf-control-sub {
+  font-size: 12px;
+  color: var(--fog);
+}
+.perf-switch {
+  flex: none;
+  min-width: 44px;
+  min-height: 36px;
+  justify-content: center;
+}
+.perf-switch:disabled,
+.seg-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.perf-switch:focus-visible,
+.seg-btn:focus-visible {
+  outline: 2px solid var(--chalk);
+  outline-offset: 2px;
+}
+
+.perf-permanent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--well);
+  font-size: 12px;
+  color: var(--soft);
+}
+.perf-snippet {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.perf-code {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+/* Eight numbers: two even rows of four instead of seven and a straggler. */
+.perf-kpis {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 719px) {
+  .perf-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.perf-live {
+  gap: 8px;
+}
+.perf-live-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+.perf-live-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.perf-live-stop {
+  margin-left: auto;
+}
+
+.perf-bench {
+  gap: 12px;
+}
+.perf-bench-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+.perf-bench-form .field {
+  flex: 1 1 280px;
+}
+.perf-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--seam);
+  overflow: hidden;
+}
+/* The width comes from progressStyle() through CSSOM, which the CSP allows. */
+.perf-progress-bar {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: width 240ms ease-out;
+}
+.perf-verdict {
+  font-weight: 500;
+  color: var(--chalk);
+  max-width: 80ch;
+}
+.perf-running .btn {
+  flex: none;
+}
+
+/* Top-bar pill: php-fpm's tracing state, a click away from the switches. It
+   names PHP, so it wears the PHP hue whatever screen is open. */
+.perf-pill {
+  --accent: var(--php);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 26px;
+  max-width: 260px;
+  padding: 0 10px;
+  border: 1px solid var(--seam);
+  border-radius: 999px;
+  background: var(--plate);
+  color: var(--soft);
+  font-size: 12px;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.perf-pill:hover {
+  color: var(--chalk);
+  border-color: var(--seam-strong);
+}
+.perf-pill:focus-visible {
+  outline: 2px solid var(--chalk);
+  outline-offset: 2px;
+}
+.perf-pill-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.perf-pill-dot {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  border: 1.5px solid var(--fog);
+}
+.perf-pill[data-on="true"] .perf-pill-dot {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.perf-pill[data-busy="true"] .perf-pill-dot {
+  animation: perf-pulse 1.2s ease-in-out infinite;
+}
+@keyframes perf-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .perf-pill[data-busy="true"] .perf-pill-dot {
+    animation-duration: 0.01ms;
+  }
+  .perf-progress-bar {
+    transition: none;
+  }
+}
+/* Below 1100 px the pill keeps only its dot; the label stays for screen
+   readers, since it is the link's name. */
+@media (max-width: 1099px) {
+  .perf-pill-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .perf-pill {
+    padding: 0 8px;
+  }
+}

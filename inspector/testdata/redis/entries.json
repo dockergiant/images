@@ -1,0 +1,48 @@
+{
+    "symfony": {
+        "fast-text": "czoxODoicGxhaW4gY2FjaGVkIHZhbHVlIjs=",
+        "page-json": "YTo0OntzOjQ6ImRhdGEiO3M6MzEyOiJ7ImNvbnRlbnQiOiI8IWRvY3R5cGUgaHRtbD5cbjxodG1sPjxoZWFkPjx0aXRsZT5Ib21lIHBhZ2U8XC90aXRsZT48XC9oZWFkPjxib2R5PldlbGNvbWU8XC9ib2R5PjxcL2h0bWw+Iiwic3RhdHVzX2NvZGUiOjIwMCwiaGVhZGVycyI6eyJDb250ZW50LVR5cGUiOnsibmFtZSI6IkNvbnRlbnQtVHlwZSIsInZhbHVlIjoidGV4dFwvaHRtbDsgY2hhcnNldD1VVEYtOCJ9fSwiY29udGV4dCI6eyJkYXRhIjp7ImN1c3RvbWVyX2dyb3VwIjoiMCIsImN1c3RvbWVyX2xvZ2dlZF9pbiI6ZmFsc2V9LCJkZWZhdWx0Ijp7ImN1c3RvbWVyX2dyb3VwIjoiMCJ9fX0iO3M6NToibXRpbWUiO2k6MTc5MjUyODY4MTtzOjY6ImV4cGlyZSI7TjtzOjQ6InRhZ3MiO2E6Mjp7aTowO3M6MzoiRlBDIjtpOjE7czo3OiJDTVNfUF8yIjt9fQ==",
+        "page-compressed": "YTo0OntzOjQ6ImRhdGEiO3M6MjI1OiJDQUNIRV9DT01QUkVTU0lPTnicdY/BisIwEIZfpTvnimVP0s32Isg+gOJFKLPJ2AppUpqJKJJ334kBwcOe/syXmS+TB2jvmBxDC+rDeM33maqRJ9udnHqmGglNp/jClrofP1E140DqtC5EDqXh15t7dySrpUXgs8yX2QE1BEaOodfeELSfTVNDHqMlQPuAbVlitZfXc+1wknzHNVzRxoyZblzEX5UecQnE34f9brWBlOryoRtnjUHGnDoGlq2Wflh8nMXQiO0FrR8GMv3FQXtGG0gchs4YLf8zm1L6A0qmbNsiO3M6NToibXRpbWUiO2k6MTc5MjUyODY4MTtzOjY6ImV4cGlyZSI7aToxNzkyNjE1MDgxO3M6NDoidGFncyI7YToyOntpOjA7czozOiJGUEMiO2k6MTtzOjg6IkNBVF9DXzQxIjt9fQ==",
+        "config-php": "YTo0OntzOjQ6ImRhdGEiO3M6OTE6ImE6MTp7czozOiJ3ZWIiO2E6MTp7czo4OiJ1bnNlY3VyZSI7YToxOntzOjg6ImJhc2VfdXJsIjtzOjI1OiJodHRwczovL2FwcC5leGFtcGxlLnRlc3QvIjt9fX0iO3M6NToibXRpbWUiO2k6MTc5MjUyODY4MTtzOjY6ImV4cGlyZSI7aToxNzkyNTM1ODgxO3M6NDoidGFncyI7YToxOntpOjA7czo2OiJDT05GSUciO319",
+        "encrypted": "YTo0OntzOjQ6ImRhdGEiO3M6Njg6IjE6MzpEb213ZElDOGwxY2tjUm9SY01OeXlkVUV0dUlDRk40NUtVanFzQU9aSkdoRC8wdTJXU1hINlcwaGQwSUs1SFBqIjtzOjU6Im10aW1lIjtpOjE3OTI1Mjg2ODE7czo2OiJleHBpcmUiO2k6MTc5MjUzNTg4MTtzOjQ6InRhZ3MiO2E6MTp7aTowO3M6NjoiQ09ORklHIjt9fQ==",
+        "binary": "czo1OiIAAQL//iI7"
+    },
+    "cm": {
+        "text": {
+            "d": "cGxhaW4gY2FjaGVkIHZhbHVl",
+            "t": "NjlkX0NPTkZJRyw2OWRfTUFHRQ==",
+            "m": "MTc5MjUyODY4MQ==",
+            "i": "MA=="
+        },
+        "page-gz": {
+            "d": "Z3o6H4t4AVVPwWrDMAz9lVTnlIWeRurlMhj7gJZdCkGz1aTg2CGWR0vwv0+OoWOnJz09PT2toL1jcgwtqJ3xmh8zVSNPtrs4taEaCU2n+MaWuk8/UTXjQOryUhgpiuDbm0f3RVaLRMitzcPsBTUERo6h194QtIemqSGv0RKgXeG9hNif5HruHU6C/+kaftDGTDPduRgfKz3iEojfzqeP/SukVJeH7vLQCgYZM+oYWFIt/bD4OItDI4GepPXDQKa/OWivaAOJh6ErRrt5PGV/uymlX0qmbNs=",
+            "t": "NjlkX0ZQQyw2OWRfQ0FUX0NfNDE=",
+            "m": "MTc5MjUyODY4MQ==",
+            "i": "MA=="
+        },
+        "config-php": {
+            "d": "YToxOntzOjM6IndlYiI7YToxOntzOjg6InVuc2VjdXJlIjthOjE6e3M6ODoiYmFzZV91cmwiO3M6MjU6Imh0dHBzOi8vYXBwLmV4YW1wbGUudGVzdC8iO319fQ==",
+            "t": "NjlkX0NPTkZJRw==",
+            "m": "MTc5MjUyODY4MQ==",
+            "i": "MQ=="
+        },
+        "encrypted": {
+            "d": "MTozOktpelBkbVp3UVo0L3VlTFFGbFQxTVlZYVhVdUdSUHR0dWxVdGJpcmlSSDFIaVFGemp1RGQ1bGpHUExrOFg3VWo=",
+            "t": "",
+            "m": "MTc5MjUyODY4MQ==",
+            "i": "MA=="
+        },
+        "link": {
+            "d": "bDozMWFmMTdlZDY4OGZkNGMxZTlhMTRkNWZiNGE5Y2RjNw==",
+            "t": "NjlkX0VBVg==",
+            "m": "MTc5MjUyODY4MQ==",
+            "i": "MA=="
+        },
+        "snappy": {
+            "d": "c246H4sUXoc2ccYJaEn+ezJES76LF+lIih60osk=",
+            "t": "NjlkX0xBWU9VVF9HRU5FUkFMX0NBQ0hFX1RBRw==",
+            "m": "MTc5MjUyODY4MQ==",
+            "i": "MA=="
+        }
+    }
+}

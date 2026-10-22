@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+root=$(cd "$(dirname "$0")/.." && pwd)
+exec docker run --rm -i \
+  -v "$root":/src -w /src \
+  -v roll-inspector-gomod:/go/pkg/mod \
+  -v roll-inspector-gocache:/root/.cache/go-build \
+  -e CGO_ENABLED=0 -e GOFLAGS=-mod=mod \
+  golang:1.27-alpine go "$@"

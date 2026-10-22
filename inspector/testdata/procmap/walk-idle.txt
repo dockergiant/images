@@ -1,0 +1,17 @@
+T   sl  local_address rem_address   st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode                                                     
+T    0: 0B00007F:8117 00000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 101122840 1 000000005f451486 100 0 0 10 0                 
+T   sl  local_address                         remote_address                        st tx_queue rx_queue tr tm->when retrnsmt   uid  timeout inode
+T    0: 00000000000000000000000000000000:2328 00000000000000000000000000000000:0000 0A 00000000:00000000 00:00000000 00000000     0        0 101123869 1 0000000058a6bf40 100 0 0 10 0
+P 1 php-fpm: master process (/usr/local/etc/php-fpm.conf) 
+F 1 101123867
+F 1 101123868
+F 1 101123869
+P 1050 socat UNIX-CLIENT:/run/host-services/ssh-auth.sock UNIX-LISTEN:/tmp/ssh-auth.sock,fork,user=www-data,group=www-data 
+F 1050 101124789
+F 1050 101124790
+F 1050 101124791
+F 1050 101124799
+P 1058 /usr/sbin/cron 
+P 1081 php-fpm: pool www 
+P 1082 php-fpm: pool www 
+P 1215 .mutagen/agents/0.18.1/mutagen-agent synchronizer --log-level=info 

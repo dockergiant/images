@@ -1,0 +1,21 @@
+[ 2, ["ban.list", "-j"], 1792528123.765,
+  {
+    "time": 1792528121.295036,
+    "refs": 0,
+    "completed": false,
+    "spec": "req.url ~ \\.html$"
+},
+  {
+    "time": 1792528082.182585,
+    "refs": 1,
+    "completed": false,
+    "spec": "obj.http.X-Magento-Tags ~ ((^|,)cat_c_41(,|$))"
+},
+  {
+    "time": 1792528044.538347,
+    "refs": 2,
+    "completed": true,
+    "spec": ""
+}
+]
+

@@ -1,0 +1,139 @@
+/*
+  Service views: Varnish, Valkey/Redis, OpenSearch and RabbitMQ.
+  Imported by ../styles.css into the components layer, after the shared
+  primitives, so rules here can use every token and override a shared class
+  where a service view needs it. The view roots carry .kind-<service>, which
+  scopes these rules away from the traces and overview views.
+*/
+
+/* Numbers line up in every service table and readout. A KPI number stands
+   alone, so it keeps proportional figures: equal-width digits look loose at
+   28 px. */
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) :is(.table td, .table th, .card-sub, .log-row) {
+  font-variant-numeric: tabular-nums;
+}
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .card-value {
+  font-variant-numeric: proportional-nums;
+}
+
+/* KPI row: the condensed face carries the number, the label stays small. */
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .card {
+  gap: 4px;
+  padding: 12px 16px 14px;
+  box-shadow: inset 0 2px 0 var(--accent-bar);
+}
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .card-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .card-value {
+  font-size: 28px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .card-sub {
+  color: var(--fog);
+}
+/* Colour on a number is a call to look. Healthy values stay in body ink so
+   a warning or an error is the only coloured number on the row. */
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .card-value.tone-ok {
+  color: var(--chalk);
+}
+
+/* Tables: a quiet eyebrow header that stays put while a long list scrolls. */
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .table-wrap {
+  max-height: calc(100vh - 220px);
+  overflow: auto;
+}
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--plate);
+  box-shadow: inset 0 -1px 0 var(--seam);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .table th.num {
+  text-align: right;
+}
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .table td.mono,
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .table td .mono {
+  font-size: 12px;
+}
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .table tbody tr:hover td {
+  background: var(--plate-raised);
+}
+/* Numbers never wrap onto a second line. */
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .table td.num {
+  white-space: nowrap;
+}
+/* Fixed line height so mono and proportional cells share a baseline. */
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .table td {
+  line-height: 20px;
+}
+/* A table inside a panel has its own frame already. */
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .panel .table-wrap {
+  border: 0;
+  border-radius: 0;
+  max-height: none;
+}
+
+/* Panel headings read as titles of what the panel answers. */
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .panel > .heading {
+  font-size: 15px;
+  letter-spacing: -0.005em;
+}
+
+/* Live log rows keep the grid of a terminal: fixed time column, wrapped text. */
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .log-row:hover {
+  background: var(--plate-raised);
+}
+
+/* Explanatory copy keeps a readable measure inside wide panels. */
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .panel > p {
+  max-width: 76ch;
+}
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .code {
+  scrollbar-width: thin;
+  scrollbar-color: var(--seam-strong) transparent;
+}
+
+/* Navigation chips between a service's views. */
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .chip[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Confirm dialog: a danger rule on top, the exact call in a well, the typed
+   target in the monospace face. */
+.dialog.border-danger-frame {
+  border-color: var(--color-danger-line);
+  box-shadow: inset 0 2px 0 var(--color-danger-edge), 0 24px 64px rgb(0 0 0 / 0.5);
+}
+.dialog h2 {
+  font-size: 15px;
+  letter-spacing: -0.005em;
+}
+.dialog .code {
+  font-size: 12px;
+  max-height: 160px;
+}
+.dialog .field {
+  color: var(--soft);
+  font-size: 13px;
+}
+
+/* Long lists scroll inside their frame; the native bar is too heavy for it. */
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--seam-strong) transparent;
+}
+
+/* A disabled danger button still has to read as a button. */
+:is(.kind-varnish, .kind-redis, .kind-search, .kind-rabbitmq) .btn-danger:disabled {
+  opacity: 0.7;
+}

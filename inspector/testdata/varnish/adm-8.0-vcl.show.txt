@@ -1,0 +1,558 @@
+// VCL.SHOW 0 7111 /etc/varnish/default.vcl
+vcl 4.0;
+
+import std;
+# The minimal Varnish version is 6.0
+
+backend default {
+    .host = "backend";
+    .port = "80";
+    .first_byte_timeout = 3600s;
+    .between_bytes_timeout = 300s;
+}
+
+acl purge {
+    "0.0.0.0/0";
+}
+
+sub vcl_recv {
+    if (req.method == "PURGE") {
+        if (client.ip !~ purge) {
+            return (synth(405, "Method not allowed"));
+        }
+        # To use the X-Pool header for purging varnish during automated deployments, make sure the X-Pool header
+        # has been added to the response in your backend server config. This is used, for example, by the
+        # capistrano-magento2 gem for purging old content from varnish during it's deploy routine.
+        if (!req.http.X-Magento-Tags-Pattern && !req.http.X-Pool) {
+            return (synth(400, "X-Magento-Tags-Pattern or X-Pool header required"));
+        }
+        if (req.http.X-Magento-Tags-Pattern) {
+          ban("obj.http.X-Magento-Tags ~ " + req.http.X-Magento-Tags-Pattern);
+        }
+        if (req.http.X-Pool) {
+          ban("obj.http.X-Pool ~ " + req.http.X-Pool);
+        }
+        return (synth(200, "Purged"));
+    }
+
+    if (req.method != "GET" &&
+        req.method != "HEAD" &&
+        req.method != "PUT" &&
+        req.method != "POST" &&
+        req.method != "TRACE" &&
+        req.method != "OPTIONS" &&
+        req.method != "DELETE") {
+          /* Non-RFC2616 or CONNECT which is weird. */
+          return (pipe);
+    }
+
+    # Handle profile requests from Blackfire browser plugin
+    if (req.http.X-Blackfire-Query) {
+        # ESI request should not be included in the profile (doc page: http://bit.ly/2GdiE1S)
+        if (req.esi_level > 0) {
+            unset req.http.X-Blackfire-Query;
+        } else {
+            return (pass);
+        }
+    }
+
+    # We only deal with GET and HEAD by default
+    if (req.method != "GET" && req.method != "HEAD") {
+        return (pass);
+    }
+
+    # Bypass customer, shopping cart, checkout and search requests
+    if (req.url ~ "/customer" || req.url ~ "/checkout" || req.url ~ "/catalogsearch") {
+        return (pass);
+    }
+
+    # Bypass health check requests
+    if (req.url ~ "^/(pub/)?(health_check.php|health.php)$") {
+        return (pass);
+    }
+
+    # normalize url in case of leading HTTP scheme and domain
+    set req.url = regsub(req.url, "^http[s]?://", "");
+
+    # collect all cookies
+    std.collect(req.http.Cookie);
+
+    # Compression filter. See https://www.varnish-cache.org/trac/wiki/FAQ/Compression
+    if (req.http.Accept-Encoding) {
+        if (req.url ~ "\.(jpg|jpeg|png|gif|gz|tgz|bz2|tbz|mp3|ogg|swf|flv)$") {
+            # No point in compressing these
+            unset req.http.Accept-Encoding;
+        } elsif (req.http.Accept-Encoding ~ "gzip") {
+            set req.http.Accept-Encoding = "gzip";
+        } elsif (req.http.Accept-Encoding ~ "deflate" && req.http.user-agent !~ "MSIE") {
+            set req.http.Accept-Encoding = "deflate";
+        } else {
+            # unknown algorithm
+            unset req.http.Accept-Encoding;
+        }
+    }
+
+    # Remove all marketing get parameters to minimize the cache objects
+    if (req.url ~ "(\?|&)(gclid|cx|ie|cof|siteurl|zanpid|origin|fbclid|mc_[a-z]+|utm_[a-z]+|_bta_[a-z]+)=") {
+        set req.url = regsuball(req.url, "(gclid|cx|ie|cof|siteurl|zanpid|origin|fbclid|mc_[a-z]+|utm_[a-z]+|_bta_[a-z]+)=[-_A-z0-9+()%.]+&?", "");
+        set req.url = regsub(req.url, "[?|&]+$", "");
+    }
+
+    # Static files caching
+    if (req.url ~ "^/(pub/)?(media|static)/") {
+        # Static files should not be cached by default
+        return (pass);
+    }
+
+    # Bypass authenticated GraphQL requests without a X-Magento-Cache-Id
+    if (req.url ~ "/graphql" && !req.http.X-Magento-Cache-Id && req.http.Authorization ~ "^Bearer") {
+        return (pass);
+    }
+
+    return (hash);
+}
+
+sub vcl_hash {
+    if ((req.url !~ "/graphql" || !req.http.X-Magento-Cache-Id) && req.http.cookie ~ "X-Magento-Vary=") {
+        hash_data(regsub(req.http.cookie, "^.*?X-Magento-Vary=([^;]+);*.*$", "\1"));
+    }
+
+    # Cache AJAX replies seperately than non-AJAX
+    if (req.http.X-Requested-With) {
+        hash_data(req.http.X-Requested-With);
+    }
+
+    # To make sure http users don't see ssl warning
+    if (req.http.X-Forwarded-Proto) {
+        hash_data(req.http.X-Forwarded-Proto);
+    }
+
+    if (req.url ~ "/graphql") {
+        call process_graphql_headers;
+    }
+}
+
+sub process_graphql_headers {
+    if (req.http.X-Magento-Cache-Id) {
+        hash_data(req.http.X-Magento-Cache-Id);
+
+        # When the frontend stops sending the auth token, make sure users stop getting results cached for logged-in users
+        if (req.http.Authorization ~ "^Bearer") {
+            hash_data("Authorized");
+        }
+    }
+
+    if (req.http.Store) {
+        hash_data(req.http.Store);
+    }
+
+    if (req.http.Content-Currency) {
+        hash_data(req.http.Content-Currency);
+    }
+}
+
+sub vcl_backend_response {
+    if (beresp.http.content-type ~ "text") {
+        set beresp.do_esi = true;
+    }
+
+    if (bereq.url ~ "\.js$" || beresp.http.content-type ~ "text") {
+        set beresp.do_gzip = true;
+    }
+
+    if (beresp.http.X-Magento-Debug) {
+        set beresp.http.X-Magento-Cache-Control = beresp.http.Cache-Control;
+    }
+
+    # cache only successfully responses and 404s that are not marked as private
+    if (beresp.status != 200 &&
+            beresp.status != 404 &&
+            beresp.http.Cache-Control ~ "private") {
+        set beresp.uncacheable = true;
+        set beresp.ttl = 86400s;
+        return (deliver);
+    }
+
+    # validate if we need to cache it and prevent from setting cookie
+    if (beresp.ttl > 0s && (bereq.method == "GET" || bereq.method == "HEAD")) {
+        unset beresp.http.set-cookie;
+    }
+
+   # If page is not cacheable then bypass varnish for 2 minutes as Hit-For-Pass
+   if (beresp.ttl <= 0s ||
+       beresp.http.Surrogate-control ~ "no-store" ||
+       (!beresp.http.Surrogate-Control &&
+       beresp.http.Cache-Control ~ "no-cache|no-store") ||
+       beresp.http.Vary == "*") {
+        # Mark as Hit-For-Pass for the next 2 minutes
+        set beresp.ttl = 120s;
+        set beresp.uncacheable = true;
+   }
+
+   # If the cache key in the Magento response doesn't match the one that was sent in the request, don't cache under the request's key
+   if (bereq.url ~ "/graphql" && bereq.http.X-Magento-Cache-Id && bereq.http.X-Magento-Cache-Id != beresp.http.X-Magento-Cache-Id) {
+      set beresp.ttl = 0s;
+      set beresp.uncacheable = true;
+   }
+
+    return (deliver);
+}
+
+sub vcl_deliver {
+    # Always include hit/miss information in response
+    if (resp.http.x-varnish ~ " ") {
+        set resp.http.X-Cache = "HIT";
+    } else {
+        set resp.http.X-Cache = "MISS";
+    }
+    set resp.http.X-Cache-Hits = obj.hits;
+
+    # Not letting browser to cache non-static files.
+    if (resp.http.Cache-Control !~ "private" && req.url !~ "^/(pub/)?(media|static)/") {
+        set resp.http.Pragma = "no-cache";
+        set resp.http.Expires = "-1";
+        set resp.http.Cache-Control = "no-store, no-cache, must-revalidate, max-age=0";
+    }
+}
+
+// VCL.SHOW 1 7401 <builtin>
+#-
+# Copyright (c) 2006 Verdens Gang AS
+# Copyright (c) 2006-2015 Varnish Software AS
+# All rights reserved.
+#
+# Author: Poul-Henning Kamp <phk@phk.freebsd.dk>
+#
+# SPDX-License-Identifier: BSD-2-Clause
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL AUTHOR OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+# This is the builtin VCL code
+
+vcl 4.0;
+
+#######################################################################
+# Client side
+
+sub vcl_recv {
+	call vcl_builtin_recv;
+	return (hash);
+}
+
+sub vcl_builtin_recv {
+	call vcl_req_url;
+	call vcl_req_host;
+	call vcl_req_method;
+	call vcl_req_authorization;
+	call vcl_req_cookie;
+}
+
+sub vcl_req_host {
+	if (req.http.host ~ "[[:upper:]]") {
+		set req.http.host = req.http.host.lower();
+	}
+	if (!req.http.host &&
+	    req.esi_level == 0 &&
+	    req.proto == "HTTP/1.1") {
+		# In HTTP/1.1, Host is required.
+		return (synth(400));
+	}
+}
+
+sub vcl_req_url {
+	if (req.url == "*" && req.method == "OPTIONS") {
+		return;
+	}
+	# NB: we do not allow connect by default (see vcl_req_method)
+	if (req.url !~ "^/" && req.method != "CONNECT") {
+		return (synth(400));
+	}
+}
+
+sub vcl_req_method {
+	if (req.method != "GET" &&
+	    req.method != "HEAD" &&
+	    req.method != "PUT" &&
+	    req.method != "POST" &&
+	    req.method != "TRACE" &&
+	    req.method != "OPTIONS" &&
+	    req.method != "DELETE" &&
+	    req.method != "PATCH") {
+		# Non-RFC2616 or CONNECT which is weird.
+		set req.http.Connection = "close";
+		return (synth(501));
+	}
+	if (req.method != "GET" && req.method != "HEAD") {
+		# We only deal with GET and HEAD by default.
+		return (pass);
+	}
+}
+
+sub vcl_req_authorization {
+	if (req.http.Authorization) {
+		# Not cacheable by default.
+		return (pass);
+	}
+}
+
+sub vcl_req_cookie {
+	if (req.http.Cookie) {
+		# Risky to cache by default.
+		return (pass);
+	}
+}
+
+sub vcl_pipe {
+	call vcl_builtin_pipe;
+	# By default "Connection: close" is set on all piped requests, to stop
+	# connection reuse from sending future requests directly to the
+	# (potentially) wrong backend. If you do want this to happen, you can
+	# undo it here:
+	# unset bereq.http.connection;
+	return (pipe);
+}
+
+sub vcl_builtin_pipe {
+}
+
+sub vcl_pass {
+	call vcl_builtin_pass;
+	return (fetch);
+}
+
+sub vcl_builtin_pass {
+}
+
+sub vcl_hash {
+	call vcl_builtin_hash;
+	return (lookup);
+}
+
+sub vcl_builtin_hash {
+	hash_data(req.url);
+	if (req.http.host) {
+		hash_data(req.http.host);
+	} else {
+		hash_data(server.ip);
+	}
+}
+
+sub vcl_purge {
+	call vcl_builtin_purge;
+	return (synth(200, "Purged"));
+}
+
+sub vcl_builtin_purge {
+}
+
+sub vcl_hit {
+	call vcl_builtin_hit;
+	return (deliver);
+}
+
+sub vcl_builtin_hit {
+}
+
+sub vcl_miss {
+	call vcl_builtin_miss;
+	return (fetch);
+}
+
+sub vcl_builtin_miss {
+}
+
+sub vcl_deliver {
+	call vcl_builtin_deliver;
+	return (deliver);
+}
+
+sub vcl_builtin_deliver {
+}
+
+#
+# We can come here "invisibly" with the following errors: 500 & 503
+#
+sub vcl_synth {
+	call vcl_builtin_synth;
+	return (deliver);
+}
+
+sub vcl_builtin_synth {
+	set resp.http.Content-Type = "text/html; charset=utf-8";
+	set resp.http.Retry-After = "5";
+	set resp.body = {"<!DOCTYPE html>
+<html>
+  <head>
+    <title>"} + resp.status + " " + resp.reason + {"</title>
+  </head>
+  <body>
+    <h1>Error "} + resp.status + " " + resp.reason + {"</h1>
+    <p>"} + resp.reason + {"</p>
+    <h3>Guru Meditation:</h3>
+    <p>XID: "} + req.xid + {"</p>
+    <hr>
+    <p>Varnish cache server</p>
+  </body>
+</html>
+"};
+}
+
+#######################################################################
+# Backend Fetch
+
+sub vcl_backend_fetch {
+	call vcl_builtin_backend_fetch;
+	return (fetch);
+}
+
+sub vcl_builtin_backend_fetch {
+	if (bereq.method == "GET") {
+		unset bereq.body;
+	}
+}
+
+sub vcl_backend_refresh {
+	call vcl_builtin_backend_refresh;
+	return (merge);
+}
+
+sub vcl_builtin_backend_refresh {
+	call vcl_refresh_valid;
+	call vcl_refresh_conditions;
+	call vcl_refresh_status;
+}
+
+# Check that the stale object was not invalidated under our feet
+sub vcl_refresh_valid {
+	if (!obj_stale.is_valid) {
+		return (error(503, "Invalid object for refresh"));
+	}
+}
+
+# Only allow revalidation if we asked for it
+sub vcl_refresh_conditions {
+	if (!bereq.http.if-modified-since &&
+	    !bereq.http.if-none-match) {
+		return (error(503, "Unexpected 304"));
+	}
+}
+
+# We currently only revalidate 200 responses
+sub vcl_refresh_status {
+	if (obj_stale.status != 200) {
+		return (error(503, "Invalid object for refresh"));
+	}
+}
+
+sub vcl_backend_response {
+	call vcl_builtin_backend_response;
+	return (deliver);
+}
+
+sub vcl_builtin_backend_response {
+	call vcl_beresp_range;
+	if (bereq.uncacheable) {
+		return (deliver);
+	}
+	call vcl_beresp_stale;
+	call vcl_beresp_cookie;
+	call vcl_beresp_control;
+	call vcl_beresp_vary;
+}
+
+sub vcl_beresp_stale {
+	if (beresp.ttl <= 0s) {
+		call vcl_beresp_hitmiss;
+	}
+}
+
+sub vcl_beresp_cookie {
+	if (beresp.http.Set-Cookie) {
+		call vcl_beresp_hitmiss;
+	}
+}
+
+sub vcl_beresp_control {
+	if (beresp.http.Surrogate-control ~ "(?i)no-store" ||
+	    (!beresp.http.Surrogate-Control &&
+	      beresp.http.Cache-Control ~ "(?i:no-cache|no-store|private)")) {
+		call vcl_beresp_hitmiss;
+	}
+}
+
+sub vcl_beresp_vary {
+	if (beresp.http.Vary == "*") {
+		call vcl_beresp_hitmiss;
+	}
+}
+
+sub vcl_beresp_range {
+	if (beresp.status != 206 && beresp.status != 416) {
+		# Content-Range has no meaning for these status codes
+		# Ref: https://www.rfc-editor.org/rfc/rfc9110.html#section-14.4
+		unset beresp.http.Content-Range;
+	}
+}
+
+sub vcl_beresp_hitmiss {
+	set beresp.ttl = param.uncacheable_ttl;
+	set beresp.uncacheable = true;
+	return (deliver);
+}
+
+sub vcl_backend_error {
+	call vcl_builtin_backend_error;
+	return (deliver);
+}
+
+sub vcl_builtin_backend_error {
+	set beresp.http.Content-Type = "text/html; charset=utf-8";
+	set beresp.http.Retry-After = "5";
+	set beresp.body = {"<!DOCTYPE html>
+<html>
+  <head>
+    <title>"} + beresp.status + " " + beresp.reason + {"</title>
+  </head>
+  <body>
+    <h1>Error "} + beresp.status + " " + beresp.reason + {"</h1>
+    <p>"} + beresp.reason + {"</p>
+    <h3>Guru Meditation:</h3>
+    <p>XID: "} + bereq.xid + {"</p>
+    <hr>
+    <p>Varnish cache server</p>
+  </body>
+</html>
+"};
+}
+
+#######################################################################
+# Housekeeping
+
+sub vcl_init {
+	return (ok);
+}
+
+sub vcl_fini {
+	return (ok);
+}
+
+

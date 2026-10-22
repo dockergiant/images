@@ -1,0 +1,214 @@
+<div x-show="hasHealthError && isHealth" x-cloak class="banner"><span class="banner-title">The cache did not answer</span><span x-text="healthError"></span></div>
+
+<div x-show="isHealth" class="flex flex-col gap-4">
+  <template x-for="w in hv.warnings" :key="w.key">
+    <div class="banner"><span class="banner-title" :class="w.cls" x-text="w.title"></span><span class="min-w-0 flex-1 basis-80" x-text="w.text"></span><code x-show="w.hasFix" class="mono rounded bg-well px-2 py-1 text-xs select-all" x-text="w.fix"></code><button type="button" x-show="w.hasFix" class="btn btn-sm" @click="copy(w.fix)">Copy fix</button></div>
+  </template>
+  <section x-show="!raw" aria-label="Key numbers" class="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
+    <template x-for="c in hv.cards" :key="c.label">
+      <div class="card"><span class="card-label" x-text="c.label"></span><span class="card-value" :class="c.cls" x-text="c.value"></span><span class="card-sub" x-text="c.sub"></span></div>
+    </template>
+  </section>
+  <template x-if="isHealth">
+    <div x-data="redisDashboard" class="dash">
+      <div class="dash-bar">
+        <div class="seg" role="group" aria-label="Time window for the charts">
+          <span class="seg-label" aria-hidden="true">Last</span>
+          <template x-for="w in windows" :key="w.id">
+            <button type="button" class="seg-btn" :aria-pressed="w.pressed" @click="setWindow(w.id)" x-text="w.label"></button>
+          </template>
+        </div>
+        <span class="dash-note" x-text="note"></span>
+        <span x-show="sampleError" x-cloak class="dash-note text-warn" x-text="sampleError"></span>
+      </div>
+      <div x-show="hasFailed" x-cloak class="banner"><span class="banner-title">Metrics did not load</span><span x-text="failed"></span><div class="grow"></div><button type="button" class="btn btn-sm" @click="retry()">Retry</button></div>
+      <div x-show="!raw" class="dash-grid">
+        <div class="dash-card dash-w4"><div x-ref="chartHit"></div></div>
+        <div class="dash-card dash-w8"><div x-ref="chartOps"></div></div>
+        <div class="dash-card dash-w4"><div x-ref="chartMemory"></div></div>
+        <div class="dash-card dash-w8"><div x-ref="chartChurn"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartDbs"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartCommands"></div></div>
+      </div>
+      <section x-show="raw" x-cloak class="panel"><h2 class="heading">Raw metrics history</h2><pre class="code m-0 max-h-[60vh]" x-text="rawMetrics"></pre></section>
+    </div>
+  </template>
+  <section x-show="!raw && hasTopCommands" class="panel">
+    <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+      <h2 class="heading">Where does the server spend its time?</h2>
+      <span class="text-xs text-fog">Commands by total time since the server started. Inspector's own INFO and SLOWLOG calls are included.</span>
+    </div>
+    <div class="table-wrap border-0">
+      <table class="table"><thead><tr><th>Command</th><th class="num">Total time</th><th class="num">Calls</th><th class="num">Per call</th><th class="num">Failed</th></tr></thead><tbody>
+        <template x-for="c in topCommands" :key="c.key"><tr><td class="mono text-xs" x-text="c.cmd"></td><td class="num text-chalk" x-text="c.total"></td><td class="num" x-text="c.calls"></td><td class="num" x-text="c.per"></td><td class="num" x-text="c.failed"></td></tr></template>
+      </tbody></table>
+    </div>
+  </section>
+  <section x-show="raw" x-cloak class="panel"><h2 class="heading">Raw INFO and command stats</h2><pre class="code m-0" x-text="rawHealth"></pre></section>
+</div>
+
+<div x-show="isBrowse" x-cloak class="flex flex-col gap-4">
+  <div class="flex flex-wrap gap-2" role="group" aria-label="Browse">
+    <template x-for="t in tabList" :key="t.id">
+      <button type="button" class="chip" :aria-pressed="t.pressed" @click="selectTab(t)" x-text="t.label"></button>
+    </template>
+  </div>
+  <div x-show="hasError" class="banner"><span x-text="error"></span></div>
+
+  <div x-show="isTabEntries || isTabTags" class="flex flex-wrap items-start gap-4">
+    <section aria-label="Cache types" class="flex min-w-0 max-w-[250px] flex-[1_1_220px] flex-col gap-2">
+      <div class="eyebrow">From app/etc/env.php</div>
+      <template x-for="t in typeList" :key="t.key">
+        <button type="button" class="pick-item" :aria-current="t.current" @click="pickType(t)">
+          <span class="font-medium" x-text="t.name"></span>
+          <span class="text-xs text-muted" x-text="t.meta"></span>
+        </button>
+      </template>
+      <p x-show="!hasTypes" class="empty m-0 text-[13px]">Inspector could not read the cache settings from env.php. Is this a Magento 2 project?</p>
+      <p class="m-0 text-xs text-warn" x-text="typeNote"></p>
+    </section>
+
+    <section x-show="isTabEntries" aria-label="Entries" class="flex min-w-0 flex-[2_1_320px] flex-col gap-2">
+      <form @submit.prevent="search()">
+        <label class="field">Search by URL, cache id or tag
+          <input type="search" name="redis-query" class="input" x-model="query" placeholder="https://shop.test/category.html or part of a cache id" spellcheck="false">
+        </label>
+      </form>
+      <p x-show="hasNote" class="m-0 text-xs text-muted" x-text="note"></p>
+      <div x-show="hasKeys" class="flex max-h-[calc(100vh-240px)] flex-col overflow-y-auto rounded-lg border border-line text-[13px]">
+        <template x-for="k in keyList" :key="k.key">
+          <button type="button" class="flex min-w-0 cursor-pointer flex-col gap-0.5 border-0 border-t border-row bg-transparent px-3 py-1.5 text-left first:border-t-0 aria-selected:bg-select" :aria-selected="k.selected" @click="openKey(k)">
+            <span class="mono break-all text-xs" x-text="k.title"></span>
+            <span class="text-xs text-muted" x-text="k.meta"></span>
+          </button>
+        </template>
+      </div>
+      <div x-show="hasMore"><button type="button" class="btn btn-sm" @click="loadMore()">Load more</button></div>
+    </section>
+
+    <section x-show="isTabTags" x-cloak aria-label="Tags" class="flex min-w-0 flex-[2_1_320px] flex-col gap-2">
+      <label class="flex cursor-pointer items-center gap-1.5 text-xs text-muted"><input type="checkbox" name="view-tags" :checked="showViewTags" @change="toggleViewTags()"><span>show per-view tags</span></label>
+      <p class="m-0 text-xs text-muted" x-text="tagNote"></p>
+      <div class="flex max-h-[60vh] flex-col overflow-y-auto rounded-lg border border-line text-[13px]">
+        <template x-for="t in tagRowsList" :key="t.key">
+          <button type="button" class="flex cursor-pointer items-center justify-between gap-3 border-0 border-t border-row bg-transparent px-3 py-2 text-left first:border-t-0 aria-selected:bg-select" :aria-selected="t.current" @click="pickTag(t.tag)">
+            <span class="mono break-all text-xs" x-text="t.tag"></span><span class="tabular-nums text-muted" x-text="t.count"></span>
+          </button>
+        </template>
+      </div>
+      <p x-show="!hasTagRows" class="empty m-0 text-[13px]">No tags. This database holds no Magento cache layout.</p>
+    </section>
+
+    <section x-show="isTabTags && hasMembers" x-cloak aria-label="Tag members" class="panel min-w-0 flex-[3_1_420px]">
+      <div class="flex flex-wrap items-center gap-2.5"><h2 class="heading" x-text="memberTitle"></h2><div class="grow"></div><button type="button" class="btn btn-danger" :disabled="lan" @click="cleanTag()">Clean tag…</button></div>
+      <p x-show="memberTruncated" class="m-0 text-xs text-muted">Showing the first 1,000 members.</p>
+      <div class="flex max-h-[50vh] flex-col overflow-y-auto">
+        <template x-for="m in memberList" :key="m.key">
+          <button type="button" class="flex cursor-pointer flex-col gap-0.5 border-0 border-t border-row bg-transparent px-1 py-1.5 text-left first:border-t-0" @click="openMember(m)">
+            <span class="mono break-all text-xs" :class="m.existsCls" x-text="m.id"></span>
+            <span class="text-xs text-warn" x-text="m.meta"></span>
+          </button>
+        </template>
+      </div>
+    </section>
+
+    <section x-show="isTabEntries && (hasDetail || hasDetailError)" x-cloak aria-label="Entry detail" class="panel sticky top-4 min-w-0 flex-[3_1_420px] gap-3.5 self-start">
+      <p x-show="hasDetailError" class="m-0 text-error" x-text="detailError"></p>
+      <template x-if="hasDetail">
+        <div class="flex flex-col gap-3.5">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <h2 class="heading" x-text="dTitle"></h2>
+            <span class="text-xs text-muted" x-text="dExpiry"></span>
+            <div class="grow"></div>
+            <button type="button" class="btn btn-danger" :disabled="lan" @click="deleteEntry()">Delete entry…</button>
+          </div>
+          <dl class="m-0 grid grid-cols-[100px_minmax(0,1fr)] gap-x-4 gap-y-2 text-[13px]">
+            <template x-for="r in dRows" :key="r.k"><div class="contents"><dt class="text-muted" x-text="r.k"></dt><dd class="m-0 break-all" x-text="r.v"></dd></div></template>
+            <div x-show="hasDTags" class="contents">
+              <dt class="text-muted">Tags</dt>
+              <dd class="m-0 flex flex-wrap gap-1.5">
+                <template x-for="t in dTags" :key="t.key"><button type="button" class="tag cursor-pointer border-0 text-ink" @click="pickTagChip(t)" x-text="t.tag"></button></template>
+                <button type="button" x-show="hasMoreTags" class="tag cursor-pointer border-0 text-muted" @click="expandTags()" x-text="moreTags"></button>
+              </dd>
+            </div>
+          </dl>
+          <div x-show="dTooLarge" class="banner"><span>This value is large, so Inspector did not load it.</span><button type="button" class="btn btn-sm" @click="loadAnyway()">Load anyway</button></div>
+          <pre x-show="hasBody" class="code m-0 max-h-[50vh]" x-text="dBody"></pre>
+          <p x-show="dTruncated" class="m-0 text-xs text-muted">Shortened for display.</p>
+          <p class="m-0 break-all text-xs text-muted" x-text="dFoot"></p>
+        </div>
+      </template>
+    </section>
+  </div>
+
+  <section x-show="isTabClients" x-cloak class="table-wrap">
+    <table class="table"><thead><tr><th>Who</th><th>Address</th><th>DB</th><th>Last command</th><th class="num">Connected</th><th class="num">Idle</th></tr></thead><tbody>
+      <template x-for="c in clientList" :key="c.key"><tr><td x-text="c.who"></td><td class="mono text-xs" x-text="c.addr"></td><td x-text="c.db"></td><td class="mono text-xs" x-text="c.cmd"></td><td class="num" x-text="c.age"></td><td class="num" x-text="c.idle"></td></tr></template>
+    </tbody></table>
+  </section>
+
+  <section x-show="isTabSlowlog" x-cloak class="flex flex-wrap items-start gap-4">
+    <div class="panel min-w-0 flex-[2_1_420px]">
+      <h2 class="heading">Slowlog</h2>
+      <div class="table-wrap max-h-[70vh] border-0"><table class="table"><thead><tr><th>Time</th><th class="num">Took</th><th>Command</th><th>From</th></tr></thead><tbody>
+        <template x-for="s in slowList" :key="s.key"><tr><td class="whitespace-nowrap text-muted" x-text="s.time"></td><td class="num" x-text="s.took"></td><td class="mono break-all text-xs" x-text="s.cmd"></td><td class="text-muted" x-text="s.from"></td></tr></template>
+      </tbody></table></div>
+    </div>
+    <div class="panel min-w-0 flex-[1_1_300px]">
+      <h2 class="heading">Latency per command</h2>
+      <div class="table-wrap border-0"><table class="table"><thead><tr><th>Command</th><th class="num">p50</th><th class="num">p99</th></tr></thead><tbody>
+        <template x-for="l in latencyList" :key="l.key"><tr><td class="mono text-xs" x-text="l.cmd"></td><td class="num" x-text="l.p50"></td><td class="num" x-text="l.p99"></td></tr></template>
+      </tbody></table></div>
+    </div>
+  </section>
+</div>
+
+<div x-show="isLive" x-cloak class="flex flex-col gap-4">
+  <section class="panel">
+    <h2 class="heading">Watch commands as they run</h2>
+    <p class="m-0 text-[13px] text-soft">Opens MONITOR in the Live drawer. Repeated reads of the same key are folded into one row with a count. MONITOR costs Redis throughput while it runs, so close the drawer when you are done.</p>
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">
+      <label class="field">Only database<input type="text" name="live-db" class="input mono" x-model="liveDb" placeholder="optional, for example 1" inputmode="numeric"></label>
+      <label class="field">Only keys matching<input type="text" name="live-match" class="input mono" x-model="liveMatch" placeholder="optional, for example 69d_:" spellcheck="false"></label>
+    </div>
+    <div class="flex items-center gap-3"><button type="button" class="btn btn-accent" @click="openMonitor()" :disabled="monitorInvalid" x-text="monitorLabel"></button><span class="mono text-xs text-muted" x-text="monitorSub"></span></div>
+  </section>
+</div>
+
+<div x-show="isActions" x-cloak class="flex flex-col gap-4">
+  <p x-show="lanReason" class="banner m-0" x-text="lanReason"></p>
+  <div class="flex flex-wrap items-start gap-4">
+    <section class="panel min-w-0 flex-[1_1_340px]">
+      <h2 class="heading">Delete one entry</h2>
+      <label class="field">Database
+        <select name="act-db" class="input mono" x-model="actDb"><template x-for="d in dbOptions" :key="d.value"><option :value="d.value" x-text="d.label"></option></template></select>
+      </label>
+      <form class="flex flex-col gap-3" @submit.prevent="actDeleteKey()">
+        <label class="field">Raw key<input type="text" name="act-key" class="input mono" x-model="actKey" placeholder="69d_:FRONTEND__RESOURCESCACHE" spellcheck="false"></label>
+        <div><button type="submit" class="btn btn-danger" :disabled="!canDeleteKey">Delete entry…</button></div>
+      </form>
+      <form class="flex flex-col gap-3" @submit.prevent="actCleanTag()">
+        <label class="field">Tag<input type="text" name="act-tag" class="input mono" x-model="actTag" placeholder="CONFIG" spellcheck="false"></label>
+        <div><button type="submit" class="btn btn-danger" :disabled="!canCleanTag">Clean tag…</button></div>
+      </form>
+    </section>
+    <section class="panel min-w-0 flex-[1_1_340px]">
+      <h2 class="heading">Clean a cache type</h2>
+      <p class="m-0 text-[13px] text-soft">Runs the same cache:clean Magento runs from the admin.</p>
+      <label class="field">Cache type
+        <select name="act-type" class="input mono" x-model="actType"><option value="">pick a type</option><template x-for="t in actionTypes" :key="t.value"><option :value="t.value" x-text="t.label"></option></template></select>
+      </label>
+      <div><button type="button" class="btn btn-danger" :disabled="!canCleanType" @click="actCleanType()">Clean cache type…</button></div>
+    </section>
+  </div>
+  <section class="panel">
+    <h2 class="heading">Flush a database</h2>
+    <p class="m-0 text-[13px] text-soft">Deletes every key in the database. You type the database number to confirm.</p>
+    <div class="flex flex-wrap items-end gap-3">
+      <label class="field min-w-0 flex-[1_1_260px]">Database
+        <select name="act-flush" class="input mono" x-model="actFlush"><template x-for="d in dbOptions" :key="d.value"><option :value="d.value" x-text="d.label"></option></template></select>
+      </label>
+      <button type="button" class="btn btn-danger" :disabled="lan" @click="actFlushDb()">Flush database…</button>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,126 @@
+{
+  "generic": false,
+  "mtime": 1792528423,
+  "igbinary": false,
+  "framework": "magento/framework",
+  "frameworkVersion": "2.4.7-p3",
+  "env": {
+    "cache": {
+      "frontend": {
+        "default": {
+          "backend": "Magento\\Framework\\Cache\\Backend\\Redis",
+          "id_prefix": "abc_",
+          "backend_options": {
+            "server": "redis",
+            "port": "6379",
+            "database": "0",
+            "compress_data": "1",
+            "compression_lib": "gzip",
+            "serializer": "igbinary"
+          }
+        },
+        "page_cache": {
+          "backend": "Magento\\Framework\\Cache\\Backend\\Redis",
+          "id_prefix": "abc_",
+          "backend_options": {
+            "server": "redis",
+            "port": "6379",
+            "database": "1",
+            "compress_data": "0"
+          }
+        }
+      }
+    },
+    "session": {
+      "save": "redis",
+      "redis": {
+        "host": "redis",
+        "port": "6379",
+        "database": "2"
+      }
+    },
+    "queue": {
+      "amqp": {
+        "host": "rabbitmq",
+        "port": "5672",
+        "virtualhost": "/",
+        "user": "planted-amqp-user",
+        "password": "planted-amqp-password"
+      }
+    },
+    "http_cache_hosts": [
+      {
+        "host": "varnish",
+        "port": "80"
+      }
+    ],
+    "cache_types": {
+      "config": 1,
+      "layout": 1,
+      "full_page": 0,
+      "block_html": 1
+    },
+    "MAGE_MODE": "developer",
+    "lock": {
+      "provider": "db",
+      "config": {
+        "prefix": "lk_"
+      }
+    },
+    "db": {
+      "connection": {
+        "default": {
+          "host": "db",
+          "dbname": "magento"
+        }
+      },
+      "table_prefix": "m2_"
+    },
+    "system": {
+      "default": {
+        "web": {
+          "unsecure": {
+            "base_url": "https://app.example.test/"
+          },
+          "secure": {
+            "base_url": "https://app.example.test/",
+            "offloader_header": "X-Forwarded-Proto"
+          }
+        },
+        "system": {
+          "full_page_cache": {
+            "caching_application": "2",
+            "ttl": "86400"
+          }
+        },
+        "catalog": {
+          "search": {
+            "engine": "opensearch",
+            "opensearch_server_hostname": "opensearch"
+          }
+        }
+      },
+      "websites": {
+        "nl": {
+          "web": {
+            "unsecure": {
+              "base_url": "https://nl.example.test/"
+            },
+            "secure": {
+              "base_url": "https://nl.example.test/"
+            }
+          }
+        }
+      },
+      "stores": {
+        "be_fr": {
+          "web": {
+            "secure": {
+              "base_url": "https://fr.example.test/"
+            }
+          }
+        }
+      }
+    }
+  }
+}

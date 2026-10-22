@@ -1,0 +1,653 @@
+<template x-if="isPage('hotspots')">
+  <div x-data="traceHotspots" class="flex min-w-0 flex-col gap-6">
+    <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+      <h1 class="page-title">Hotspots</h1>
+      <span class="text-xs text-fog" x-text="summary"></span>
+      <div class="grow"></div>
+      <a :href="requestsHref" class="text-link">Every request →</a>
+    </div>
+
+    <nav x-show="hasData" x-cloak class="jump-row" aria-label="Jump to a section">
+      <span class="eyebrow">Jump to</span>
+      <template x-for="j in jumps" :key="j.id">
+        <button type="button" class="jump-btn" @click="jump(j.id)"><span x-text="j.label"></span><span class="jump-count" x-text="j.count"></span></button>
+      </template>
+    </nav>
+
+    <div x-data="phpDashboard" class="dash dash-strip" aria-label="PHP requests over time" role="region">
+      <div class="dash-bar">
+        <div class="seg" role="group" aria-label="Time window for the charts and numbers">
+          <span class="seg-label" aria-hidden="true">Last</span>
+          <template x-for="w in windows" :key="w.id">
+            <button type="button" class="seg-btn" :aria-pressed="w.pressed" @click="setWindow(w.id)" x-text="w.label"></button>
+          </template>
+        </div>
+        <span class="dash-note" x-text="note"></span>
+      </div>
+      <div x-show="hasFailed" x-cloak class="banner"><span class="banner-title">Metrics did not load</span><span x-text="failed"></span><div class="grow"></div><button type="button" class="btn btn-sm" @click="retry()">Retry</button></div>
+      <section aria-label="Key numbers" class="dash-kpis">
+        <template x-for="k in kpis" :key="k.key">
+          <div class="card" :class="k.cls"><span class="card-label" x-text="k.label"></span><span class="card-value" x-text="k.value"></span><span class="card-sub" x-text="k.sub"></span></div>
+        </template>
+      </section>
+      <div class="dash-grid">
+        <div class="dash-card dash-w3"><div x-ref="chartRequests"></div></div>
+        <div class="dash-card dash-w3"><div x-ref="chartLatency"></div></div>
+        <div class="dash-card dash-w3"><div x-ref="chartHistogram"></div></div>
+        <div class="dash-card dash-w3"><div x-ref="chartSql"></div></div>
+      </div>
+    </div>
+
+    <div x-show="loading" class="text-sm text-fog">Reading the trace store…</div>
+    <div x-show="failed" x-cloak class="banner">
+      <span class="banner-title">Hotspots did not load</span>
+      <span x-text="error"></span>
+      <div class="grow"></div>
+      <button type="button" class="btn btn-sm" @click="load()">Retry</button>
+    </div>
+    <div x-show="empty" x-cloak class="empty flex flex-col items-center gap-2">
+      <p class="heading m-0 text-chalk">No traces yet</p>
+      <p class="m-0 max-w-[60ch] text-sm">Inspector keeps the last 500 PHP requests that dd-trace sends it. Switch tracing on, then load a storefront page that Varnish does not serve from cache:</p>
+      <code class="code">roll inspector trace on</code>
+      <p class="m-0 text-sm">This page fills in as the requests arrive.</p>
+    </div>
+
+    <section id="hs-routes" x-show="hasData" x-cloak aria-labelledby="hs-routes-h" class="jump-target flex min-w-0 flex-col gap-2">
+      <div class="section-head">
+        <h2 id="hs-routes-h" class="heading">Routes</h2>
+        <span class="section-note">Click a route to list its requests. The strip shows where an average request spends its time.</span>
+        <ul class="cost-legend cost-legend-sm" aria-label="Cost strip colours">
+          <template x-for="c in costKey" :key="c.key"><li><span :class="c.swatch" aria-hidden="true"></span><span x-text="c.label"></span></li></template>
+        </ul>
+      </div>
+      <div class="table-wrap">
+        <table class="table trace-table">
+          <thead>
+            <tr>
+              <template x-for="h in routeHeaders" :key="h.id">
+                <th :class="h.cls" :aria-sort="h.ariaSort"><a class="sort-link" :href="h.href"><span x-text="h.label"></span><span class="sort-arrow" x-text="h.arrow"></span></a></th>
+              </template>
+              <th class="w-[22%] min-w-16"><span class="sm:hidden">Cost</span><span class="hidden sm:inline">Where the time goes</span></th>
+              <th class="num hidden sm:table-cell"><span class="sr-only-text">Slowest request</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="r in routes" :key="r.key">
+              <tr class="click-row" @click="openRoute(r, $event)">
+                <td class="mono w-[40%] max-w-0 text-xs"><a class="row-link block break-all sm:truncate" :href="r.href" :title="r.route" x-text="r.route"></a></td>
+                <td class="num mono hidden sm:table-cell" x-text="r.count"></td>
+                <td class="num mono hidden md:table-cell" x-text="r.p50"></td>
+                <td class="num mono text-chalk" x-text="r.p95"></td>
+                <td class="num mono hidden md:table-cell" x-text="r.max"></td>
+                <td class="align-middle">
+                  <div class="cost-strip" role="img" :aria-label="r.stripLabel">
+                    <template x-for="s in r.strip" :key="s.key"><span :class="s.cls" :style="s.style" :title="s.title"></span></template>
+                  </div>
+                </td>
+                <td class="num hidden sm:table-cell"><a x-show="r.worstHref" class="text-link text-xs whitespace-nowrap" :href="r.worstHref">Slowest →</a></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="hs-ops" x-show="hasData" x-cloak aria-labelledby="hs-ops-h" class="jump-target flex min-w-0 flex-col gap-2">
+      <div class="section-head">
+        <h2 id="hs-ops-h" class="heading">Most expensive operations</h2>
+        <span class="section-note">Statements, cache calls, plugins, observers and blocks, ranked by self time summed over every trace. Bars are relative to the top row.</span>
+      </div>
+      <div x-show="!hasOperations" class="empty text-sm">No SQL, cache, search, HTTP, plugin, observer or block spans in the store yet.</div>
+      <div x-show="hasOperations" class="table-wrap">
+        <table class="table trace-table">
+          <thead>
+            <tr>
+              <th class="w-10"><span class="sr-only-text">Rank</span></th>
+              <th>Operation</th>
+              <th class="num">Self time</th>
+              <th class="hidden w-[16%] min-w-28 sm:table-cell">Share of traced time</th>
+              <th class="num hidden md:table-cell">Calls</th>
+              <th class="num hidden md:table-cell">Traces</th>
+              <th class="num hidden sm:table-cell"><span class="sr-only-text">Open</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="o in operations" :key="o.key">
+              <tr class="click-row heat-row" :data-heat="o.heat" @click="openRoute(o, $event)">
+                <td><span class="rank" :data-heat="o.heat" x-text="o.rank"></span></td>
+                <td class="min-w-0">
+                  <div class="op-cell">
+                    <span class="kind-tag" :data-kind="o.kind" x-text="o.kindLabel"></span>
+                    <span class="mono clamp-2 min-w-0 text-xs text-chalk" :title="o.title" x-text="o.text"></span>
+                  </div>
+                </td>
+                <td class="num mono text-chalk" x-text="o.self"></td>
+                <td class="hidden align-middle sm:table-cell">
+                  <div class="flex items-center gap-2">
+                    <div class="heat-bar"><div class="heat-fill" :data-heat="o.heat" :style="o.shareStyle"></div></div>
+                    <span class="mono w-12 shrink-0 text-right text-xs text-fog" x-text="o.share"></span>
+                  </div>
+                </td>
+                <td class="num mono hidden md:table-cell" x-text="o.calls"></td>
+                <td class="num mono hidden md:table-cell" x-text="o.traces"></td>
+                <td class="num hidden sm:table-cell"><a x-show="o.href" class="text-link text-xs whitespace-nowrap" :href="o.href">Worst trace →</a></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+      <button type="button" x-show="opsMore" class="link-btn self-start text-xs" @click="toggleOps()" x-text="opsMoreText"></button>
+    </section>
+
+    <section id="hs-repeats" x-show="hasData" x-cloak aria-labelledby="hs-repeats-h" class="jump-target flex min-w-0 flex-col gap-2">
+      <div class="section-head">
+        <h2 id="hs-repeats-h" class="heading">Repeated calls (N+1)</h2>
+        <span class="section-note">The same statement 10 times or more in one request, with only its values changing. Literals show as ?.</span>
+      </div>
+      <div x-show="!hasRepeats" class="empty text-sm">No request repeated a statement 10 times or more.</div>
+      <div x-show="hasRepeats" class="table-wrap">
+        <table class="table trace-table">
+          <thead>
+            <tr>
+              <th>Statement</th>
+              <th class="num">Per request</th>
+              <th class="num hidden sm:table-cell">Time per request</th>
+              <th class="num hidden md:table-cell">Traces</th>
+              <th class="hidden lg:table-cell">Routes</th>
+              <th class="num hidden sm:table-cell"><span class="sr-only-text">Open</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="r in repeats" :key="r.key">
+              <tr class="click-row" @click="openRoute(r, $event)">
+                <td class="min-w-0">
+                  <div class="op-cell">
+                    <span class="kind-tag" :data-kind="r.kind" x-text="r.kindLabel"></span>
+                    <span class="mono clamp-2 min-w-0 text-xs text-chalk" :title="r.text" x-text="r.text"></span>
+                  </div>
+                </td>
+                <td class="num mono text-chalk" x-text="r.perRequest"></td>
+                <td class="num mono hidden sm:table-cell" x-text="r.msPerRequest"></td>
+                <td class="num mono hidden md:table-cell" x-text="r.traces"></td>
+                <td class="hidden lg:table-cell">
+                  <div class="flex flex-wrap gap-1">
+                    <template x-for="x in r.routes" :key="x.key"><a class="tag no-underline hover:text-chalk" :href="x.href" x-text="x.label"></a></template>
+                  </div>
+                </td>
+                <td class="num hidden sm:table-cell"><a x-show="r.href" class="text-link text-xs whitespace-nowrap" :href="r.href">Worst trace →</a></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</template>
+
+<template x-if="isPage('requests')">
+  <div x-data="traceRequests" class="flex min-w-0 flex-col gap-3">
+    <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+      <h1 class="page-title">Requests</h1>
+      <span class="text-xs text-fog" x-text="countText"></span>
+      <div class="grow"></div>
+      <ul class="cost-legend cost-legend-sm hidden sm:flex" aria-label="Cost strip colours">
+        <template x-for="c in costKey" :key="c.key"><li><span :class="c.swatch" aria-hidden="true"></span><span x-text="c.label"></span></li></template>
+      </ul>
+      <span class="hidden text-xs text-fog sm:inline"><span class="kbd">j</span> <span class="kbd">k</span> move · <span class="kbd">↵</span> open</span>
+    </div>
+
+    <div class="filter-bar" role="group" aria-label="Filter requests">
+      <label class="filter-field">
+        <span class="sr-only-text">Route</span>
+        <select name="route" class="input mono text-xs" @change="setRoute($event)">
+          <template x-for="o in routeOptions" :key="o.value"><option :value="o.value" :selected="o.selected" x-text="o.label"></option></template>
+        </select>
+      </label>
+      <label class="filter-field grow">
+        <span class="sr-only-text">URL contains</span>
+        <input x-ref="url" type="search" name="url" class="input mono w-full text-xs" placeholder="URL contains…" spellcheck="false" autocomplete="off" :value="urlDraft" @input="onUrl($event)">
+      </label>
+      <div class="flex flex-wrap items-center gap-1.5">
+        <template x-for="c in minChips" :key="c.id">
+          <button type="button" class="chip" :aria-pressed="c.pressed" @click="setMin(c)" x-text="c.label"></button>
+        </template>
+        <button type="button" class="chip" :aria-pressed="errorsPressed" @click="toggleErrors()">Errors only</button>
+      </div>
+      <div class="flex gap-1" role="group" aria-label="Sort">
+        <template x-for="b in sortButtons" :key="b.id">
+          <button type="button" class="chip" :aria-pressed="b.pressed" @click="setSort(b)" x-text="b.label"></button>
+        </template>
+      </div>
+    </div>
+
+    <div x-show="loading" class="text-sm text-fog">Loading traces…</div>
+    <div x-show="failed" x-cloak class="banner">
+      <span class="banner-title">Traces did not load</span>
+      <span x-text="error"></span>
+      <div class="grow"></div>
+      <button type="button" class="btn btn-sm" @click="load()">Retry</button>
+    </div>
+    <div x-show="noTraces" x-cloak class="empty flex flex-col items-center gap-2">
+      <p class="heading m-0 text-chalk">No traces yet</p>
+      <p class="m-0 text-sm">Switch tracing on with <span class="mono text-chalk">roll inspector trace on</span> and load a page that Varnish does not serve from cache.</p>
+    </div>
+    <div x-show="noMatch" x-cloak class="empty flex flex-col items-center gap-2">
+      <p class="m-0 text-sm">No request matches these filters.</p>
+      <a class="text-link text-sm" :href="clearHref" @click="clearFilters()">Clear the filters</a>
+    </div>
+
+    <div x-show="hasRows" class="table-wrap">
+      <table class="table trace-table req-table">
+        <thead>
+          <tr>
+            <th class="hidden md:table-cell">Time</th>
+            <th>Request</th>
+            <th class="num hidden sm:table-cell">Status</th>
+            <th class="num">Duration</th>
+            <th class="w-[18%] min-w-20">Cost</th>
+            <th class="num hidden lg:table-cell">SQL</th>
+            <th class="num hidden lg:table-cell">Cache</th>
+            <th class="num hidden lg:table-cell">Search</th>
+            <th class="hidden md:table-cell"><span class="sr-only-text">Markers</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="r in rows" :key="r.id">
+            <tr class="click-row" @click="open(r, $event)">
+              <td class="mono hidden text-xs text-fog md:table-cell" x-text="r.time"></td>
+              <td class="min-w-0 max-w-0 w-[45%]">
+                <a data-row class="row-link req-link" :href="r.href" :title="r.title">
+                  <span class="req-route"><span class="req-method" x-text="r.method"></span> <span x-text="r.route"></span></span>
+                  <span class="req-url" x-text="r.path"></span>
+                </a>
+              </td>
+              <td class="num mono hidden text-xs sm:table-cell" :class="r.statusCls" x-text="r.status"></td>
+              <td class="num mono text-chalk" x-text="r.duration"></td>
+              <td class="align-middle">
+                <div class="cost-strip" role="img" :aria-label="r.stripLabel">
+                  <template x-for="s in r.strip" :key="s.key"><span :class="s.cls" :style="s.style" :title="s.title"></span></template>
+                </div>
+              </td>
+              <td class="num mono hidden text-xs lg:table-cell" x-text="r.sql"></td>
+              <td class="num mono hidden text-xs lg:table-cell" x-text="r.cache"></td>
+              <td class="num mono hidden text-xs lg:table-cell" x-text="r.search"></td>
+              <td class="hidden md:table-cell">
+                <span class="flex gap-1">
+                  <span x-show="r.nPlusOne" class="marker marker-warn" title="A statement ran 10 times or more (N+1)">N+1</span>
+                  <span x-show="r.profile" class="marker" title="An Excimer profile exists for this request">profile</span>
+                </span>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+<template x-if="isPage('trace')">
+  <div x-data="traceDetail" class="flex min-w-0 flex-col gap-4">
+    <div x-show="loading" class="text-sm text-fog">Loading the trace…</div>
+    <div x-show="failed" x-cloak class="banner">
+      <span class="banner-title">Trace unavailable</span>
+      <span x-text="traceError"></span>
+      <div class="grow"></div>
+      <a class="btn btn-sm" :href="hotspotsHref">Back to Hotspots</a>
+    </div>
+
+    <header x-show="ready" x-cloak class="trace-head" aria-label="Request">
+      <div class="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h1 class="trace-url"><span class="req-method" x-text="method"></span> <span :title="fullUrl" x-text="path"></span></h1>
+        <div class="grow"></div>
+        <span class="trace-duration" x-text="duration"></span>
+      </div>
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+        <template x-for="f in facts" :key="f.key">
+          <span class="whitespace-nowrap"><span class="text-fog" x-text="f.label"></span> <span :class="f.cls" x-text="f.value"></span></span>
+        </template>
+        <span x-show="hasProfile" class="marker">profile</span>
+        <span x-show="cached" class="marker">served from FPC</span>
+        <div class="grow"></div>
+        <a class="text-link" :href="overviewHref">See it in the Overview timeline →</a>
+      </div>
+      <div class="cost-strip cost-strip-lg" role="img" :aria-label="stripLabel">
+        <template x-for="s in strip" :key="s.key"><span :class="s.cls" :style="s.style" :title="s.title"></span></template>
+      </div>
+      <ul class="cost-legend">
+        <template x-for="l in legend" :key="l.key">
+          <li :data-zero="l.zero"><span :class="l.swatch" aria-hidden="true"></span><span class="text-soft" x-text="l.label"></span><span class="mono text-chalk" x-text="l.ms"></span><span class="mono text-fog" x-text="l.pct"></span></li>
+        </template>
+      </ul>
+    </header>
+
+    <nav x-show="ready" x-cloak class="trace-tabs" aria-label="Trace views">
+      <template x-for="t in tabs" :key="t.id">
+        <a class="trace-tab" :href="t.href" :aria-current="t.current" x-text="t.label"></a>
+      </template>
+    </nav>
+
+    <div x-show="hasFocus" x-cloak class="focus-strip" role="status">
+      <span class="eyebrow">Focused span</span>
+      <span class="kind-tag" :data-kind="focusInfo.kind" x-text="focusInfo.kindLabel"></span>
+      <span class="mono min-w-0 truncate text-xs text-chalk" x-text="focusInfo.name"></span>
+      <span class="mono min-w-0 flex-1 truncate text-xs text-fog" :title="focusInfo.resource" x-text="focusInfo.resource"></span>
+      <span class="mono shrink-0 text-xs"><span class="text-chalk" x-text="focusInfo.self"></span> <span class="text-fog">self of</span> <span x-text="focusInfo.total"></span></span>
+      <a x-show="showFocusLink" class="text-link shrink-0 text-xs" :href="focusWaterfallHref">Show in waterfall</a>
+      <button type="button" class="btn btn-sm btn-ghost shrink-0" @click="clearFocus()">Clear</button>
+    </div>
+    <p x-show="missingFocus" x-cloak class="m-0 text-xs text-warn">The focused span is not in this trace any more.</p>
+
+    <nav x-show="showJumps" x-cloak class="jump-row" aria-label="Jump to a section">
+      <span class="eyebrow">Jump to</span>
+      <template x-for="j in jumps" :key="j.id">
+        <button type="button" class="jump-btn" @click="jump(j.id)"><span x-text="j.label"></span><span class="jump-count" x-text="j.count"></span></button>
+      </template>
+    </nav>
+
+    <!-- Bottlenecks -->
+    <div x-show="isMode('bottlenecks')" class="flex min-w-0 flex-col gap-6">
+      <div x-show="analysisLoading" class="text-sm text-fog">Reading the analysis…</div>
+      <div x-show="analysisFailed" x-cloak class="banner">
+        <span class="banner-title">Analysis unavailable</span>
+        <span x-text="analysisError"></span>
+      </div>
+
+      <section id="bn-hot" x-show="analysisReady" aria-labelledby="bn-hot-h" class="jump-target flex min-w-0 flex-col gap-2">
+        <div class="section-head">
+          <h2 id="bn-hot-h" class="heading">Hot spans</h2>
+          <span class="section-note">Ranked by self time: what the span did itself, without its children. Same spans under the same parent are grouped.</span>
+        </div>
+        <div x-show="!hasHot" class="empty text-sm">This trace has no spans with self time.</div>
+        <ol class="bn-list">
+          <template x-for="h in hotShown" :key="h.key">
+            <li class="bn-item heat-row" :data-heat="h.heat" :data-focus="h.focused">
+              <span class="rank" :data-heat="h.heat" x-text="h.rank"></span>
+              <div class="bn-main">
+                <div class="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <span class="kind-tag" :data-kind="h.kind" x-text="h.kindLabel"></span>
+                  <span class="mono text-[13px] text-chalk" x-text="h.name"></span>
+                  <span x-show="h.calls" class="mono text-xs text-fog" x-text="h.calls"></span>
+                </div>
+                <p x-show="h.resource" class="bn-resource" :title="h.resource" x-text="h.resource"></p>
+                <p x-show="h.hasPath" class="bn-path" :title="h.fullPath" x-text="h.path"></p>
+              </div>
+              <div class="bn-metrics">
+                <span class="bn-self" x-text="h.self"></span>
+                <div class="bn-share">
+                  <div class="heat-bar"><div class="heat-fill" :data-heat="h.heat" :style="h.shareStyle"></div></div>
+                  <span class="mono w-11 shrink-0 text-right text-xs text-fog" x-text="h.share"></span>
+                </div>
+                <span class="bn-sub"><span class="mono" x-text="h.total"></span> total · <a class="text-link" :href="h.href">Show in waterfall</a></span>
+              </div>
+            </li>
+          </template>
+        </ol>
+        <button type="button" x-show="hotMore" class="link-btn self-start text-xs" @click="toggleHotList()" x-text="hotMoreText"></button>
+      </section>
+
+      <section id="bn-repeats" x-show="analysisReady" aria-labelledby="bn-repeats-h" class="jump-target flex min-w-0 flex-col gap-2">
+        <div class="section-head">
+          <h2 id="bn-repeats-h" class="heading">Repeated calls</h2>
+          <span class="section-note">Statements this request ran 10 times or more with only their values changing (N+1).</span>
+        </div>
+        <div x-show="!hasRepeats" class="empty text-sm">Nothing ran 10 times or more in this request.</div>
+        <ul x-show="hasRepeats" class="flex flex-col gap-2 p-0">
+          <template x-for="r in repeats" :key="r.key">
+            <li class="bn-item heat-row" :data-heat="r.heat" :data-focus="r.focused">
+              <span class="rank rank-count" x-text="r.count"></span>
+              <div class="bn-main">
+                <div class="flex min-w-0 items-baseline gap-2">
+                  <span class="kind-tag" :data-kind="r.kind" x-text="r.kindLabel"></span>
+                  <span class="mono min-w-0 text-xs text-fog" x-text="r.formula"></span>
+                </div>
+                <p class="bn-resource" :title="r.example" x-text="r.text"></p>
+              </div>
+              <div class="bn-metrics">
+                <span class="bn-self" x-text="r.total"></span>
+                <span class="bn-sub"><span class="mono" x-text="r.share"></span> of the request<span x-show="r.href"> · <a class="text-link" :href="r.href">Show in waterfall</a></span></span>
+              </div>
+            </li>
+          </template>
+        </ul>
+      </section>
+
+      <section id="bn-slow" x-show="analysisReady" aria-labelledby="bn-slow-h" class="jump-target flex min-w-0 flex-col gap-2">
+        <div class="section-head">
+          <h2 id="bn-slow-h" class="heading">Slowest single calls</h2>
+          <span class="section-note">The five slowest SQL, cache, search and HTTP calls, one by one.</span>
+        </div>
+        <div x-show="!hasSlowest" class="empty text-sm">This request made no SQL, cache, search or HTTP calls.</div>
+        <div x-show="hasSlowest" class="slow-grid">
+          <template x-for="g in slowest" :key="g.key">
+            <div class="slow-group">
+              <h3 class="slow-title"><span class="kind-tag" :data-kind="g.kind" x-text="g.label"></span></h3>
+              <ul class="m-0 flex flex-col p-0">
+                <template x-for="s in g.items" :key="s.key">
+                  <li class="slow-item" :data-focus="s.focused">
+                    <span class="mono min-w-0 flex-1 truncate text-xs text-soft" :title="s.resource" x-text="s.resource"></span>
+                    <span class="mono shrink-0 text-xs text-chalk" x-text="s.ms"></span>
+                    <a class="text-link shrink-0 text-xs" :href="s.href" :aria-label="s.label">Show</a>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </template>
+        </div>
+      </section>
+    </div>
+
+    <!-- Shared filter toolbar for Waterfall and Spans -->
+    <div x-show="showToolbar" x-cloak class="filter-bar" role="group" aria-label="Filter spans">
+      <label class="filter-field grow">
+        <span class="sr-only-text">Filter by name or resource</span>
+        <input x-ref="filter" type="search" name="span-filter" class="input mono w-full text-xs" placeholder="Filter by name or resource…" spellcheck="false" autocomplete="off" :value="qDraft" @input="onFilter($event)">
+      </label>
+      <label class="filter-field">
+        <span class="sr-only-text">Minimum self time</span>
+        <select name="min-self" class="input text-xs" @change="setMinSelf($event)">
+          <template x-for="o in selfSteps" :key="o.id"><option :value="o.id" :selected="o.selected" x-text="o.label"></option></template>
+        </select>
+      </label>
+      <button type="button" class="chip" :aria-pressed="hotPressed" title="Only the slowest child at each level" @click="toggleHot()">Hot path only</button>
+      <template x-if="isMode('waterfall')">
+        <div class="flex gap-1">
+          <button type="button" class="btn btn-sm btn-ghost" @click="expandAll()">Expand all</button>
+          <button type="button" class="btn btn-sm btn-ghost" @click="collapseAll()">Collapse all</button>
+        </div>
+      </template>
+      <span x-show="hasFilter" class="text-xs text-fog" x-text="matchText"></span>
+      <button type="button" x-show="hasFilter" class="btn btn-sm btn-ghost" @click="clearFilter()">Clear filter</button>
+    </div>
+
+    <!-- Waterfall -->
+    <div x-show="isMode('waterfall')" class="wf-layout" :data-panel="panelOpen">
+      <div class="flex min-w-0 flex-col gap-2">
+        <div class="wf-grid mono text-[11px] text-fog">
+          <span>span</span>
+          <div class="flex justify-between">
+            <template x-for="a in axis" :key="a.key"><span :class="a.cls" x-text="a.text"></span></template>
+          </div>
+          <span class="text-right">total</span>
+        </div>
+        <div x-ref="wf" class="wf-viewport" :style="wfStyle" @scroll="onScroll()" @keydown="wfKey($event)">
+          <div class="relative" :style="spacerStyle()">
+            <div :style="windowStyle()">
+              <template x-for="row in visibleRows" :key="row.key">
+                <div class="wf-grid wf-row mono" :data-selected="row.selected" :title="row.title" @click="pick(row)">
+                  <span class="flex min-w-0 items-center">
+                    <span class="wf-prefix" x-text="row.prefix"></span>
+                    <button type="button" class="wf-caret" :disabled="row.fixed" :aria-label="row.toggleLabel" @click.stop="toggleRow(row)" x-text="row.caret"></button>
+                    <button type="button" class="wf-name min-w-0 truncate" :data-row="row.index" :aria-pressed="row.selected" @click.stop="pick(row)"><span :class="row.nameCls" x-text="row.name"></span> <span class="text-fog" x-text="row.detail"></span></button>
+                  </span>
+                  <div class="relative h-3">
+                    <div :class="row.barCls" :style="row.bar"></div>
+                  </div>
+                  <span class="text-right text-fog" x-text="row.ms"></span>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+        <p x-show="noRows" class="m-0 text-xs text-fog">No span matches the filter.</p>
+        <p class="m-0 flex flex-wrap items-center gap-1.5 text-xs text-fog">
+          <span>Click a span for its details; ↑ and ↓ move between spans.</span>
+          <button type="button" x-show="hiddenCount" class="link-btn" @click="toggleHidden()" x-text="hiddenLink"></button>
+        </p>
+      </div>
+
+      <aside x-show="hasPanel" x-cloak class="span-panel" aria-label="Span details">
+        <div class="flex items-start gap-2">
+          <div class="flex min-w-0 flex-1 flex-col gap-1">
+            <span class="kind-tag self-start" :data-kind="panel.kind" x-text="panel.kindLabel"></span>
+            <span class="mono break-all text-[13px] text-chalk" x-text="panel.title"></span>
+          </div>
+          <button type="button" class="btn btn-sm btn-ghost" aria-label="Close span details" @click="clearFocus()">
+            <svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg>
+          </button>
+        </div>
+        <div class="flex flex-col gap-1">
+          <div class="self-track"><div class="self-fill" :style="panel.selfStyle"></div></div>
+          <span class="mono text-xs text-soft" x-text="panel.selfText"></span>
+        </div>
+        <div x-show="panel.code" class="flex flex-col gap-1.5">
+          <pre class="code m-0 max-h-56 whitespace-pre-wrap break-all" x-text="panel.code"></pre>
+          <div class="flex gap-1.5">
+            <button type="button" x-show="panel.isSql" class="btn btn-sm" @click="copySql()">Copy SQL</button>
+            <button type="button" x-show="!panel.isSql" class="btn btn-sm" @click="copyResource()">Copy</button>
+          </div>
+        </div>
+        <dl class="panel-facts">
+          <template x-for="f in panel.facts" :key="f.k">
+            <div class="contents"><dt x-text="f.k"></dt><dd class="mono" x-text="f.v"></dd></div>
+          </template>
+        </dl>
+        <div x-show="hasGroups" class="flex flex-col gap-1">
+          <h3 class="eyebrow m-0">Children by type</h3>
+          <template x-for="g in panel.groups" :key="g.key">
+            <div class="flex items-baseline gap-2 text-xs">
+              <span class="kind-tag" :data-kind="g.kind" x-text="g.label"></span>
+              <span class="mono text-fog" x-text="g.count"></span>
+              <span class="grow"></span>
+              <span class="mono text-soft" x-text="g.total"></span>
+            </div>
+          </template>
+        </div>
+        <div class="flex flex-col gap-1">
+          <h3 class="eyebrow m-0">Attributes</h3>
+          <dl class="panel-attrs">
+            <template x-for="a in panel.attrs" :key="a.key">
+              <div class="contents"><dt class="mono" x-text="a.k"></dt><dd class="mono" x-text="a.v"></dd></div>
+            </template>
+          </dl>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Flame graph -->
+    <div x-show="isMode('flame')" class="flex min-w-0 flex-col gap-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex gap-1" role="group" aria-label="Flame graph source">
+          <template x-for="b in flameSources" :key="b.id">
+            <button type="button" class="chip" :aria-pressed="b.pressed" :disabled="b.disabled" @click="setFlameSource(b)" x-text="b.label"></button>
+          </template>
+        </div>
+        <div class="grow"></div>
+        <button type="button" x-show="flameZoomed" class="btn btn-sm" @click="resetZoom()">Reset zoom</button>
+      </div>
+      <p class="m-0 text-xs text-fog"><span x-text="flameNote"></span> <span class="flame-key"><span class="flame-swatch flame-swatch-hot" aria-hidden="true"></span>5% or more of the request in its own code</span> <span class="flame-key"><span class="flame-swatch flame-swatch-warm" aria-hidden="true"></span>2% or more</span></p>
+      <p class="mono m-0 min-h-[1.45em] truncate text-xs text-soft" :title="flameHint" x-text="flameHint"></p>
+      <div x-show="flameLoading" class="py-6 text-center text-sm text-fog">Loading the profile…</div>
+      <div x-ref="flameBox" x-show="flameReady" class="max-h-[62vh] min-w-0 overflow-x-hidden overflow-y-auto rounded-lg border border-seam-soft bg-well">
+        <svg x-ref="flame" class="block" role="group" aria-label="Flame graph: Tab to a frame, arrow keys move, Enter zooms"></svg>
+      </div>
+    </div>
+
+    <!-- By type -->
+    <div x-show="isMode('types')" class="flex min-w-0 flex-col gap-6">
+      <section aria-labelledby="ty-cat" class="flex flex-col gap-2">
+        <div class="section-head">
+          <h2 id="ty-cat" class="heading">Where the time went</h2>
+          <span class="section-note">The cost strip's categories. PHP is the request's time minus SQL, cache, search and HTTP.</span>
+        </div>
+        <div class="table-wrap">
+          <table class="table trace-table">
+            <thead><tr><th>Category</th><th class="w-2/5">Share of the request</th><th class="num">Time</th><th class="num">Calls</th></tr></thead>
+            <tbody>
+              <template x-for="c in categories" :key="c.key">
+                <tr>
+                  <td><span class="flex items-center gap-2"><span :class="c.swatch" aria-hidden="true"></span><span x-text="c.label"></span></span></td>
+                  <td class="align-middle">
+                    <div class="flex items-center gap-2">
+                      <div class="share-track"><div class="share-fill" :class="c.bar" :style="c.style"></div></div>
+                      <span class="mono w-12 shrink-0 text-right text-xs text-fog" x-text="c.share"></span>
+                    </div>
+                  </td>
+                  <td class="num mono" x-text="c.ms"></td>
+                  <td class="num mono text-fog" x-text="c.count"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section aria-labelledby="ty-kind" class="flex flex-col gap-2">
+        <div class="section-head">
+          <h2 id="ty-kind" class="heading">Self time by span type</h2>
+          <span class="section-note">Blocks, templates, plugins and observers split out of PHP.</span>
+        </div>
+        <div class="table-wrap">
+          <table class="table trace-table">
+            <thead><tr><th>Type</th><th class="w-2/5">Share of the request</th><th class="num">Self time</th><th class="num">Spans</th></tr></thead>
+            <tbody>
+              <template x-for="k in kinds" :key="k.key">
+                <tr>
+                  <td><span class="kind-tag" :data-kind="k.kind" x-text="k.label"></span></td>
+                  <td class="align-middle">
+                    <div class="flex items-center gap-2">
+                      <div class="share-track"><div class="share-fill bg-neutral-bar" :style="k.style"></div></div>
+                      <span class="mono w-12 shrink-0 text-right text-xs text-fog" x-text="k.share"></span>
+                    </div>
+                  </td>
+                  <td class="num mono" x-text="k.self"></td>
+                  <td class="num mono text-fog" x-text="k.count"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- Spans -->
+    <div x-show="isMode('spans')" class="flex min-w-0 flex-col gap-2">
+      <p class="m-0 text-xs text-fog" x-text="spanNote"></p>
+      <div class="table-wrap">
+        <table class="table trace-table">
+          <thead>
+            <tr>
+              <template x-for="h in spanHeaders" :key="h.id">
+                <th :class="h.cls" :aria-sort="h.ariaSort"><a class="sort-link" :href="h.href"><span x-text="h.label"></span><span class="sort-arrow" x-text="h.arrow"></span></a></th>
+              </template>
+              <th class="num"><span class="sr-only-text">Open</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="r in spanRows" :key="r.key">
+              <tr class="click-row heat-row" :data-heat="r.heat" :data-focus="r.focused" :aria-selected="r.focused" @click="pickSpan(r, $event)">
+                <td class="min-w-0 max-w-0 w-1/2">
+                  <span class="mono block truncate text-xs text-chalk" x-text="r.name"></span>
+                  <span class="mono block truncate text-[11px] text-fog" :title="r.resource" x-text="r.resource"></span>
+                </td>
+                <td class="num mono text-chalk" x-text="r.self"></td>
+                <td class="num mono" x-text="r.total"></td>
+                <td class="hidden sm:table-cell"><span class="kind-tag" :data-kind="r.kind" x-text="r.kindLabel"></span></td>
+                <td class="num mono hidden text-fog sm:table-cell" x-text="r.depth"></td>
+                <td class="num"><a class="text-link text-xs whitespace-nowrap" :href="r.href">Waterfall</a></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</template>

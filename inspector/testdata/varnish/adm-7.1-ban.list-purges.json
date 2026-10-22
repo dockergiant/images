@@ -1,0 +1,15 @@
+[ 2, ["ban.list", "-j"], 1792528552.345,
+  {
+    "time": 1792528131.625074,
+    "refs": 1,
+    "completed": false,
+    "spec": "req.url ~ \\.html$"
+},
+  {
+    "time": 1792528101.093004,
+    "refs": 2,
+    "completed": true,
+    "spec": ""
+}
+]
+

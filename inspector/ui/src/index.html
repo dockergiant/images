@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark">
+<title>Roll Inspector</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/ibm-plex-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/jetbrains-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="app.css">
+<script defer src="lib/format.js"></script>
+<script defer src="lib/charts.js"></script>
+<script defer src="lib/route.js"></script>
+<script defer src="lib/rail.js"></script>
+<script defer src="lib/api.js"></script>
+<script defer src="lib/waterfall.js"></script>
+<script defer src="lib/flame.js"></script>
+<script defer src="app.js"></script>
+<script defer src="components/drawer.js"></script>
+<script defer src="components/confirm.js"></script>
+<script defer src="components/palette.js"></script>
+<script defer src="components/overview.js"></script>
+<script defer src="components/varnish.js"></script>
+<script defer src="components/redis.js"></script>
+<script defer src="components/search.js"></script>
+<script defer src="components/rabbitmq.js"></script>
+<script defer src="components/traces.js"></script>
+<script defer src="components/dashboards.js"></script>
+<script defer src="components/connect.js"></script>
+<script defer src="components/performance.js"></script>
+<script defer src="vendor/alpine-csp.min.js"></script>
+</head>
+<body>
+<svg class="sr-only-text" aria-hidden="true" focusable="false">
+  <symbol id="i-overview" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-traces" viewBox="0 0 24 24"><path d="M4 5h8M7 10h12M10 15h5M6 20h4"/></symbol>
+  <symbol id="i-varnish" viewBox="0 0 24 24"><path d="M12 3.5 3.5 8 12 12.5 20.5 8z"/><path d="m3.5 12.5 8.5 4.5 8.5-4.5"/><path d="m3.5 16.5 8.5 4.5 8.5-4.5"/></symbol>
+  <symbol id="i-redis" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.5" ry="2.8"/><path d="M4.5 6v6c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V6"/><path d="M4.5 12v6c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/></symbol>
+  <symbol id="i-rabbitmq" viewBox="0 0 24 24"><rect x="3.5" y="6.5" width="17" height="11" rx="2"/><path d="M8 10v4M12 10v4M16 10v4"/></symbol>
+  <symbol id="i-api" viewBox="0 0 24 24"><path d="m8 7.5-4.5 4.5L8 16.5M16 7.5l4.5 4.5-4.5 4.5M13.5 5l-3 14"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4.2 17.5a8.5 8.5 0 1 1 15.6 0"/><path d="m12 13.5 4-4.5"/><circle cx="12" cy="14" r="1.2"/></symbol>
+  <symbol id="i-live" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.8"/><path d="M8.6 8.6a4.8 4.8 0 0 0 0 6.8M15.4 8.6a4.8 4.8 0 0 1 0 6.8M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+  <symbol id="i-enter" viewBox="0 0 24 24"><path d="M19 5v6a3 3 0 0 1-3 3H6"/><path d="m9.5 10-4 4 4 4"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6z"/></symbol>
+  <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 18h7.5a3 3 0 0 0 0-6h-7a3 3 0 0 1 0-6H16"/></symbol>
+  <symbol id="i-request" viewBox="0 0 24 24"><path d="M4.5 12h15M13.5 6l6 6-6 6"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15.5" r="4"/><path d="m11 12.5 8-8M15.5 8l2.5 2.5"/></symbol>
+  <symbol id="i-index" viewBox="0 0 24 24"><path d="M6 3.5h8.5l3.5 3.5v13.5H6z"/><path d="M9.5 11h5M9.5 15h5"/></symbol>
+  <symbol id="i-page" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9h17"/></symbol>
+</svg>
+
+<div x-data="shell" class="shell" @keydown.window="onKey($event)">
+  <a class="skip-link" href="#content" :inert="modalOpen">Skip to content</a>
+
+  <aside id="rail" x-ref="rail" class="rail" :data-open="sheetState" :inert="modalOpen" aria-label="Inspector navigation">
+    <div class="rail-head">
+      <a href="#/overview" class="wordmark" title="Roll Inspector">
+        <svg class="wordmark-mark" viewBox="0 0 22 22" aria-hidden="true"><rect class="wordmark-plate" x="0.5" y="0.5" width="21" height="21" rx="5"/><rect class="fill-cat-sql" x="4" y="9" width="6" height="4" rx="1"/><rect class="fill-cat-cache" x="11" y="9" width="3" height="4" rx="1"/><rect class="fill-cat-php" x="15" y="9" width="3" height="4" rx="1"/></svg>
+        <span class="wordmark-text"><span class="wordmark-roll">Roll</span> Inspector</span>
+      </a>
+      <span class="rail-head-alert" x-show="hasAlert" x-cloak :title="capturing"></span>
+      <div class="rail-env" x-show="ready" x-cloak>
+        <span class="rail-env-name" :title="envName" x-text="envName"></span>
+        <span class="rail-env-meta" x-show="envMeta" x-text="envMeta"></span>
+      </div>
+      <div class="rail-badges" x-show="hasAlert" x-cloak>
+        <span class="badge" x-show="lan" :title="lanReason">LAN · read-only</span>
+        <span class="badge" x-show="capturing" :title="capturing" x-text="capturing"></span>
+      </div>
+    </div>
+
+    <nav aria-label="Services" class="rail-section">
+      <ul class="rail-list">
+        <template x-for="s in services" :key="s.id">
+          <li :class="s.cls">
+            <a class="rail-link" :href="s.href" :aria-current="s.current" :data-absent="s.absent" :title="s.title">
+              <svg class="icon" aria-hidden="true"><use :href="s.icon"></use></svg>
+              <span class="rail-text" x-text="s.label"></span>
+              <span x-show="s.toneLabel" class="dot" :data-tone="s.tone" role="img" :aria-label="s.toneLabel"></span>
+            </a>
+            <ul x-show="s.hasSections" class="rail-sub" :aria-label="s.label">
+              <template x-for="sec in s.sections" :key="sec.id">
+                <li><a class="rail-sublink" :href="sec.href" :aria-current="sec.current" :data-mono="sec.mono" x-text="sec.label"></a></li>
+              </template>
+            </ul>
+          </li>
+        </template>
+      </ul>
+    </nav>
+
+    <section class="rail-section" aria-labelledby="live-label" x-show="ready" x-cloak>
+      <div class="rail-label">
+        <h2 id="live-label" class="eyebrow m-0">Live</h2>
+        <svg class="icon rail-label-icon" aria-hidden="true"><use href="#i-live"></use></svg>
+        <span class="live-count" :data-on="liveOn" x-text="liveCountText"></span>
+      </div>
+      <ul class="rail-list">
+        <template x-for="row in liveRows" :key="row.sub">
+          <li :class="row.cls">
+            <button type="button" class="live-row" role="switch" :aria-checked="row.on" :aria-label="row.label" :disabled="row.disabled" :title="row.title" @click="toggleLive(row)">
+              <span class="live-dot" aria-hidden="true"></span>
+              <span class="rail-text" x-text="row.short"></span>
+              <span x-show="row.optIn" class="live-optin">capture</span>
+            </button>
+          </li>
+        </template>
+      </ul>
+    </section>
+
+    <div class="rail-foot">
+      <nav aria-label="More">
+      <ul class="rail-list p-0">
+        <li class="kind-none">
+          <a class="rail-link" :href="perfHref" :aria-current="perfCurrent" title="Performance">
+            <svg class="icon" aria-hidden="true"><use href="#i-gauge"></use></svg>
+            <span class="rail-text">Performance</span>
+          </a>
+        </li>
+        <li class="kind-none">
+          <a class="rail-link" :href="connectHref" :aria-current="connectCurrent" title="API &amp; extensions">
+            <svg class="icon" aria-hidden="true"><use href="#i-api"></use></svg>
+            <span class="rail-text">API &amp; extensions</span>
+          </a>
+        </li>
+      </ul>
+      </nav>
+      <span class="rail-version" x-text="versionLine"></span>
+    </div>
+  </aside>
+  <div class="rail-scrim" x-show="sheetOpen" x-cloak @click="closeSheet()"></div>
+
+  <div class="workspace" :inert="workspaceInert">
+    <header class="topbar" :class="kindCls">
+      <button type="button" x-ref="menu" class="topbar-btn topbar-icon menu-btn" aria-controls="rail" :aria-expanded="sheetState" aria-label="Menu" @click="toggleSheet()">
+        <svg class="icon" aria-hidden="true"><use href="#i-menu"></use></svg>
+      </button>
+      <nav aria-label="Breadcrumb" class="min-w-0 flex-1">
+        <ol class="crumbs">
+          <template x-for="c in crumbs" :key="c.key">
+            <li class="crumb" :data-mono="c.mono"><a :href="c.href" :aria-current="c.current" :title="c.label" x-text="c.label"></a></li>
+          </template>
+        </ol>
+      </nav>
+      <nav x-show="hasCurrentSections" x-cloak class="topbar-sections" aria-label="Sections">
+        <template x-for="sec in currentSections" :key="sec.id">
+          <a class="topbar-section" :href="sec.href" :aria-current="sec.current" x-text="sec.label"></a>
+        </template>
+      </nav>
+      <a x-show="hasPerfPill" x-cloak class="perf-pill" :href="perfHref" :data-on="perfPillOn" :data-busy="perfPillBusy" title="Performance: what tracing costs, and the switches">
+        <span class="perf-pill-dot" aria-hidden="true"></span>
+        <span class="perf-pill-label" x-text="perfPillLabel"></span>
+      </a>
+      <button type="button" x-show="hasRaw" x-cloak class="switch" role="switch" :aria-checked="raw" @click="toggleRaw()">
+        <span class="switch-track" aria-hidden="true"></span>
+        <span class="switch-label" x-text="rawLabel"></span>
+        <span class="switch-short" aria-hidden="true">Raw</span>
+      </button>
+      <button type="button" class="topbar-btn live-btn" :aria-expanded="drawerOpen" aria-controls="drawer" :title="liveBtnLabel" @click="toggleDrawer()">
+        <svg class="icon live-btn-icon" aria-hidden="true"><use href="#i-live"></use></svg>
+        <span class="live-btn-dot" :data-on="liveOn" aria-hidden="true"></span>
+        <span class="live-btn-label">Live</span>
+        <span class="sr-only-text" x-text="liveCountText"></span>
+      </button>
+      <button type="button" class="topbar-btn find-btn" aria-haspopup="dialog" @click="openPalette()">
+        <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+        <span class="find-label">Find</span>
+        <span class="kbd" x-text="findKey"></span>
+      </button>
+    </header>
+
+    <main id="content" class="content" tabindex="-1">
+      <div x-show="updated" x-cloak class="update-bar" role="status">
+        <span>Inspector was updated. Reload to get the new screens.</span>
+        <button type="button" class="btn btn-sm" @click="reload()">Reload</button>
+      </div>
+      <div x-show="loading" class="px-6 py-10 text-fog">Connecting to Inspector…</div>
+      <div x-show="fatal" x-cloak class="px-4 py-6 sm:px-6">
+        <div class="banner">
+          <span class="banner-title">Inspector cannot load its session</span>
+          <span x-text="fatal"></span>
+          <div class="grow"></div>
+          <button type="button" class="btn btn-sm" @click="retry()">Retry</button>
+        </div>
+      </div>
+
+      <template x-if="showView('overview')">
+        <div x-data="overview" class="kind-none flex flex-col gap-5 px-4 pt-5 pb-8 sm:px-6">
+          <!-- view:overview -->
+        </div>
+      </template>
+
+      <template x-if="showView('varnish')">
+        <div x-data="varnish" class="kind-varnish flex flex-col gap-4 px-4 pt-5 pb-8 sm:px-6">
+          <!-- view:varnish -->
+        </div>
+      </template>
+      <template x-if="isAbsent('varnish')">
+        <div class="px-4 py-6 sm:px-6"><div class="empty flex flex-col gap-2"><p class="heading text-chalk" x-text="absentTitle('varnish')"></p><p class="m-0" x-text="absentText('varnish')"></p></div></div>
+      </template>
+
+      <template x-if="showView('redis')">
+        <div x-data="redis" class="kind-redis flex flex-col gap-4 px-4 pt-5 pb-8 sm:px-6">
+          <!-- view:redis -->
+        </div>
+      </template>
+      <template x-if="isAbsent('redis')">
+        <div class="px-4 py-6 sm:px-6"><div class="empty flex flex-col gap-2"><p class="heading text-chalk" x-text="absentTitle('redis')"></p><p class="m-0" x-text="absentText('redis')"></p></div></div>
+      </template>
+
+      <template x-if="showView('search')">
+        <div x-data="search" class="kind-search flex flex-col gap-4 px-4 pt-5 pb-8 sm:px-6">
+          <!-- view:search -->
+        </div>
+      </template>
+      <template x-if="isAbsent('search')">
+        <div class="px-4 py-6 sm:px-6"><div class="empty flex flex-col gap-2"><p class="heading text-chalk" x-text="absentTitle('search')"></p><p class="m-0" x-text="absentText('search')"></p></div></div>
+      </template>
+
+      <template x-if="showView('rabbitmq')">
+        <div x-data="rabbitmq" class="kind-rabbitmq flex flex-col gap-4 px-4 pt-5 pb-8 sm:px-6">
+          <!-- view:rabbitmq -->
+        </div>
+      </template>
+      <template x-if="isAbsent('rabbitmq')">
+        <div class="px-4 py-6 sm:px-6"><div class="empty flex flex-col gap-2"><p class="heading text-chalk" x-text="absentTitle('rabbitmq')"></p><p class="m-0" x-text="absentText('rabbitmq')"></p></div></div>
+      </template>
+
+      <template x-if="showView('traces')">
+        <div x-data="traces" class="kind-php flex flex-col gap-4 px-4 pt-5 pb-8 sm:px-6">
+          <!-- view:traces -->
+        </div>
+      </template>
+
+      <template x-if="showView('connect')">
+        <div x-data="connect" class="kind-none flex flex-col gap-5 px-4 pt-5 pb-8 sm:px-6">
+          <!-- view:connect -->
+        </div>
+      </template>
+      <template x-if="showView('performance')">
+        <div x-data="performance" class="kind-php flex flex-col gap-5 px-4 pt-5 pb-8 sm:px-6">
+          <!-- view:performance -->
+        </div>
+      </template>
+    </main>
+
+    <section id="drawer" x-data="drawer" x-show="open" x-cloak aria-labelledby="drawer-title" class="drawer">
+      <div class="drawer-bar">
+        <h2 id="drawer-title" class="drawer-title m-0">Live</h2>
+        <template x-for="p in pills" :key="p.sub">
+          <span class="stream-pill" :class="p.cls" :title="p.title">
+            <span class="stream-pill-dot" aria-hidden="true"></span>
+            <span class="truncate" x-text="p.label"></span>
+            <button type="button" class="stream-pill-x" :aria-label="p.removeLabel" @click="stop(p)">✕</button>
+          </span>
+        </template>
+        <span class="max-w-[40ch] truncate text-xs" :class="statusCls" :title="statusText" x-text="statusText"></span>
+        <button type="button" x-show="canRetry" class="btn btn-sm" @click="retry()">Retry</button>
+        <div class="grow"></div>
+        <label x-show="hasPills" class="flex items-center gap-1.5 text-xs text-fog">Filter
+          <input type="search" name="drawer-filter" class="input mono min-h-7 w-40 text-xs" x-model="filter" placeholder="MISS, /checkout, HGET" spellcheck="false">
+        </label>
+        <span x-show="hasPills" class="text-xs text-fog" x-text="countText"></span>
+        <button type="button" x-show="hasPills" class="btn btn-sm btn-ghost" @click="togglePause()" x-text="pauseLabel"></button>
+        <button type="button" x-show="hasPills" class="btn btn-sm btn-ghost" @click="clear()">Clear</button>
+        <button type="button" class="btn btn-sm btn-ghost" aria-label="Close the live drawer (L)" title="Close (L)" @click="close()">
+          <svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg>
+        </button>
+      </div>
+      <div x-show="capturing" class="banner mx-4 mt-2 py-2"><span class="banner-title">Capturing</span><span x-text="capturing"></span></div>
+      <template x-for="n in noticeList" :key="n.sub">
+        <p class="mx-4 mt-2 mb-0 text-xs" :class="n.cls"><span class="mono text-fog" x-text="n.sub"></span> <span x-text="n.text"></span></p>
+      </template>
+      <div x-show="!hasPills" class="flex flex-wrap items-center gap-2 px-4 py-3">
+        <span class="text-xs text-fog">Start a stream:</span>
+        <template x-for="o in offers" :key="o.sub">
+          <button type="button" class="chip" :class="o.cls" :disabled="o.disabled" :title="o.title" @click="start(o)">
+            <span class="size-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true"></span>
+            <span x-text="o.label"></span>
+            <span x-show="o.optIn" class="live-optin">capture</span>
+          </button>
+        </template>
+      </div>
+      <div class="flex min-h-0 flex-1">
+        <div x-ref="viewport" class="relative min-w-0 flex-1 overflow-x-hidden overflow-y-auto" @scroll="onScroll()">
+          <div class="relative" :style="spacerStyle()">
+            <div :style="windowStyle()">
+              <template x-for="row in visibleRows" :key="row.id">
+                <div class="log-row" :data-selected="row.selected" @click="pick(row)">
+                  <span class="size-1.5 shrink-0 rounded-full bg-accent" :class="row.kindCls"></span>
+                  <span class="shrink-0 text-fog" x-text="row.time"></span>
+                  <span class="w-16 shrink-0 truncate" :class="row.toneCls" x-text="row.badge"></span>
+                  <button type="button" class="log-row-text min-w-0 truncate" :aria-pressed="row.selected" @click.stop="pick(row)" x-text="row.text"></button>
+                </div>
+              </template>
+            </div>
+          </div>
+          <div x-show="isEmpty" class="absolute inset-0 flex items-center justify-center px-5 text-center text-xs text-fog" x-text="emptyText"></div>
+        </div>
+        <aside x-show="hasDetail" class="flex w-[min(45%,560px)] min-w-0 flex-col border-l border-seam-soft">
+          <div class="flex items-center gap-2 px-3 py-1.5">
+            <span class="mono min-w-0 flex-1 truncate text-xs text-fog" x-text="detailTitle"></span>
+            <a x-show="traceHref" class="text-link shrink-0 text-xs" :href="traceHref">Open bottlenecks →</a>
+            <button type="button" class="btn btn-sm btn-ghost" aria-label="Close detail" @click="closeDetail()">✕</button>
+          </div>
+          <pre class="code m-0 min-h-0 flex-1 rounded-none border-0 border-t border-seam-soft" x-text="detailText"></pre>
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <div x-data="consent" x-show="visible" x-cloak class="overlay" @click.self="cancel()" @keydown.escape.window="onEscape()">
+    <div role="dialog" aria-modal="true" aria-labelledby="consent-title" aria-describedby="consent-effect" class="dialog dialog-warn">
+      <h2 id="consent-title" class="m-0 text-base font-semibold" x-text="title"></h2>
+      <p id="consent-effect" class="m-0 leading-normal text-soft" x-text="effect"></p>
+      <div x-show="hasCall" class="code break-all whitespace-pre-wrap text-fog" x-text="call"></div>
+      <div class="flex justify-end gap-2.5">
+        <button x-ref="cancel" type="button" class="btn" @click="cancel()">Cancel</button>
+        <button type="button" class="btn btn-accent" :class="kindCls" @click="accept()" x-text="button"></button>
+      </div>
+    </div>
+  </div>
+
+  <div x-data="confirmDialog" x-show="visible" x-cloak class="overlay" @click.self="cancel()" @keydown.escape.window="cancel()">
+    <div role="dialog" aria-modal="true" aria-labelledby="confirm-title" class="dialog border-danger-frame">
+      <h2 id="confirm-title" class="m-0 text-base font-semibold" x-text="title"></h2>
+      <p x-show="effect" class="m-0 leading-normal text-soft" x-text="effect"></p>
+      <div x-show="hasCall" class="code break-all whitespace-pre-wrap text-fog" x-text="call"></div>
+      <p x-show="lanReason" class="m-0 text-sm text-warn" x-text="lanReason"></p>
+      <label x-show="needsTyped" class="field">
+        <span x-text="typedLabel"></span>
+        <input x-ref="typed" type="text" name="confirm-typed" class="input mono min-h-9" x-model="typed" :placeholder="typedPlaceholder" autocomplete="off" spellcheck="false" @keydown.enter="submit()">
+      </label>
+      <p x-show="hasError" class="m-0 text-sm text-error" x-text="error"></p>
+      <div class="flex justify-end gap-2.5">
+        <button x-ref="cancel" type="button" class="btn" @click="cancel()">Cancel</button>
+        <button type="button" class="btn" :class="buttonCls" :disabled="disabled" @click="submit()" x-text="button"></button>
+      </div>
+    </div>
+  </div>
+
+  <div x-data="palette" x-show="open" x-cloak class="overlay overlay-top" @click.self="close()" @keydown.escape.window="onEscape()">
+    <div role="dialog" aria-modal="true" aria-label="Find" class="palette" @mousedown="keepFocus($event)">
+      <div class="palette-input-row">
+        <svg class="icon" aria-hidden="true"><use href="#i-search"></use></svg>
+        <span x-show="hasMode" class="palette-mode" :class="modeCls" x-text="modeLabel"></span>
+        <input x-ref="input" class="palette-input" type="text" name="palette" role="combobox" aria-expanded="true" aria-controls="palette-list" aria-autocomplete="list" :aria-activedescendant="activeId" :placeholder="placeholder" :aria-label="placeholder" autocomplete="off" spellcheck="false" x-model="query" @input="onInput()" @keydown="onKey($event)">
+      </div>
+      <div id="palette-list" class="palette-list" role="listbox" aria-label="Results">
+        <template x-for="g in groups" :key="g.id">
+          <div role="group" :aria-labelledby="g.labelId">
+            <div class="palette-group eyebrow" :id="g.labelId" x-text="g.label"></div>
+            <template x-for="o in g.options" :key="o.id">
+              <div class="palette-option" :class="o.cls" role="option" :id="o.domId" :aria-selected="isActive(o)" @mousemove="hover(o)" @click="pick(o)">
+                <svg class="icon" aria-hidden="true"><use :href="o.icon"></use></svg>
+                <span class="palette-label" :data-mono="o.isMono"><template x-for="seg in o.segments" :key="seg.key"><span :class="seg.cls" x-text="seg.text"></span></template></span>
+                <span x-show="o.hasHint" class="palette-hint" :data-mono="o.hintIsMono" x-text="o.hint"></span>
+                <svg class="icon palette-enter" aria-hidden="true"><use href="#i-enter"></use></svg>
+              </div>
+            </template>
+          </div>
+        </template>
+        <p x-show="showNote" class="palette-note m-0" x-text="noteText"></p>
+      </div>
+      <p class="sr-only-text" role="status" x-text="announce"></p>
+      <div class="palette-foot" aria-hidden="true">
+        <span><span class="kbd">↑</span><span class="kbd">↓</span> move</span>
+        <span><span class="kbd">↵</span> go</span>
+        <span><span class="kbd">esc</span> close</span>
+        <span><span class="kbd">/</span> or <span class="kbd" x-text="findKey"></span> open</span>
+        <span><span class="kbd">L</span> live drawer</span>
+      </div>
+    </div>
+  </div>
+
+  <div x-data="toasts" class="toasts" :data-drawer="lifted" aria-live="polite" @inspector:toast.window="add($event)">
+    <template x-for="t in items" :key="t.id">
+      <button type="button" class="toast" @click="dismiss(t)">
+        <span :class="t.cls" x-text="t.text"></span>
+      </button>
+    </template>
+  </div>
+</div>
+</body>
+</html>

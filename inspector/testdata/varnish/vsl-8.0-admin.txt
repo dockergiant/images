@@ -1,0 +1,306 @@
+*              << Request  >>   7         
+-            7 Begin          c req 4 rxreq
+-            7 Timestamp      c Start: 1792526556.494798 0.000000 0.000000
+-            7 Timestamp      c Req: 1792526556.494798 0.000000 0.000000
+-            7 VCL_use        c boot
+-            7 ReqStart       c 192.168.156.2 60802 a0
+-            7 ReqMethod      c GET
+-            7 ReqURL         c /backend/admin/dashboard/index/key/REDACTED/
+-            7 ReqProtocol    c HTTP/1.1
+-            7 ReqHeader      c Host: app.shop.test
+-            7 ReqHeader      c User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+-            7 ReqHeader      c Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+-            7 ReqHeader      c Accept-Encoding: gzip, deflate, br, zstd
+-            7 ReqHeader      c Accept-Language: en-US
+-            7 ReqHeader      c Cache-Control: no-cache
+-            7 ReqHeader      c Cookie: REDACTED
+-            7 ReqHeader      c Pragma: no-cache
+-            7 ReqHeader      c Priority: u=0, i
+-            7 ReqHeader      c Sec-Ch-Ua: "HeadlessChrome";v="153", "Not_A Brand";v="8", "Chromium";v="153"
+-            7 ReqHeader      c Sec-Ch-Ua-Mobile: ?0
+-            7 ReqHeader      c Sec-Ch-Ua-Platform: "macOS"
+-            7 ReqHeader      c Sec-Fetch-Dest: document
+-            7 ReqHeader      c Sec-Fetch-Mode: navigate
+-            7 ReqHeader      c Sec-Fetch-Site: none
+-            7 ReqHeader      c Sec-Fetch-User: ?1
+-            7 ReqHeader      c Upgrade-Insecure-Requests: 1
+-            7 ReqHeader      c X-Forwarded-For: 192.168.148.1
+-            7 ReqHeader      c X-Forwarded-Host: app.shop.test
+-            7 ReqHeader      c X-Forwarded-Port: 443
+-            7 ReqHeader      c X-Forwarded-Proto: https
+-            7 ReqHeader      c X-Forwarded-Server: 853d8aa62131
+-            7 ReqHeader      c X-Real-Ip: 192.168.148.1
+-            7 ReqUnset       c X-Forwarded-For: 192.168.148.1
+-            7 ReqHeader      c X-Forwarded-For: 192.168.148.1, 192.168.156.2
+-            7 ReqHeader      c Via: 1.1 shop-varnish (Varnish/8.0)
+-            7 VCL_call       c RECV
+-            7 ReqURL         c /backend/admin/dashboard/index/key/REDACTED/
+-            7 ReqUnset       c Accept-Encoding: gzip, deflate, br, zstd
+-            7 ReqHeader      c Accept-Encoding: gzip
+-            7 VCL_return     c hash
+-            7 VCL_call       c HASH
+-            7 VCL_return     c lookup
+-            7 VCL_call       c MISS
+-            7 VCL_return     c fetch
+-            7 Link           c bereq 8 fetch
+-            7 Timestamp      c Fetch: 1792526585.453978 28.959180 28.959180
+-            7 RespProtocol   c HTTP/1.1
+-            7 RespStatus     c 200
+-            7 RespReason     c OK
+-            7 RespHeader     c Server: nginx/1.30.5
+-            7 RespHeader     c Date: Tue, 20 Oct 2026 20:03:05 GMT
+-            7 RespHeader     c Content-Type: text/html; charset=UTF-8
+-            7 RespHeader     c Vary: Accept-Encoding
+-            7 RespHeader     c X-Powered-By: PHP/8.5.0
+-            7 RespHeader     c Set-Cookie: REDACTED
+-            7 RespHeader     c Set-Cookie: REDACTED
+-            7 RespHeader     c Pragma: no-cache
+-            7 RespHeader     c Cache-Control: max-age=0, must-revalidate, no-cache, no-store
+-            7 RespHeader     c Expires: Mon, 20 Oct 2025 20:02:39 GMT
+-            7 RespHeader     c Report-To: {"group":"report-endpoint","max_age":10886400,"endpoints":[{"url":"http:\/\/localhost\/paynl\/csp\/report"}]}
+-            7 RespHeader     c Content-Security-Policy-Report-Only: font-src www.paypalobjects.com fonts.gstatic.com https://fonts.gstatic.com data: 'self' 'unsafe-inline'; form-action geostag.cardinalcommerce.com geo.cardinalcommerce.com 1eafstag.cardinalcommerce.com 1eaf.cardinalcom
+-            7 RespHeader     c X-Content-Type-Options: nosniff
+-            7 RespHeader     c X-Dist: Mage-OS
+-            7 RespHeader     c X-XSS-Protection: 1; mode=block
+-            7 RespHeader     c X-Frame-Options: SAMEORIGIN
+-            7 RespHeader     c Content-Encoding: gzip
+-            7 RespHeader     c X-Varnish: 7
+-            7 RespHeader     c Age: 0
+-            7 RespHeader     c Via: 1.1 shop-varnish (Varnish/8.0)
+-            7 RespHeader     c Accept-Ranges: bytes
+-            7 VCL_call       c DELIVER
+-            7 RespHeader     c X-Cache: MISS
+-            7 RespHeader     c X-Cache-Hits: 0
+-            7 RespUnset      c Pragma: no-cache
+-            7 RespHeader     c Pragma: no-cache
+-            7 RespUnset      c Expires: Mon, 20 Oct 2025 20:02:39 GMT
+-            7 RespHeader     c Expires: -1
+-            7 RespUnset      c Cache-Control: max-age=0, must-revalidate, no-cache, no-store
+-            7 RespHeader     c Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+-            7 VCL_return     c deliver
+-            7 Timestamp      c Process: 1792526585.524206 29.029408 0.070227
+-            7 Filters        c 
+-            7 RespHeader     c Content-Length: 19421
+-            7 RespHeader     c Connection: keep-alive
+-            7 Timestamp      c Resp: 1792526585.585914 29.091115 0.061707
+-            7 ReqAcct        c 1277 0 1277 4440 19421 23861
+-            7 End            c 
+**             << BeReq    >>   8         
+--           8 Begin          b bereq 7 fetch
+--           8 VCL_use        b boot
+--           8 Timestamp      b Start: 1792526556.495530 0.000000 0.000000
+--           8 BereqMethod    b GET
+--           8 BereqURL       b /backend/admin/dashboard/index/key/REDACTED/
+--           8 BereqProtocol  b HTTP/1.1
+--           8 BereqHeader    b Host: app.shop.test
+--           8 BereqHeader    b User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+--           8 BereqHeader    b Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+--           8 BereqHeader    b Accept-Language: en-US
+--           8 BereqHeader    b Cookie: REDACTED
+--           8 BereqHeader    b Pragma: no-cache
+--           8 BereqHeader    b Priority: u=0, i
+--           8 BereqHeader    b Sec-Ch-Ua: "HeadlessChrome";v="153", "Not_A Brand";v="8", "Chromium";v="153"
+--           8 BereqHeader    b Sec-Ch-Ua-Mobile: ?0
+--           8 BereqHeader    b Sec-Ch-Ua-Platform: "macOS"
+--           8 BereqHeader    b Sec-Fetch-Dest: document
+--           8 BereqHeader    b Sec-Fetch-Mode: navigate
+--           8 BereqHeader    b Sec-Fetch-Site: none
+--           8 BereqHeader    b Sec-Fetch-User: ?1
+--           8 BereqHeader    b Upgrade-Insecure-Requests: 1
+--           8 BereqHeader    b X-Forwarded-Host: app.shop.test
+--           8 BereqHeader    b X-Forwarded-Port: 443
+--           8 BereqHeader    b X-Forwarded-Proto: https
+--           8 BereqHeader    b X-Forwarded-Server: 853d8aa62131
+--           8 BereqHeader    b X-Real-Ip: 192.168.148.1
+--           8 BereqHeader    b X-Forwarded-For: 192.168.148.1, 192.168.156.2
+--           8 BereqHeader    b Via: 1.1 shop-varnish (Varnish/8.0)
+--           8 BereqHeader    b Accept-Encoding: gzip
+--           8 BereqHeader    b X-Varnish: 8
+--           8 VCL_call       b BACKEND_FETCH
+--           8 VCL_return     b fetch
+--           8 Timestamp      b Fetch: 1792526556.495556 0.000026 0.000026
+--           8 Timestamp      b Connected: 1792526556.497612 0.002082 0.002055
+--           8 BackendOpen    b 24 default 192.168.156.11 80 192.168.156.13 42064 reuse
+--           8 Timestamp      b Bereq: 1792526556.498775 0.003245 0.001163
+--           8 BerespProtocol b HTTP/1.1
+--           8 BerespStatus   b 200
+--           8 BerespReason   b OK
+--           8 BerespHeader   b Server: nginx/1.30.5
+--           8 BerespHeader   b Date: Tue, 20 Oct 2026 20:03:05 GMT
+--           8 BerespHeader   b Content-Type: text/html; charset=UTF-8
+--           8 BerespHeader   b Transfer-Encoding: chunked
+--           8 BerespHeader   b Connection: keep-alive
+--           8 BerespHeader   b Vary: Accept-Encoding
+--           8 BerespHeader   b X-Powered-By: PHP/8.5.0
+--           8 BerespHeader   b Set-Cookie: REDACTED
+--           8 BerespHeader   b Set-Cookie: REDACTED
+--           8 BerespHeader   b Pragma: no-cache
+--           8 BerespHeader   b Cache-Control: max-age=0, must-revalidate, no-cache, no-store
+--           8 BerespHeader   b Expires: Mon, 20 Oct 2025 20:02:39 GMT
+--           8 BerespHeader   b Report-To: {"group":"report-endpoint","max_age":10886400,"endpoints":[{"url":"http:\/\/localhost\/paynl\/csp\/report"}]}
+--           8 BerespHeader   b Content-Security-Policy-Report-Only: font-src www.paypalobjects.com fonts.gstatic.com https://fonts.gstatic.com data: 'self' 'unsafe-inline'; form-action geostag.cardinalcommerce.com geo.cardinalcommerce.com 1eafstag.cardinalcommerce.com 1eaf.cardinalcom
+--           8 BerespHeader   b X-Content-Type-Options: nosniff
+--           8 BerespHeader   b X-Dist: Mage-OS
+--           8 BerespHeader   b X-XSS-Protection: 1; mode=block
+--           8 BerespHeader   b X-Frame-Options: SAMEORIGIN
+--           8 BerespHeader   b Content-Encoding: gzip
+--           8 Timestamp      b Beresp: 1792526585.375222 28.879691 28.876446
+--           8 TTL            b RFC 0 3600 0 1792526585 1792526585 1792526585 1760990559 0 cacheable
+--           8 VCL_call       b BACKEND_RESPONSE
+--           8 TTL            b VCL 120 3600 0 1792526585 cacheable
+--           8 TTL            b VCL 120 3600 0 1792526585 uncacheable
+--           8 VCL_return     b deliver
+--           8 Timestamp      b Process: 1792526585.382652 28.887121 0.007430
+--           8 Filters        b  gunzip esi_gzip
+--           8 BerespUnset    b Content-Encoding: gzip
+--           8 BerespHeader   b Content-Encoding: gzip
+--           8 Storage        b malloc Transient
+--           8 Fetch_Body     b 2 chunked -
+--           8 Gzip           b G F E 123778 19421 80 155288 155298
+--           8 Gzip           b U F - 19410 123778 80 80 155210
+--           8 BackendClose   b 24 default recycle
+--           8 Timestamp      b BerespBody: 1792526585.450347 28.954816 0.067694
+--           8 Length         b 19421
+--           8 BereqAcct      b 1307 0 1307 4351 19410 23761
+--           8 End            b 
+
+*              << Request  >>   98312     
+-        98312 Begin          c req 98305 rxreq
+-        98312 Timestamp      c Start: 1792526586.976204 0.000000 0.000000
+-        98312 Timestamp      c Req: 1792526586.976204 0.000000 0.000000
+-        98312 VCL_use        c boot
+-        98312 ReqStart       c 192.168.156.2 36090 a0
+-        98312 ReqMethod      c GET
+-        98312 ReqURL         c /static/version1792525861/adminhtml/MageOS/m137-admin-theme/en_US/fonts/inter/regular/inter-400.woff2
+-        98312 ReqProtocol    c HTTP/1.1
+-        98312 ReqHeader      c Host: app.shop.test
+-        98312 ReqHeader      c User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+-        98312 ReqHeader      c Accept: */*
+-        98312 ReqHeader      c Accept-Encoding: gzip, deflate, br, zstd
+-        98312 ReqHeader      c Accept-Language: en-US
+-        98312 ReqHeader      c Cache-Control: no-cache
+-        98312 ReqHeader      c Origin: https://app.shop.test
+-        98312 ReqHeader      c Pragma: no-cache
+-        98312 ReqHeader      c Priority: u=0
+-        98312 ReqHeader      c Referer: https://app.shop.test/static/version1792525861/adminhtml/MageOS/m137-admin-theme/en_US/css/styles.css
+-        98312 ReqHeader      c Sec-Ch-Ua: "HeadlessChrome";v="153", "Not_A Brand";v="8", "Chromium";v="153"
+-        98312 ReqHeader      c Sec-Ch-Ua-Mobile: ?0
+-        98312 ReqHeader      c Sec-Ch-Ua-Platform: "macOS"
+-        98312 ReqHeader      c Sec-Fetch-Dest: font
+-        98312 ReqHeader      c Sec-Fetch-Mode: cors
+-        98312 ReqHeader      c Sec-Fetch-Site: same-origin
+-        98312 ReqHeader      c X-Forwarded-For: 192.168.148.1
+-        98312 ReqHeader      c X-Forwarded-Host: app.shop.test
+-        98312 ReqHeader      c X-Forwarded-Port: 443
+-        98312 ReqHeader      c X-Forwarded-Proto: https
+-        98312 ReqHeader      c X-Forwarded-Server: 853d8aa62131
+-        98312 ReqHeader      c X-Real-Ip: 192.168.148.1
+-        98312 ReqUnset       c X-Forwarded-For: 192.168.148.1
+-        98312 ReqHeader      c X-Forwarded-For: 192.168.148.1, 192.168.156.2
+-        98312 ReqHeader      c Via: 1.1 shop-varnish (Varnish/8.0)
+-        98312 VCL_call       c RECV
+-        98312 ReqURL         c /static/version1792525861/adminhtml/MageOS/m137-admin-theme/en_US/fonts/inter/regular/inter-400.woff2
+-        98312 ReqUnset       c Accept-Encoding: gzip, deflate, br, zstd
+-        98312 ReqHeader      c Accept-Encoding: gzip
+-        98312 VCL_return     c pass
+-        98312 VCL_call       c HASH
+-        98312 VCL_return     c lookup
+-        98312 VCL_call       c PASS
+-        98312 VCL_return     c fetch
+-        98312 Link           c bereq 98313 pass
+-        98312 Timestamp      c Fetch: 1792526587.037821 0.061616 0.061616
+-        98312 RespProtocol   c HTTP/1.1
+-        98312 RespStatus     c 200
+-        98312 RespReason     c OK
+-        98312 RespHeader     c Server: nginx/1.30.5
+-        98312 RespHeader     c Date: Tue, 20 Oct 2026 20:03:06 GMT
+-        98312 RespHeader     c Content-Type: font/woff2
+-        98312 RespHeader     c Content-Length: 99752
+-        98312 RespHeader     c Last-Modified: Wed, 25 Feb 2026 14:38:13 GMT
+-        98312 RespHeader     c ETag: "699f0955-185a8"
+-        98312 RespHeader     c Expires: Wed, 20 Oct 2027 20:03:06 GMT
+-        98312 RespHeader     c Cache-Control: max-age=31536000, public
+-        98312 RespHeader     c X-Frame-Options: SAMEORIGIN
+-        98312 RespHeader     c Access-Control-Allow-Origin: *
+-        98312 RespHeader     c Accept-Ranges: bytes
+-        98312 RespHeader     c X-Varnish: 98312
+-        98312 RespHeader     c Age: 0
+-        98312 RespHeader     c Via: 1.1 shop-varnish (Varnish/8.0)
+-        98312 VCL_call       c DELIVER
+-        98312 RespHeader     c X-Cache: MISS
+-        98312 RespHeader     c X-Cache-Hits: 0
+-        98312 VCL_return     c deliver
+-        98312 Timestamp      c Process: 1792526587.037835 0.061630 0.000013
+-        98312 Filters        c 
+-        98312 RespHeader     c Connection: keep-alive
+-        98312 Timestamp      c Resp: 1792526587.044009 0.067804 0.006174
+-        98312 ReqAcct        c 970 0 970 488 99752 100240
+-        98312 End            c 
+**             << BeReq    >>   98313     
+--       98313 Begin          b bereq 98312 pass
+--       98313 VCL_use        b boot
+--       98313 Timestamp      b Start: 1792526586.984692 0.000000 0.000000
+--       98313 BereqMethod    b GET
+--       98313 BereqURL       b /static/version1792525861/adminhtml/MageOS/m137-admin-theme/en_US/fonts/inter/regular/inter-400.woff2
+--       98313 BereqProtocol  b HTTP/1.1
+--       98313 BereqHeader    b Host: app.shop.test
+--       98313 BereqHeader    b User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36
+--       98313 BereqHeader    b Accept: */*
+--       98313 BereqHeader    b Accept-Language: en-US
+--       98313 BereqHeader    b Cache-Control: no-cache
+--       98313 BereqHeader    b Origin: https://app.shop.test
+--       98313 BereqHeader    b Pragma: no-cache
+--       98313 BereqHeader    b Priority: u=0
+--       98313 BereqHeader    b Referer: https://app.shop.test/static/version1792525861/adminhtml/MageOS/m137-admin-theme/en_US/css/styles.css
+--       98313 BereqHeader    b Sec-Ch-Ua: "HeadlessChrome";v="153", "Not_A Brand";v="8", "Chromium";v="153"
+--       98313 BereqHeader    b Sec-Ch-Ua-Mobile: ?0
+--       98313 BereqHeader    b Sec-Ch-Ua-Platform: "macOS"
+--       98313 BereqHeader    b Sec-Fetch-Dest: font
+--       98313 BereqHeader    b Sec-Fetch-Mode: cors
+--       98313 BereqHeader    b Sec-Fetch-Site: same-origin
+--       98313 BereqHeader    b X-Forwarded-Host: app.shop.test
+--       98313 BereqHeader    b X-Forwarded-Port: 443
+--       98313 BereqHeader    b X-Forwarded-Proto: https
+--       98313 BereqHeader    b X-Forwarded-Server: 853d8aa62131
+--       98313 BereqHeader    b X-Real-Ip: 192.168.148.1
+--       98313 BereqHeader    b X-Forwarded-For: 192.168.148.1, 192.168.156.2
+--       98313 BereqHeader    b Via: 1.1 shop-varnish (Varnish/8.0)
+--       98313 BereqHeader    b Accept-Encoding: gzip
+--       98313 BereqHeader    b X-Varnish: 98313
+--       98313 VCL_call       b BACKEND_FETCH
+--       98313 VCL_return     b fetch
+--       98313 Timestamp      b Fetch: 1792526586.984715 0.000022 0.000022
+--       98313 Timestamp      b Connected: 1792526586.984719 0.000026 0.000004
+--       98313 BackendOpen    b 48 default 192.168.156.11 80 192.168.156.13 50690 reuse
+--       98313 Timestamp      b Bereq: 1792526586.985290 0.000597 0.000571
+--       98313 BerespProtocol b HTTP/1.1
+--       98313 BerespStatus   b 200
+--       98313 BerespReason   b OK
+--       98313 BerespHeader   b Server: nginx/1.30.5
+--       98313 BerespHeader   b Date: Tue, 20 Oct 2026 20:03:06 GMT
+--       98313 BerespHeader   b Content-Type: font/woff2
+--       98313 BerespHeader   b Content-Length: 99752
+--       98313 BerespHeader   b Last-Modified: Wed, 25 Feb 2026 14:38:13 GMT
+--       98313 BerespHeader   b Connection: keep-alive
+--       98313 BerespHeader   b ETag: "699f0955-185a8"
+--       98313 BerespHeader   b Expires: Wed, 20 Oct 2027 20:03:06 GMT
+--       98313 BerespHeader   b Cache-Control: max-age=31536000
+--       98313 BerespHeader   b Cache-Control: public
+--       98313 BerespHeader   b X-Frame-Options: SAMEORIGIN
+--       98313 BerespHeader   b Access-Control-Allow-Origin: *
+--       98313 BerespHeader   b Accept-Ranges: bytes
+--       98313 Timestamp      b Beresp: 1792526587.037736 0.053043 0.052445
+--       98313 VCL_call       b BACKEND_RESPONSE
+--       98313 TTL            b VCL 120 0 0 1792526587 uncacheable
+--       98313 TTL            b VCL 120 0 0 1792526587 uncacheable
+--       98313 VCL_return     b deliver
+--       98313 Timestamp      b Process: 1792526587.037762 0.053070 0.000026
+--       98313 Filters        b 
+--       98313 Storage        b malloc Transient
+--       98313 Fetch_Body     b 3 length stream
+--       98313 BackendClose   b 48 default recycle
+--       98313 Timestamp      b BerespBody: 1792526587.044020 0.059327 0.006257
+--       98313 Length         b 99752
+--       98313 BereqAcct      b 1029 0 1029 400 99752 100152
+--       98313 End            b 
+

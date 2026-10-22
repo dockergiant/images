@@ -1,0 +1,17 @@
+{
+  "name" : "shop2-opensearch",
+  "cluster_name" : "docker-cluster",
+  "cluster_uuid" : "xd64coJaSCGszFqabeTssg",
+  "version" : {
+    "distribution" : "opensearch",
+    "number" : "2.6.0",
+    "build_type" : "tar",
+    "build_hash" : "7203a5af21a8a009aece1474446b437a3c674db6",
+    "build_date" : "2023-02-24T18:58:37.352296474Z",
+    "build_snapshot" : false,
+    "lucene_version" : "9.5.0",
+    "minimum_wire_compatibility_version" : "7.10.0",
+    "minimum_index_compatibility_version" : "7.0.0"
+  },
+  "tagline" : "The OpenSearch Project: https://opensearch.org/"
+}

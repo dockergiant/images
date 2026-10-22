@@ -1,0 +1,108 @@
+<header class="connect-head">
+  <h1 class="connect-title">API &amp; extensions</h1>
+  <p class="connect-lede">Read Inspector's answers where you look at the shop: a badge on every shop page, a DevTools panel next to Network, or your own script against <span class="mono text-chalk">/api/v1</span>.</p>
+  <p class="connect-note"><svg class="icon" aria-hidden="true"><use href="#i-api"></use></svg><span>The read API is open to every origin, so any website open in this browser can read this shop's traces and cache through <span class="mono text-chalk" x-text="inspectorHost"></span>. Writes stay on this page, behind the confirm dialog.</span></p>
+</header>
+
+<div class="connect-clients">
+  <section class="panel connect-client" aria-labelledby="us-title">
+    <div class="connect-client-head">
+      <h2 id="us-title" class="heading">Userscript badge</h2>
+      <span class="tag">Tampermonkey · Violentmonkey</span>
+    </div>
+    <p class="connect-text">A small badge in the corner of each shop page: the Varnish result, PHP time, SQL calls and N+1 count. Click it for the cost strip and the three hottest spans, each linked to its trace here.</p>
+    <ol class="connect-steps">
+      <li><span>Install Tampermonkey or Violentmonkey in this browser.</span></li>
+      <li><span>Open the userscript below. The manager shows it for <span class="mono text-chalk" x-text="matchText"></span>; click Install.</span></li>
+      <li><span>Reload a shop page. The badge sits bottom right; "Hide on this site" in its popover remembers the choice.</span></li>
+    </ol>
+    <div class="connect-actions">
+      <a class="btn btn-accent" :href="userscriptHref">Install the userscript</a>
+      <span class="mono text-2xs text-fog">roll-inspector.user.js</span>
+    </div>
+  </section>
+
+  <section class="panel connect-client" aria-labelledby="ext-title">
+    <div class="connect-client-head">
+      <h2 id="ext-title" class="heading">DevTools panel</h2>
+      <span class="tag">Chrome · Edge · MV3</span>
+    </div>
+    <p class="connect-text">A "Roll Inspector" tab in DevTools that lists the page's document and XHR/fetch requests. It joins each one through its X-Varnish header and shows the cost strip and bottlenecks.</p>
+    <ol class="connect-steps">
+      <li><span>Download the zip and unzip it.</span></li>
+      <li><span>Open <button type="button" class="connect-inline mono" @click="copyExtensions()" title="Copy chrome://extensions">chrome://extensions</button>, switch on Developer mode, click Load unpacked and pick the <span class="mono text-chalk">roll-inspector</span> folder.</span></li>
+      <li><span>Open DevTools on a shop page, pick the Roll Inspector tab and reload. Shops outside <span class="mono text-chalk">.test</span> need "Allow every site" in its options.</span></li>
+    </ol>
+    <div class="connect-actions">
+      <a class="btn btn-accent" :href="extensionHref" download>Download the extension</a>
+      <span class="mono text-2xs text-fog">roll-inspector.zip</span>
+    </div>
+  </section>
+</div>
+
+<section class="panel connect-probe" aria-labelledby="probe-title">
+  <div class="connect-client-head">
+    <h2 id="probe-title" class="heading">Test from this browser</h2>
+    <button type="button" class="btn btn-sm" :disabled="probing" @click="runProbe()" x-text="probeLabel"></button>
+  </div>
+  <p class="connect-text">Calls <span class="mono text-chalk">/api/v1/</span> and shows the headers a shop page gets back. From this page the call is same-origin; to see CORS itself, paste the line below into the console of a shop tab.</p>
+  <dl x-show="hasProbe" x-cloak class="connect-probe-rows">
+    <template x-for="row in probeRows" :key="row.key">
+      <div class="connect-probe-row">
+        <dt x-text="row.label"></dt>
+        <dd :class="row.ddCls" x-text="row.value"></dd>
+      </div>
+    </template>
+  </dl>
+  <p x-show="hasProbe" x-cloak class="connect-verdict" :class="probeCls" role="status" x-text="probeVerdict"></p>
+  <div class="connect-snippet">
+    <pre class="code connect-code" x-text="consoleCode"></pre>
+    <button type="button" class="btn btn-sm" @click="copyConsole()">Copy</button>
+  </div>
+</section>
+
+<section class="connect-api" aria-labelledby="api-title">
+  <div class="connect-api-head">
+    <h2 id="api-title" class="heading">Endpoints</h2>
+    <span class="text-xs text-fog" x-text="endpointCount"></span>
+    <div class="grow"></div>
+    <a class="btn btn-sm btn-ghost" :href="openapiHref" target="_blank" rel="noopener">OpenAPI 3.1</a>
+  </div>
+  <p x-show="loading" class="text-fog">Reading /api/v1/…</p>
+  <div x-show="failed" x-cloak class="banner"><span class="banner-title">The read API did not answer</span><span x-text="error"></span></div>
+  <div x-show="ready" x-cloak class="connect-api-body">
+    <nav class="panel connect-eps" aria-label="v1 endpoints">
+      <template x-for="g in groups" :key="g.id">
+        <div class="connect-ep-group" role="group" :aria-labelledby="g.labelId">
+          <h3 class="eyebrow connect-ep-label" :id="g.labelId" x-text="g.label"></h3>
+          <ul class="connect-ep-list">
+            <template x-for="ep in g.items" :key="ep.key">
+              <li><a class="connect-ep" :href="ep.href" :aria-current="ep.current" :title="ep.summary"><span class="connect-ep-get">GET</span><span class="mono connect-ep-path" x-text="ep.path"></span></a></li>
+            </template>
+          </ul>
+        </div>
+      </template>
+    </nav>
+    <article x-show="hasSelected" class="panel connect-example" aria-live="polite">
+      <div class="connect-example-head">
+        <span class="connect-ep-get">GET</span>
+        <h3 class="mono connect-example-path" x-text="selectedTitle"></h3>
+      </div>
+      <p class="connect-text" x-text="selectedSummary"></p>
+      <div class="connect-snippet-head">
+        <span class="eyebrow">curl</span>
+        <button type="button" class="btn btn-sm" @click="copyCurl()">Copy</button>
+      </div>
+      <pre class="code connect-code" x-text="curl"></pre>
+      <div class="connect-snippet-head">
+        <span class="eyebrow">fetch</span>
+        <button type="button" class="btn btn-sm" @click="copyFetch()">Copy</button>
+      </div>
+      <pre class="code connect-code" x-text="fetchCode"></pre>
+      <p x-show="needsValueText" class="text-xs text-warn" x-text="needsValueText"></p>
+      <div x-show="canOpen" class="connect-actions">
+        <a class="btn btn-sm btn-ghost" :href="exampleUrl" target="_blank" rel="noopener">Open the response</a>
+      </div>
+    </article>
+  </div>
+</section>

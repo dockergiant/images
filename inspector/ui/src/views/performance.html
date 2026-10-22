@@ -1,0 +1,147 @@
+<header class="perf-head">
+  <h1 class="perf-title">Performance</h1>
+  <p class="perf-lede">What Inspector costs this shop right now, and the switches that turn the costly parts off. The PHP switches reload FPM in the container and last until it restarts.</p>
+</header>
+
+<div x-show="hasFailed" x-cloak class="banner"><span class="banner-title">The performance state did not load</span><span x-text="failed"></span></div>
+
+<div x-show="running" x-cloak class="banner perf-running" role="status">
+  <span class="banner-title">Measuring the overhead</span>
+  <span class="min-w-0 flex-1 basis-60" x-text="progressText"></span>
+  <button type="button" class="btn btn-sm" @click="cancelBench()">Cancel</button>
+  <span class="basis-full text-[13px] text-soft">Tracing switches for every request on php-fpm until it ends: pages loaded during the off arm get no trace, and each switch reloads FPM, which can answer 502 for a moment.</span>
+</div>
+
+<section class="perf-switches" aria-labelledby="perf-switch-title">
+  <h2 id="perf-switch-title" class="heading">Switches</h2>
+  <div class="perf-switch-grid">
+    <template x-for="row in rows" :key="row.key">
+      <section class="panel perf-card" :aria-label="row.title">
+        <div class="perf-card-head">
+          <h3 class="perf-card-title mono" x-text="row.title"></h3>
+          <span class="perf-env" x-text="row.envText"></span>
+        </div>
+        <p x-show="row.reason" class="perf-why m-0" x-text="row.reason"></p>
+
+        <div class="perf-control">
+          <div class="perf-control-text">
+            <span class="perf-control-label">Tracing</span>
+            <span class="perf-control-sub">ddtrace loaded and sending every request here</span>
+          </div>
+          <button type="button" class="switch perf-switch" role="switch" :aria-checked="row.tracing.checked" :disabled="row.tracing.disabled" :title="row.tracing.why" @click="toggleTracing(row)">
+            <span class="switch-track" aria-hidden="true"></span>
+            <span class="sr-only-text">Tracing</span>
+          </button>
+        </div>
+
+        <div class="perf-control">
+          <div class="perf-control-text">
+            <span class="perf-control-label">Trace detail</span>
+            <span class="perf-control-sub">Lean drops the Magento block, event and plugin spans. Its traces group in Hotspots by URL until a full trace of the same page names the controller.</span>
+          </div>
+          <div class="seg" role="group" aria-label="Trace detail" :title="row.detail.why">
+            <template x-for="o in row.detail.options" :key="o.id">
+              <button type="button" class="seg-btn" :aria-pressed="o.pressed" :disabled="o.disabled" @click="setDetail(row, o)" x-text="o.label"></button>
+            </template>
+          </div>
+        </div>
+
+        <div class="perf-control">
+          <div class="perf-control-text">
+            <span class="perf-control-label">Profiling</span>
+            <span class="perf-control-sub">Excimer flame graph for every traced request</span>
+          </div>
+          <button type="button" class="switch perf-switch" role="switch" :aria-checked="row.profiling.checked" :disabled="row.profiling.disabled" :title="row.profiling.why" @click="toggleProfiling(row)">
+            <span class="switch-track" aria-hidden="true"></span>
+            <span class="sr-only-text">Profiling</span>
+          </button>
+        </div>
+
+        <div x-show="row.differs" x-cloak class="perf-permanent">
+          <p class="m-0" x-text="row.lasts"></p>
+          <div class="perf-snippet">
+            <pre class="code perf-code" x-text="row.permanent"></pre>
+            <button type="button" class="btn btn-sm" @click="copy(row.permanent)">Copy</button>
+          </div>
+        </div>
+      </section>
+    </template>
+
+    <section class="panel perf-card" aria-label="Metrics sampling">
+      <div class="perf-card-head">
+        <h3 class="perf-card-title">Metrics sampling</h3>
+        <span class="perf-env" x-text="sampleNote"></span>
+      </div>
+      <div class="perf-control">
+        <div class="perf-control-text">
+          <span class="perf-control-label">Sample every</span>
+          <span class="perf-control-sub">Feeds the Health dashboards; paused keeps the history</span>
+        </div>
+        <div class="seg" role="group" aria-label="Sample interval">
+          <template x-for="o in samples" :key="o.id">
+            <button type="button" class="seg-btn" :aria-pressed="o.pressed" :disabled="samplePending" @click="setSample(o)" x-text="o.label"></button>
+          </template>
+        </div>
+      </div>
+      <div x-show="sampleDiffers" x-cloak class="perf-permanent">
+        <p class="m-0">To keep this after a restart, put this in .env.roll and run roll env up:</p>
+        <div class="perf-snippet">
+          <pre class="code perf-code" x-text="samplePermanent"></pre>
+          <button type="button" class="btn btn-sm" @click="copy(samplePermanent)">Copy</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</section>
+
+<section class="dash" aria-labelledby="perf-cost-title">
+  <h2 id="perf-cost-title" class="heading">What Inspector costs right now</h2>
+  <div class="dash-kpis perf-kpis">
+    <template x-for="k in kpis" :key="k.key">
+      <div class="card dash-kpi">
+        <span class="card-label" x-text="k.label"></span>
+        <span class="card-value" x-text="k.value"></span>
+        <span class="card-sub" x-text="k.sub"></span>
+      </div>
+    </template>
+  </div>
+  <div class="dash-grid">
+    <div class="dash-card dash-w6"><div x-ref="chartIntake"></div></div>
+    <div class="dash-card dash-w6"><div x-ref="chartTicks"></div></div>
+    <div class="dash-card dash-w12 perf-live">
+      <h3 class="chart-title">Which live streams are running?</h3>
+      <p x-show="!hasLive" class="dash-note m-0">None. Streams run only while the drawer, the Overview timeline or a page using /api/v1 shows them.</p>
+      <p x-show="hasLive" x-cloak class="dash-note m-0">Each one runs a MONITOR, varnishlog or poll in its service. Stop ends it for everyone who holds it; a page using /api/v1 cannot start it again for 10 minutes.</p>
+      <ul x-show="hasLive" class="perf-live-list">
+        <template x-for="l in live" :key="l.key">
+          <li class="perf-live-row">
+            <span class="mono" x-text="l.label"></span><span class="text-fog" x-text="l.holders"></span>
+            <button type="button" class="btn btn-sm perf-live-stop" :aria-label="l.stopLabel" :disabled="stopping" @click="stopLive(l)">Stop</button>
+          </li>
+        </template>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="panel perf-bench" aria-labelledby="perf-bench-title">
+  <div class="perf-card-head">
+    <h2 id="perf-bench-title" class="heading">Measure the overhead</h2>
+    <span x-show="showLiveLoad" class="perf-env">Docker VM load average <span class="mono" x-text="loadText"></span></span>
+    <span x-show="runLoadText" x-cloak class="perf-env mono" x-text="runLoadText"></span>
+  </div>
+  <p class="perf-text">Inspector requests one page straight from nginx, so Varnish never answers it, with tracing off, lean, full, and full with profiling, in rounds that rotate the order. Your previous settings come back afterwards, also after an error or a cancel. Other load on this machine moves these numbers.</p>
+  <form class="perf-bench-form" @submit.prevent="startBench()">
+    <label class="field min-w-0">
+      <span>Page</span>
+      <input type="text" name="bench-url" class="input mono min-h-9" x-model="benchUrl" @change="onUrl()" placeholder="/women.html or https://app.shop.test/…" spellcheck="false" autocomplete="off" :disabled="running">
+    </label>
+    <button type="submit" class="btn btn-accent" :disabled="startDisabled" x-text="startLabel"></button>
+  </form>
+  <div x-show="running" x-cloak class="perf-progress" role="progressbar" aria-label="Benchmark progress" aria-valuemin="0" aria-valuemax="100" :aria-valuenow="progress.pct" :aria-valuetext="progressLabel">
+    <span class="perf-progress-bar" :style="progressStyle()"></span>
+  </div>
+  <p x-show="hasVerdict" x-cloak class="perf-verdict m-0" :class="verdictCls" role="status" x-text="verdict"></p>
+  <p x-show="benchMeta" x-cloak class="dash-note m-0 mono break-all" x-text="benchMeta"></p>
+  <div x-ref="chartBench"></div>
+</section>

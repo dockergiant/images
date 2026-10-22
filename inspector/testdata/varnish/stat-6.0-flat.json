@@ -1,0 +1,39 @@
+{
+  "timestamp": "2026-10-20T20:23:09",
+  "MGT.uptime": {
+    "description": "Management process uptime",
+    "flag": "c", "format": "d",
+    "value": 8692
+  },
+  "MAIN.cache_hit": {
+    "description": "Cache hits",
+    "flag": "c", "format": "i",
+    "value": 120
+  },
+  "MAIN.cache_miss": {
+    "description": "Cache misses",
+    "flag": "c", "format": "i",
+    "value": 40
+  },
+  "MAIN.s_pass": {
+    "description": "Total pass-ed requests seen",
+    "flag": "c", "format": "i",
+    "value": 2547
+  },
+  "MAIN.n_object": {
+    "description": "object structs made",
+    "flag": "g", "format": "i",
+    "value": 12
+  },
+  "SMA.s0.g_bytes": {
+    "description": "Bytes outstanding",
+    "flag": "g", "format": "B",
+    "value": 1048576
+  },
+  "VBE.boot.default.happy": {
+    "description": "Happy health probes",
+    "type": "VBE", "ident": "boot.default",
+    "flag": "b", "format": "b",
+    "value": 18446744073709551615
+  }
+}

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<title>Roll Inspector</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="panel.css">
+<script defer src="lib/core.js"></script>
+<script defer src="panel.js"></script>
+</head>
+<body>
+<header class="bar">
+  <span class="mark" aria-hidden="true"><span class="mark-sql"></span><span class="mark-cache"></span><span class="mark-php"></span></span>
+  <h1 class="title">Roll Inspector</h1>
+  <span id="status" class="status" role="status">Looking for Inspector…</span>
+  <span class="grow"></span>
+  <label class="check"><input id="preserve" type="checkbox"> Preserve log</label>
+  <button id="clear" type="button" class="btn">Clear</button>
+  <a id="open" class="btn" target="_blank" rel="noopener" hidden>Open Inspector</a>
+  <a id="options" class="btn btn-ghost" target="_blank" rel="noopener">Options</a>
+</header>
+<main class="split">
+  <section class="list" aria-label="Requests">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col" class="c-varnish">Varnish</th>
+          <th scope="col">Request</th>
+          <th scope="col" class="num">Status</th>
+          <th scope="col" class="num">Browser</th>
+          <th scope="col" class="num">PHP</th>
+          <th scope="col" class="num">SQL</th>
+          <th scope="col" class="c-cost">Where the time went</th>
+          <th scope="col" class="c-n1">N+1</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p id="empty" class="empty">Reload the page to see its document and XHR/fetch requests here, each with Inspector's answer.</p>
+  </section>
+  <aside id="detail" class="detail" aria-label="Request detail" hidden></aside>
+</main>
+</body>
+</html>

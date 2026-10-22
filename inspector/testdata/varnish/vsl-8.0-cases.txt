@@ -1,0 +1,962 @@
+*              << Request  >>   2         
+-            2 Begin          c req 1 rxreq
+-            2 Timestamp      c Start: 1792528077.712176 0.000000 0.000000
+-            2 Timestamp      c Req: 1792528077.712176 0.000000 0.000000
+-            2 VCL_use        c boot
+-            2 ReqStart       c 192.168.164.5 46668 a0
+-            2 ReqMethod      c GET
+-            2 ReqURL         c /catalog/product.html
+-            2 ReqProtocol    c HTTP/1.1
+-            2 ReqHeader      c Accept-Encoding: identity
+-            2 ReqHeader      c User-Agent: Python-urllib/3.13
+-            2 ReqHeader      c Host: app.fixture.test
+-            2 ReqHeader      c Connection: close
+-            2 ReqHeader      c X-Forwarded-For: 192.168.164.5
+-            2 ReqHeader      c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-            2 VCL_call       c RECV
+-            2 ReqURL         c /catalog/product.html
+-            2 ReqUnset       c Accept-Encoding: identity
+-            2 VCL_return     c hash
+-            2 VCL_call       c HASH
+-            2 VCL_return     c lookup
+-            2 VCL_call       c MISS
+-            2 VCL_return     c fetch
+-            2 Link           c bereq 3 fetch
+-            2 Timestamp      c Fetch: 1792528077.762803 0.050626 0.050626
+-            2 RespProtocol   c HTTP/1.1
+-            2 RespStatus     c 200
+-            2 RespReason     c OK
+-            2 RespHeader     c Server: nginx/1.27.5
+-            2 RespHeader     c Date: Tue, 20 Oct 2026 20:27:57 GMT
+-            2 RespHeader     c Content-Type: text/html
+-            2 RespHeader     c Cache-Control: public, max-age=2
+-            2 RespHeader     c X-Magento-Tags: cat_p_17,cat_c_41,cms_b_footer,store
+-            2 RespHeader     c Content-Encoding: gzip
+-            2 RespHeader     c Vary: Accept-Encoding
+-            2 RespHeader     c X-Varnish: 2
+-            2 RespHeader     c Age: 0
+-            2 RespHeader     c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-            2 RespHeader     c Accept-Ranges: bytes
+-            2 VCL_call       c DELIVER
+-            2 RespHeader     c X-Cache: MISS
+-            2 RespHeader     c X-Cache-Hits: 0
+-            2 RespHeader     c Pragma: no-cache
+-            2 RespHeader     c Expires: -1
+-            2 RespUnset      c Cache-Control: public, max-age=2
+-            2 RespHeader     c Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+-            2 VCL_return     c deliver
+-            2 Timestamp      c Process: 1792528077.763261 0.051085 0.000458
+-            2 Filters        c  gunzip
+-            2 RespUnset      c Content-Encoding: gzip
+-            2 RespHeader     c Content-Length: 20
+-            2 RespHeader     c Connection: close
+-            2 Gzip           c U D - 48 20 80 304 314
+-            2 Timestamp      c Resp: 1792528077.767308 0.055132 0.004046
+-            2 ReqAcct        c 140 0 140 426 20 446
+-            2 End            c 
+**             << BeReq    >>   3         
+--           3 Begin          b bereq 2 fetch
+--           3 VCL_use        b boot
+--           3 Timestamp      b Start: 1792528077.725000 0.000000 0.000000
+--           3 BereqMethod    b GET
+--           3 BereqURL       b /catalog/product.html
+--           3 BereqProtocol  b HTTP/1.1
+--           3 BereqHeader    b User-Agent: Python-urllib/3.13
+--           3 BereqHeader    b Host: app.fixture.test
+--           3 BereqHeader    b X-Forwarded-For: 192.168.164.5
+--           3 BereqHeader    b Via: 1.1 313fc632fd82 (Varnish/8.0)
+--           3 BereqHeader    b Accept-Encoding: gzip
+--           3 BereqHeader    b X-Varnish: 3
+--           3 VCL_call       b BACKEND_FETCH
+--           3 VCL_return     b fetch
+--           3 Timestamp      b Fetch: 1792528077.725050 0.000049 0.000049
+--           3 Timestamp      b Connected: 1792528077.742637 0.017637 0.017587
+--           3 BackendOpen    b 24 default 192.168.164.2 80 192.168.164.3 47266 connect
+--           3 Timestamp      b Bereq: 1792528077.743262 0.018261 0.000624
+--           3 BerespProtocol b HTTP/1.1
+--           3 BerespStatus   b 200
+--           3 BerespReason   b OK
+--           3 BerespHeader   b Server: nginx/1.27.5
+--           3 BerespHeader   b Date: Tue, 20 Oct 2026 20:27:57 GMT
+--           3 BerespHeader   b Content-Type: text/html
+--           3 BerespHeader   b Content-Length: 20
+--           3 BerespHeader   b Connection: keep-alive
+--           3 BerespHeader   b Cache-Control: public, max-age=2
+--           3 BerespHeader   b X-Magento-Tags: cat_p_17,cat_c_41,cms_b_footer,store
+--           3 Timestamp      b Beresp: 1792528077.752757 0.027757 0.009495
+--           3 TTL            b RFC 2 3600 0 1792528078 1792528078 1792528077 0 2 cacheable
+--           3 VCL_call       b BACKEND_RESPONSE
+--           3 VCL_return     b deliver
+--           3 Timestamp      b Process: 1792528077.753006 0.028005 0.000248
+--           3 Filters        b  esi_gzip
+--           3 BerespUnset    b Content-Length: 20
+--           3 BerespHeader   b Content-Encoding: gzip
+--           3 BerespHeader   b Vary: Accept-Encoding
+--           3 Storage        b malloc s0
+--           3 Fetch_Body     b 3 length -
+--           3 Gzip           b G F E 20 48 80 304 314
+--           3 BackendClose   b 24 default recycle
+--           3 Timestamp      b BerespBody: 1792528077.767583 0.042582 0.014576
+--           3 Length         b 48
+--           3 BereqAcct      b 200 0 200 235 20 255
+--           3 End            b 
+
+*              << Request  >>   32770     
+-        32770 Begin          c req 32769 rxreq
+-        32770 Timestamp      c Start: 1792528077.768974 0.000000 0.000000
+-        32770 Timestamp      c Req: 1792528077.768974 0.000000 0.000000
+-        32770 VCL_use        c boot
+-        32770 ReqStart       c 192.168.164.5 46680 a0
+-        32770 ReqMethod      c GET
+-        32770 ReqURL         c /catalog/product.html
+-        32770 ReqProtocol    c HTTP/1.1
+-        32770 ReqHeader      c Accept-Encoding: identity
+-        32770 ReqHeader      c User-Agent: Python-urllib/3.13
+-        32770 ReqHeader      c Host: app.fixture.test
+-        32770 ReqHeader      c Connection: close
+-        32770 ReqHeader      c X-Forwarded-For: 192.168.164.5
+-        32770 ReqHeader      c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        32770 VCL_call       c RECV
+-        32770 ReqURL         c /catalog/product.html
+-        32770 ReqUnset       c Accept-Encoding: identity
+-        32770 VCL_return     c hash
+-        32770 VCL_call       c HASH
+-        32770 VCL_return     c lookup
+-        32770 Hit            c 3 1.983783 3600.000000 0.000000
+-        32770 VCL_call       c HIT
+-        32770 VCL_return     c deliver
+-        32770 RespProtocol   c HTTP/1.1
+-        32770 RespStatus     c 200
+-        32770 RespReason     c OK
+-        32770 RespHeader     c Server: nginx/1.27.5
+-        32770 RespHeader     c Date: Tue, 20 Oct 2026 20:27:57 GMT
+-        32770 RespHeader     c Content-Type: text/html
+-        32770 RespHeader     c Cache-Control: public, max-age=2
+-        32770 RespHeader     c X-Magento-Tags: cat_p_17,cat_c_41,cms_b_footer,store
+-        32770 RespHeader     c Content-Encoding: gzip
+-        32770 RespHeader     c Vary: Accept-Encoding
+-        32770 RespHeader     c X-Varnish: 32770 3
+-        32770 RespHeader     c Age: 0
+-        32770 RespHeader     c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        32770 RespHeader     c Accept-Ranges: bytes
+-        32770 VCL_call       c DELIVER
+-        32770 RespHeader     c X-Cache: HIT
+-        32770 RespHeader     c X-Cache-Hits: 1
+-        32770 RespHeader     c Pragma: no-cache
+-        32770 RespHeader     c Expires: -1
+-        32770 RespUnset      c Cache-Control: public, max-age=2
+-        32770 RespHeader     c Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+-        32770 VCL_return     c deliver
+-        32770 Timestamp      c Process: 1792528077.769122 0.000147 0.000147
+-        32770 Filters        c  gunzip
+-        32770 RespUnset      c Content-Encoding: gzip
+-        32770 RespHeader     c Content-Length: 20
+-        32770 RespHeader     c Connection: close
+-        32770 Gzip           c U D - 48 20 80 304 314
+-        32770 Timestamp      c Resp: 1792528077.769262 0.000287 0.000139
+-        32770 ReqAcct        c 140 0 140 431 20 451
+-        32770 End            c 
+
+*              << Request  >>   65538     
+-        65538 Begin          c req 65537 rxreq
+-        65538 Timestamp      c Start: 1792528081.502694 0.000000 0.000000
+-        65538 Timestamp      c Req: 1792528081.502694 0.000000 0.000000
+-        65538 VCL_use        c boot
+-        65538 ReqStart       c 192.168.164.5 46694 a0
+-        65538 ReqMethod      c GET
+-        65538 ReqURL         c /catalog/product.html
+-        65538 ReqProtocol    c HTTP/1.1
+-        65538 ReqHeader      c Accept-Encoding: identity
+-        65538 ReqHeader      c User-Agent: Python-urllib/3.13
+-        65538 ReqHeader      c Host: app.fixture.test
+-        65538 ReqHeader      c Connection: close
+-        65538 ReqHeader      c X-Forwarded-For: 192.168.164.5
+-        65538 ReqHeader      c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        65538 VCL_call       c RECV
+-        65538 ReqURL         c /catalog/product.html
+-        65538 ReqUnset       c Accept-Encoding: identity
+-        65538 VCL_return     c hash
+-        65538 VCL_call       c HASH
+-        65538 VCL_return     c lookup
+-        65538 Hit            c 3 -1.749937 3600.000000 0.000000
+-        65538 VCL_call       c HIT
+-        65538 VCL_return     c deliver
+-        65538 Link           c bereq 65539 bgfetch
+-        65538 Timestamp      c Fetch: 1792528081.503049 0.000355 0.000355
+-        65538 RespProtocol   c HTTP/1.1
+-        65538 RespStatus     c 200
+-        65538 RespReason     c OK
+-        65538 RespHeader     c Server: nginx/1.27.5
+-        65538 RespHeader     c Date: Tue, 20 Oct 2026 20:27:57 GMT
+-        65538 RespHeader     c Content-Type: text/html
+-        65538 RespHeader     c Cache-Control: public, max-age=2
+-        65538 RespHeader     c X-Magento-Tags: cat_p_17,cat_c_41,cms_b_footer,store
+-        65538 RespHeader     c Content-Encoding: gzip
+-        65538 RespHeader     c Vary: Accept-Encoding
+-        65538 RespHeader     c X-Varnish: 65538 3
+-        65538 RespHeader     c Age: 3
+-        65538 RespHeader     c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        65538 RespHeader     c Accept-Ranges: bytes
+-        65538 VCL_call       c DELIVER
+-        65538 RespHeader     c X-Cache: HIT
+-        65538 RespHeader     c X-Cache-Hits: 2
+-        65538 RespHeader     c Pragma: no-cache
+-        65538 RespHeader     c Expires: -1
+-        65538 RespUnset      c Cache-Control: public, max-age=2
+-        65538 RespHeader     c Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+-        65538 VCL_return     c deliver
+-        65538 Timestamp      c Process: 1792528081.503097 0.000403 0.000047
+-        65538 Filters        c  gunzip
+-        65538 RespUnset      c Content-Encoding: gzip
+-        65538 RespHeader     c Content-Length: 20
+-        65538 RespHeader     c Connection: close
+-        65538 Gzip           c U D - 48 20 80 304 314
+-        65538 Timestamp      c Resp: 1792528081.503313 0.000618 0.000215
+-        65538 ReqAcct        c 140 0 140 431 20 451
+-        65538 End            c 
+**             << BeReq    >>   65539     
+--       65539 Begin          b bereq 65538 bgfetch
+--       65539 VCL_use        b boot
+--       65539 Timestamp      b Start: 1792528081.502866 0.000000 0.000000
+--       65539 BereqMethod    b GET
+--       65539 BereqURL       b /catalog/product.html
+--       65539 BereqProtocol  b HTTP/1.1
+--       65539 BereqHeader    b User-Agent: Python-urllib/3.13
+--       65539 BereqHeader    b Host: app.fixture.test
+--       65539 BereqHeader    b X-Forwarded-For: 192.168.164.5
+--       65539 BereqHeader    b Via: 1.1 313fc632fd82 (Varnish/8.0)
+--       65539 BereqHeader    b Accept-Encoding: gzip
+--       65539 BereqHeader    b X-Varnish: 65539
+--       65539 VCL_call       b BACKEND_FETCH
+--       65539 VCL_return     b fetch
+--       65539 Timestamp      b Fetch: 1792528081.502884 0.000018 0.000018
+--       65539 Timestamp      b Connected: 1792528081.502888 0.000022 0.000003
+--       65539 BackendOpen    b 24 default 192.168.164.2 80 192.168.164.3 47266 reuse
+--       65539 Timestamp      b Bereq: 1792528081.503035 0.000169 0.000146
+--       65539 BerespProtocol b HTTP/1.1
+--       65539 BerespStatus   b 200
+--       65539 BerespReason   b OK
+--       65539 BerespHeader   b Server: nginx/1.27.5
+--       65539 BerespHeader   b Date: Tue, 20 Oct 2026 20:28:01 GMT
+--       65539 BerespHeader   b Content-Type: text/html
+--       65539 BerespHeader   b Content-Length: 20
+--       65539 BerespHeader   b Connection: keep-alive
+--       65539 BerespHeader   b Cache-Control: public, max-age=2
+--       65539 BerespHeader   b X-Magento-Tags: cat_p_17,cat_c_41,cms_b_footer,store
+--       65539 Timestamp      b Beresp: 1792528081.504907 0.002041 0.001872
+--       65539 TTL            b RFC 2 3600 0 1792528082 1792528082 1792528081 0 2 cacheable
+--       65539 VCL_call       b BACKEND_RESPONSE
+--       65539 VCL_return     b deliver
+--       65539 Timestamp      b Process: 1792528081.504935 0.002069 0.000028
+--       65539 Filters        b  esi_gzip
+--       65539 BerespUnset    b Content-Length: 20
+--       65539 BerespHeader   b Content-Encoding: gzip
+--       65539 BerespHeader   b Vary: Accept-Encoding
+--       65539 Storage        b malloc s0
+--       65539 Fetch_Body     b 3 length -
+--       65539 Gzip           b G F E 20 48 80 304 314
+--       65539 BackendClose   b 24 default recycle
+--       65539 Timestamp      b BerespBody: 1792528081.505229 0.002363 0.000293
+--       65539 Length         b 48
+--       65539 BereqAcct      b 204 0 204 235 20 255
+--       65539 End            b 
+
+*              << Request  >>   32772     
+-        32772 Begin          c req 32771 rxreq
+-        32772 Timestamp      c Start: 1792528082.051770 0.000000 0.000000
+-        32772 Timestamp      c Req: 1792528082.051770 0.000000 0.000000
+-        32772 VCL_use        c boot
+-        32772 ReqStart       c 192.168.164.5 46702 a0
+-        32772 ReqMethod      c GET
+-        32772 ReqURL         c /private.html
+-        32772 ReqProtocol    c HTTP/1.1
+-        32772 ReqHeader      c Accept-Encoding: identity
+-        32772 ReqHeader      c User-Agent: Python-urllib/3.13
+-        32772 ReqHeader      c Host: app.fixture.test
+-        32772 ReqHeader      c Connection: close
+-        32772 ReqHeader      c X-Forwarded-For: 192.168.164.5
+-        32772 ReqHeader      c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        32772 VCL_call       c RECV
+-        32772 ReqURL         c /private.html
+-        32772 ReqUnset       c Accept-Encoding: identity
+-        32772 VCL_return     c hash
+-        32772 VCL_call       c HASH
+-        32772 VCL_return     c lookup
+-        32772 VCL_call       c MISS
+-        32772 VCL_return     c fetch
+-        32772 Link           c bereq 32773 fetch
+-        32772 Timestamp      c Fetch: 1792528082.087300 0.035530 0.035530
+-        32772 RespProtocol   c HTTP/1.1
+-        32772 RespStatus     c 200
+-        32772 RespReason     c OK
+-        32772 RespHeader     c Server: nginx/1.27.5
+-        32772 RespHeader     c Date: Tue, 20 Oct 2026 20:28:02 GMT
+-        32772 RespHeader     c Content-Type: text/html
+-        32772 RespHeader     c Cache-Control: private, no-cache
+-        32772 RespHeader     c Content-Encoding: gzip
+-        32772 RespHeader     c Vary: Accept-Encoding
+-        32772 RespHeader     c X-Varnish: 32772
+-        32772 RespHeader     c Age: 0
+-        32772 RespHeader     c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        32772 RespHeader     c Accept-Ranges: bytes
+-        32772 VCL_call       c DELIVER
+-        32772 RespHeader     c X-Cache: MISS
+-        32772 RespHeader     c X-Cache-Hits: 0
+-        32772 VCL_return     c deliver
+-        32772 Timestamp      c Process: 1792528082.087416 0.035646 0.000116
+-        32772 Filters        c  gunzip
+-        32772 RespUnset      c Content-Encoding: gzip
+-        32772 RespHeader     c Content-Length: 20
+-        32772 RespHeader     c Connection: close
+-        32772 Gzip           c U D - 48 20 80 304 314
+-        32772 Timestamp      c Resp: 1792528082.087551 0.035781 0.000134
+-        32772 ReqAcct        c 132 0 132 316 20 336
+-        32772 End            c 
+**             << BeReq    >>   32773     
+--       32773 Begin          b bereq 32772 fetch
+--       32773 VCL_use        b boot
+--       32773 Timestamp      b Start: 1792528082.084471 0.000000 0.000000
+--       32773 BereqMethod    b GET
+--       32773 BereqURL       b /private.html
+--       32773 BereqProtocol  b HTTP/1.1
+--       32773 BereqHeader    b User-Agent: Python-urllib/3.13
+--       32773 BereqHeader    b Host: app.fixture.test
+--       32773 BereqHeader    b X-Forwarded-For: 192.168.164.5
+--       32773 BereqHeader    b Via: 1.1 313fc632fd82 (Varnish/8.0)
+--       32773 BereqHeader    b Accept-Encoding: gzip
+--       32773 BereqHeader    b X-Varnish: 32773
+--       32773 VCL_call       b BACKEND_FETCH
+--       32773 VCL_return     b fetch
+--       32773 Timestamp      b Fetch: 1792528082.084699 0.000228 0.000228
+--       32773 Timestamp      b Connected: 1792528082.084705 0.000234 0.000005
+--       32773 BackendOpen    b 24 default 192.168.164.2 80 192.168.164.3 47266 reuse
+--       32773 Timestamp      b Bereq: 1792528082.086475 0.002003 0.001769
+--       32773 BerespProtocol b HTTP/1.1
+--       32773 BerespStatus   b 200
+--       32773 BerespReason   b OK
+--       32773 BerespHeader   b Server: nginx/1.27.5
+--       32773 BerespHeader   b Date: Tue, 20 Oct 2026 20:28:02 GMT
+--       32773 BerespHeader   b Content-Type: text/html
+--       32773 BerespHeader   b Content-Length: 20
+--       32773 BerespHeader   b Connection: keep-alive
+--       32773 BerespHeader   b Cache-Control: private, no-cache
+--       32773 BerespHeader   b Set-Cookie: REDACTED
+--       32773 Timestamp      b Beresp: 1792528082.086497 0.002025 0.000021
+--       32773 TTL            b RFC 2 3600 0 1792528082 1792528082 1792528082 0 0 cacheable
+--       32773 VCL_call       b BACKEND_RESPONSE
+--       32773 BerespUnset    b Set-Cookie: REDACTED
+--       32773 TTL            b VCL 120 3600 0 1792528082 cacheable
+--       32773 TTL            b VCL 120 3600 0 1792528082 uncacheable
+--       32773 VCL_return     b deliver
+--       32773 Timestamp      b Process: 1792528082.086552 0.002080 0.000054
+--       32773 Filters        b  esi_gzip
+--       32773 BerespUnset    b Content-Length: 20
+--       32773 BerespHeader   b Content-Encoding: gzip
+--       32773 BerespHeader   b Vary: Accept-Encoding
+--       32773 Storage        b malloc Transient
+--       32773 Fetch_Body     b 3 length -
+--       32773 Gzip           b G F E 20 48 80 304 314
+--       32773 BackendClose   b 24 default recycle
+--       32773 Timestamp      b BerespBody: 1792528082.089016 0.004545 0.002464
+--       32773 Length         b 48
+--       32773 BereqAcct      b 196 0 196 219 20 239
+--       32773 End            b 
+
+*              << Request  >>   5         
+-            5 Begin          c req 4 rxreq
+-            5 Timestamp      c Start: 1792528082.110952 0.000000 0.000000
+-            5 Timestamp      c Req: 1792528082.110952 0.000000 0.000000
+-            5 VCL_use        c boot
+-            5 ReqStart       c 192.168.164.5 46704 a0
+-            5 ReqMethod      c GET
+-            5 ReqURL         c /cookie.html
+-            5 ReqProtocol    c HTTP/1.1
+-            5 ReqHeader      c Accept-Encoding: identity
+-            5 ReqHeader      c User-Agent: Python-urllib/3.13
+-            5 ReqHeader      c Host: app.fixture.test
+-            5 ReqHeader      c Connection: close
+-            5 ReqHeader      c X-Forwarded-For: 192.168.164.5
+-            5 ReqHeader      c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-            5 VCL_call       c RECV
+-            5 ReqURL         c /cookie.html
+-            5 ReqUnset       c Accept-Encoding: identity
+-            5 VCL_return     c hash
+-            5 VCL_call       c HASH
+-            5 VCL_return     c lookup
+-            5 VCL_call       c MISS
+-            5 VCL_return     c fetch
+-            5 Link           c bereq 6 fetch
+-            5 Timestamp      c Fetch: 1792528082.160598 0.049646 0.049646
+-            5 RespProtocol   c HTTP/1.1
+-            5 RespStatus     c 200
+-            5 RespReason     c OK
+-            5 RespHeader     c Server: nginx/1.27.5
+-            5 RespHeader     c Date: Tue, 20 Oct 2026 20:28:02 GMT
+-            5 RespHeader     c Content-Type: text/html
+-            5 RespHeader     c Content-Encoding: gzip
+-            5 RespHeader     c Vary: Accept-Encoding
+-            5 RespHeader     c X-Varnish: 5
+-            5 RespHeader     c Age: 0
+-            5 RespHeader     c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-            5 RespHeader     c Accept-Ranges: bytes
+-            5 VCL_call       c DELIVER
+-            5 RespHeader     c X-Cache: MISS
+-            5 RespHeader     c X-Cache-Hits: 0
+-            5 RespHeader     c Pragma: no-cache
+-            5 RespHeader     c Expires: -1
+-            5 RespHeader     c Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+-            5 VCL_return     c deliver
+-            5 Timestamp      c Process: 1792528082.160638 0.049686 0.000040
+-            5 Filters        c  gunzip
+-            5 RespUnset      c Content-Encoding: gzip
+-            5 RespHeader     c Content-Length: 19
+-            5 RespHeader     c Connection: close
+-            5 Gzip           c U D - 47 19 80 296 306
+-            5 Timestamp      c Resp: 1792528082.162413 0.051460 0.001774
+-            5 ReqAcct        c 131 0 131 372 19 391
+-            5 End            c 
+**             << BeReq    >>   6         
+--           6 Begin          b bereq 5 fetch
+--           6 VCL_use        b boot
+--           6 Timestamp      b Start: 1792528082.111269 0.000000 0.000000
+--           6 BereqMethod    b GET
+--           6 BereqURL       b /cookie.html
+--           6 BereqProtocol  b HTTP/1.1
+--           6 BereqHeader    b User-Agent: Python-urllib/3.13
+--           6 BereqHeader    b Host: app.fixture.test
+--           6 BereqHeader    b X-Forwarded-For: 192.168.164.5
+--           6 BereqHeader    b Via: 1.1 313fc632fd82 (Varnish/8.0)
+--           6 BereqHeader    b Accept-Encoding: gzip
+--           6 BereqHeader    b X-Varnish: 6
+--           6 VCL_call       b BACKEND_FETCH
+--           6 VCL_return     b fetch
+--           6 Timestamp      b Fetch: 1792528082.113175 0.001906 0.001906
+--           6 Timestamp      b Connected: 1792528082.113181 0.001912 0.000005
+--           6 BackendOpen    b 24 default 192.168.164.2 80 192.168.164.3 47266 reuse
+--           6 Timestamp      b Bereq: 1792528082.113254 0.001985 0.000073
+--           6 BerespProtocol b HTTP/1.1
+--           6 BerespStatus   b 200
+--           6 BerespReason   b OK
+--           6 BerespHeader   b Server: nginx/1.27.5
+--           6 BerespHeader   b Date: Tue, 20 Oct 2026 20:28:02 GMT
+--           6 BerespHeader   b Content-Type: text/html
+--           6 BerespHeader   b Content-Length: 19
+--           6 BerespHeader   b Connection: keep-alive
+--           6 BerespHeader   b Set-Cookie: REDACTED
+--           6 Timestamp      b Beresp: 1792528082.133326 0.022057 0.020071
+--           6 TTL            b RFC 2 3600 0 1792528082 1792528082 1792528082 0 0 cacheable
+--           6 VCL_call       b BACKEND_RESPONSE
+--           6 BerespUnset    b Set-Cookie: REDACTED
+--           6 VCL_return     b deliver
+--           6 Timestamp      b Process: 1792528082.133363 0.022094 0.000036
+--           6 Filters        b  esi_gzip
+--           6 BerespUnset    b Content-Length: 19
+--           6 BerespHeader   b Content-Encoding: gzip
+--           6 BerespHeader   b Vary: Accept-Encoding
+--           6 Storage        b malloc s0
+--           6 Fetch_Body     b 3 length -
+--           6 Gzip           b G F E 19 47 80 296 306
+--           6 BackendClose   b 24 default recycle
+--           6 Timestamp      b BerespBody: 1792528082.162593 0.051324 0.029230
+--           6 Length         b 47
+--           6 BereqAcct      b 191 0 191 186 19 205
+--           6 End            b 
+
+*              << Request  >>   98306     
+-        98306 Begin          c req 98305 rxreq
+-        98306 Timestamp      c Start: 1792528082.170596 0.000000 0.000000
+-        98306 Timestamp      c Req: 1792528082.170596 0.000000 0.000000
+-        98306 VCL_use        c boot
+-        98306 ReqStart       c 192.168.164.5 46710 a0
+-        98306 ReqMethod      c POST
+-        98306 ReqURL         c /checkout/cart/add
+-        98306 ReqProtocol    c HTTP/1.1
+-        98306 ReqHeader      c Accept-Encoding: identity
+-        98306 ReqHeader      c Content-Type: application/x-www-form-urlencoded
+-        98306 ReqHeader      c Content-Length: 3
+-        98306 ReqHeader      c User-Agent: Python-urllib/3.13
+-        98306 ReqHeader      c Host: app.fixture.test
+-        98306 ReqHeader      c Connection: close
+-        98306 ReqHeader      c X-Forwarded-For: 192.168.164.5
+-        98306 ReqHeader      c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        98306 VCL_call       c RECV
+-        98306 VCL_return     c pass
+-        98306 VCL_call       c HASH
+-        98306 VCL_return     c lookup
+-        98306 VCL_call       c PASS
+-        98306 VCL_return     c fetch
+-        98306 Link           c bereq 98307 pass
+-        98306 Storage        c malloc Transient
+-        98306 Timestamp      c ReqBody: 1792528082.170984 0.000387 0.000387
+-        98306 Timestamp      c Fetch: 1792528082.171436 0.000839 0.000452
+-        98306 RespProtocol   c HTTP/1.1
+-        98306 RespStatus     c 200
+-        98306 RespReason     c OK
+-        98306 RespHeader     c Server: nginx/1.27.5
+-        98306 RespHeader     c Date: Tue, 20 Oct 2026 20:28:02 GMT
+-        98306 RespHeader     c Content-Type: text/html
+-        98306 RespHeader     c Content-Encoding: gzip
+-        98306 RespHeader     c Vary: Accept-Encoding
+-        98306 RespHeader     c X-Varnish: 98306
+-        98306 RespHeader     c Age: 0
+-        98306 RespHeader     c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        98306 VCL_call       c DELIVER
+-        98306 RespHeader     c X-Cache: MISS
+-        98306 RespHeader     c X-Cache-Hits: 0
+-        98306 RespHeader     c Pragma: no-cache
+-        98306 RespHeader     c Expires: -1
+-        98306 RespHeader     c Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+-        98306 VCL_return     c deliver
+-        98306 Timestamp      c Process: 1792528082.171457 0.000860 0.000020
+-        98306 Filters        c  gunzip
+-        98306 RespUnset      c Content-Encoding: gzip
+-        98306 RespHeader     c Content-Length: 18
+-        98306 RespHeader     c Connection: close
+-        98306 Gzip           c U D - 46 18 80 288 298
+-        98306 Timestamp      c Resp: 1792528082.171529 0.000932 0.000072
+-        98306 ReqAcct        c 206 3 209 354 18 372
+-        98306 End            c 
+**             << BeReq    >>   98307     
+--       98307 Begin          b bereq 98306 pass
+--       98307 VCL_use        b boot
+--       98307 Timestamp      b Start: 1792528082.170854 0.000000 0.000000
+--       98307 BereqMethod    b POST
+--       98307 BereqURL       b /checkout/cart/add
+--       98307 BereqProtocol  b HTTP/1.1
+--       98307 BereqHeader    b Accept-Encoding: identity
+--       98307 BereqHeader    b Content-Type: application/x-www-form-urlencoded
+--       98307 BereqHeader    b Content-Length: 3
+--       98307 BereqHeader    b User-Agent: Python-urllib/3.13
+--       98307 BereqHeader    b Host: app.fixture.test
+--       98307 BereqHeader    b X-Forwarded-For: 192.168.164.5
+--       98307 BereqHeader    b Via: 1.1 313fc632fd82 (Varnish/8.0)
+--       98307 BereqHeader    b X-Varnish: 98307
+--       98307 VCL_call       b BACKEND_FETCH
+--       98307 VCL_return     b fetch
+--       98307 Timestamp      b Fetch: 1792528082.170863 0.000009 0.000009
+--       98307 Timestamp      b Connected: 1792528082.170867 0.000013 0.000003
+--       98307 BackendOpen    b 24 default 192.168.164.2 80 192.168.164.3 47266 reuse
+--       98307 Timestamp      b Bereq: 1792528082.171013 0.000158 0.000145
+--       98307 BerespProtocol b HTTP/1.1
+--       98307 BerespStatus   b 200
+--       98307 BerespReason   b OK
+--       98307 BerespHeader   b Server: nginx/1.27.5
+--       98307 BerespHeader   b Date: Tue, 20 Oct 2026 20:28:02 GMT
+--       98307 BerespHeader   b Content-Type: text/html
+--       98307 BerespHeader   b Content-Length: 18
+--       98307 BerespHeader   b Connection: keep-alive
+--       98307 Timestamp      b Beresp: 1792528082.171154 0.000300 0.000141
+--       98307 VCL_call       b BACKEND_RESPONSE
+--       98307 TTL            b VCL 120 0 0 1792528082 uncacheable
+--       98307 TTL            b VCL 120 0 0 1792528082 uncacheable
+--       98307 VCL_return     b deliver
+--       98307 Timestamp      b Process: 1792528082.171170 0.000315 0.000015
+--       98307 Filters        b  esi_gzip
+--       98307 BerespUnset    b Content-Length: 18
+--       98307 BerespHeader   b Content-Encoding: gzip
+--       98307 BerespHeader   b Vary: Accept-Encoding
+--       98307 Storage        b malloc Transient
+--       98307 Fetch_Body     b 3 length -
+--       98307 Gzip           b G F E 18 46 80 288 298
+--       98307 BackendClose   b 24 default recycle
+--       98307 Timestamp      b BerespBody: 1792528082.171577 0.000723 0.000407
+--       98307 Length         b 46
+--       98307 BereqAcct      b 274 3 277 147 18 165
+--       98307 End            b 
+
+*              << Request  >>   65541     
+-        65541 Begin          c req 65540 rxreq
+-        65541 Timestamp      c Start: 1792528082.182390 0.000000 0.000000
+-        65541 Timestamp      c Req: 1792528082.182390 0.000000 0.000000
+-        65541 VCL_use        c boot
+-        65541 ReqStart       c 192.168.164.5 46722 a0
+-        65541 ReqMethod      c PURGE
+-        65541 ReqURL         c /
+-        65541 ReqProtocol    c HTTP/1.1
+-        65541 ReqHeader      c Accept-Encoding: identity
+-        65541 ReqHeader      c User-Agent: Python-urllib/3.13
+-        65541 ReqHeader      c X-Magento-Tags-Pattern: ((^|,)cat_c_41(,|$))
+-        65541 ReqHeader      c Host: app.fixture.test
+-        65541 ReqHeader      c Connection: close
+-        65541 ReqHeader      c X-Forwarded-For: 192.168.164.5
+-        65541 ReqHeader      c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        65541 VCL_call       c RECV
+-        65541 VCL_return     c synth
+-        65541 ReqUnset       c Accept-Encoding: identity
+-        65541 VCL_call       c HASH
+-        65541 VCL_return     c lookup
+-        65541 RespProtocol   c HTTP/1.1
+-        65541 RespStatus     c 200
+-        65541 RespReason     c Purged
+-        65541 RespHeader     c Date: Tue, 20 Oct 2026 20:28:02 GMT
+-        65541 RespHeader     c Server: Varnish
+-        65541 RespHeader     c X-Varnish: 65541
+-        65541 VCL_call       c SYNTH
+-        65541 RespHeader     c Content-Type: text/html; charset=utf-8
+-        65541 RespHeader     c Retry-After: 5
+-        65541 VCL_return     c deliver
+-        65541 Timestamp      c Process: 1792528082.182662 0.000272 0.000272
+-        65541 RespHeader     c Content-Length: 240
+-        65541 Storage        c malloc Transient
+-        65541 Filters        c 
+-        65541 RespHeader     c Connection: close
+-        65541 Timestamp      c Resp: 1792528082.182718 0.000327 0.000055
+-        65541 ReqAcct        c 168 0 168 191 240 431
+-        65541 End            c 
+
+*              << Request  >>   32775     
+-        32775 Begin          c req 32774 rxreq
+-        32775 Timestamp      c Start: 1792528082.185291 0.000000 0.000000
+-        32775 Timestamp      c Req: 1792528082.185291 0.000000 0.000000
+-        32775 VCL_use        c boot
+-        32775 ReqStart       c 192.168.164.5 46726 a0
+-        32775 ReqMethod      c GET
+-        32775 ReqURL         c /catalog/product.html
+-        32775 ReqProtocol    c HTTP/1.1
+-        32775 ReqHeader      c Accept-Encoding: identity
+-        32775 ReqHeader      c User-Agent: Python-urllib/3.13
+-        32775 ReqHeader      c Host: app.fixture.test
+-        32775 ReqHeader      c Connection: close
+-        32775 ReqHeader      c X-Forwarded-For: 192.168.164.5
+-        32775 ReqHeader      c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        32775 VCL_call       c RECV
+-        32775 ReqURL         c /catalog/product.html
+-        32775 ReqUnset       c Accept-Encoding: identity
+-        32775 VCL_return     c hash
+-        32775 VCL_call       c HASH
+-        32775 VCL_return     c lookup
+-        32775 ExpBan         c 65539 banned lookup
+-        32775 VCL_call       c MISS
+-        32775 VCL_return     c fetch
+-        32775 Link           c bereq 32776 fetch
+-        32775 Timestamp      c Fetch: 1792528082.187965 0.002673 0.002673
+-        32775 RespProtocol   c HTTP/1.1
+-        32775 RespStatus     c 200
+-        32775 RespReason     c OK
+-        32775 RespHeader     c Server: nginx/1.27.5
+-        32775 RespHeader     c Date: Tue, 20 Oct 2026 20:28:02 GMT
+-        32775 RespHeader     c Content-Type: text/html
+-        32775 RespHeader     c Cache-Control: public, max-age=2
+-        32775 RespHeader     c X-Magento-Tags: cat_p_17,cat_c_41,cms_b_footer,store
+-        32775 RespHeader     c Content-Encoding: gzip
+-        32775 RespHeader     c Vary: Accept-Encoding
+-        32775 RespHeader     c X-Varnish: 32775
+-        32775 RespHeader     c Age: 0
+-        32775 RespHeader     c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        32775 RespHeader     c Accept-Ranges: bytes
+-        32775 VCL_call       c DELIVER
+-        32775 RespHeader     c X-Cache: MISS
+-        32775 RespHeader     c X-Cache-Hits: 0
+-        32775 RespHeader     c Pragma: no-cache
+-        32775 RespHeader     c Expires: -1
+-        32775 RespUnset      c Cache-Control: public, max-age=2
+-        32775 RespHeader     c Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+-        32775 VCL_return     c deliver
+-        32775 Timestamp      c Process: 1792528082.188001 0.002710 0.000036
+-        32775 Filters        c  gunzip
+-        32775 RespUnset      c Content-Encoding: gzip
+-        32775 RespHeader     c Content-Length: 20
+-        32775 RespHeader     c Connection: close
+-        32775 Gzip           c U D - 48 20 80 304 314
+-        32775 Timestamp      c Resp: 1792528082.189061 0.003770 0.001059
+-        32775 ReqAcct        c 140 0 140 430 20 450
+-        32775 End            c 
+**             << BeReq    >>   32776     
+--       32776 Begin          b bereq 32775 fetch
+--       32776 VCL_use        b boot
+--       32776 Timestamp      b Start: 1792528082.185589 0.000000 0.000000
+--       32776 BereqMethod    b GET
+--       32776 BereqURL       b /catalog/product.html
+--       32776 BereqProtocol  b HTTP/1.1
+--       32776 BereqHeader    b User-Agent: Python-urllib/3.13
+--       32776 BereqHeader    b Host: app.fixture.test
+--       32776 BereqHeader    b X-Forwarded-For: 192.168.164.5
+--       32776 BereqHeader    b Via: 1.1 313fc632fd82 (Varnish/8.0)
+--       32776 BereqHeader    b Accept-Encoding: gzip
+--       32776 BereqHeader    b X-Varnish: 32776
+--       32776 VCL_call       b BACKEND_FETCH
+--       32776 VCL_return     b fetch
+--       32776 Timestamp      b Fetch: 1792528082.185597 0.000007 0.000007
+--       32776 Timestamp      b Connected: 1792528082.185600 0.000010 0.000002
+--       32776 BackendOpen    b 24 default 192.168.164.2 80 192.168.164.3 47266 reuse
+--       32776 Timestamp      b Bereq: 1792528082.185804 0.000215 0.000204
+--       32776 BerespProtocol b HTTP/1.1
+--       32776 BerespStatus   b 200
+--       32776 BerespReason   b OK
+--       32776 BerespHeader   b Server: nginx/1.27.5
+--       32776 BerespHeader   b Date: Tue, 20 Oct 2026 20:28:02 GMT
+--       32776 BerespHeader   b Content-Type: text/html
+--       32776 BerespHeader   b Content-Length: 20
+--       32776 BerespHeader   b Connection: keep-alive
+--       32776 BerespHeader   b Cache-Control: public, max-age=2
+--       32776 BerespHeader   b X-Magento-Tags: cat_p_17,cat_c_41,cms_b_footer,store
+--       32776 Timestamp      b Beresp: 1792528082.185850 0.000260 0.000045
+--       32776 TTL            b RFC 2 3600 0 1792528082 1792528082 1792528082 0 2 cacheable
+--       32776 VCL_call       b BACKEND_RESPONSE
+--       32776 VCL_return     b deliver
+--       32776 Timestamp      b Process: 1792528082.185876 0.000286 0.000025
+--       32776 Filters        b  esi_gzip
+--       32776 BerespUnset    b Content-Length: 20
+--       32776 BerespHeader   b Content-Encoding: gzip
+--       32776 BerespHeader   b Vary: Accept-Encoding
+--       32776 Storage        b malloc s0
+--       32776 Fetch_Body     b 3 length -
+--       32776 Gzip           b G F E 20 48 80 304 314
+--       32776 BackendClose   b 24 default recycle
+--       32776 Timestamp      b BerespBody: 1792528082.189295 0.003705 0.003419
+--       32776 Length         b 48
+--       32776 BereqAcct      b 204 0 204 235 20 255
+--       32776 End            b 
+
+*              << Request  >>   65543     
+-        65543 Begin          c req 65542 rxreq
+-        65543 Timestamp      c Start: 1792528082.215394 0.000000 0.000000
+-        65543 Timestamp      c Req: 1792528082.215394 0.000000 0.000000
+-        65543 VCL_use        c boot
+-        65543 ReqStart       c 192.168.164.5 46734 a0
+-        65543 ReqMethod      c BREW
+-        65543 ReqURL         c /coffee
+-        65543 ReqProtocol    c HTTP/1.1
+-        65543 ReqHeader      c Accept-Encoding: identity
+-        65543 ReqHeader      c User-Agent: Python-urllib/3.13
+-        65543 ReqHeader      c Host: app.fixture.test
+-        65543 ReqHeader      c Connection: close
+-        65543 ReqHeader      c X-Forwarded-For: 192.168.164.5
+-        65543 ReqHeader      c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        65543 VCL_call       c RECV
+-        65543 VCL_return     c pipe
+-        65543 VCL_call       c HASH
+-        65543 VCL_return     c lookup
+-        65543 Link           c bereq 65544 pipe
+-        65543 VCL_call       c PIPE
+-        65543 VCL_return     c pipe
+-        65543 Timestamp      c Process: 1792528082.215499 0.000105 0.000105
+-        65543 Timestamp      c Pipe: 1792528082.216154 0.000760 0.000655
+-        65543 Timestamp      c PipeSess: 1792528082.235522 0.020128 0.019367
+-        65543 PipeAcct       c 127 214 0 160
+-        65543 End            c 
+**             << BeReq    >>   65544     
+--       65544 Begin          b bereq 65543 pipe
+--       65544 Timestamp      b Start: 1792528082.215478 0.000000 0.000000
+--       65544 BereqMethod    b BREW
+--       65544 BereqURL       b /coffee
+--       65544 BereqProtocol  b HTTP/1.1
+--       65544 BereqHeader    b Accept-Encoding: identity
+--       65544 BereqHeader    b User-Agent: Python-urllib/3.13
+--       65544 BereqHeader    b Host: app.fixture.test
+--       65544 BereqHeader    b Connection: close
+--       65544 BereqHeader    b X-Forwarded-For: 192.168.164.5
+--       65544 BereqHeader    b Via: 1.1 313fc632fd82 (Varnish/8.0)
+--       65544 BereqHeader    b X-Varnish: 65543
+--       65544 Timestamp      b Process: 1792528082.215499 0.000020 0.000020
+--       65544 Timestamp      b Connected: 1792528082.216095 0.000617 0.000596
+--       65544 BackendOpen    b 24 default 192.168.164.2 80 192.168.164.3 47266 reuse
+--       65544 Timestamp      b Bereq: 1792528082.216153 0.000675 0.000058
+--       65544 BackendClose   b 24 default close TX_PIPE
+--       65544 BereqAcct      b 0 0 0 0 0 0
+--       65544 End            b 
+
+*              << Request  >>   65546     
+-        65546 Begin          c req 65545 rxreq
+-        65546 Timestamp      c Start: 1792528206.884816 0.000000 0.000000
+-        65546 Timestamp      c Req: 1792528206.884816 0.000000 0.000000
+-        65546 VCL_use        c boot
+-        65546 ReqStart       c 192.168.164.5 56878 a0
+-        65546 ReqMethod      c GET
+-        65546 ReqURL         c /private.html
+-        65546 ReqProtocol    c HTTP/1.1
+-        65546 ReqHeader      c Accept-Encoding: identity
+-        65546 ReqHeader      c User-Agent: Python-urllib/3.13
+-        65546 ReqHeader      c Host: app.fixture.test
+-        65546 ReqHeader      c Connection: close
+-        65546 ReqHeader      c X-Forwarded-For: 192.168.164.5
+-        65546 ReqHeader      c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        65546 VCL_call       c RECV
+-        65546 ReqURL         c /private.html
+-        65546 ReqUnset       c Accept-Encoding: identity
+-        65546 VCL_return     c hash
+-        65546 VCL_call       c HASH
+-        65546 VCL_return     c lookup
+-        65546 ExpBan         c 32773 banned lookup
+-        65546 VCL_call       c MISS
+-        65546 VCL_return     c fetch
+-        65546 Link           c bereq 65547 fetch
+-        65546 Timestamp      c Fetch: 1792528206.944478 0.059662 0.059662
+-        65546 RespProtocol   c HTTP/1.1
+-        65546 RespStatus     c 200
+-        65546 RespReason     c OK
+-        65546 RespHeader     c Server: nginx/1.27.5
+-        65546 RespHeader     c Date: Tue, 20 Oct 2026 20:30:06 GMT
+-        65546 RespHeader     c Content-Type: text/html
+-        65546 RespHeader     c Cache-Control: private, no-cache
+-        65546 RespHeader     c Content-Encoding: gzip
+-        65546 RespHeader     c Vary: Accept-Encoding
+-        65546 RespHeader     c X-Varnish: 65546
+-        65546 RespHeader     c Age: 0
+-        65546 RespHeader     c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        65546 RespHeader     c Accept-Ranges: bytes
+-        65546 VCL_call       c DELIVER
+-        65546 RespHeader     c X-Cache: MISS
+-        65546 RespHeader     c X-Cache-Hits: 0
+-        65546 VCL_return     c deliver
+-        65546 Timestamp      c Process: 1792528206.944569 0.059753 0.000091
+-        65546 Filters        c  gunzip
+-        65546 RespUnset      c Content-Encoding: gzip
+-        65546 RespHeader     c Content-Length: 20
+-        65546 RespHeader     c Connection: close
+-        65546 Gzip           c U D - 48 20 80 304 314
+-        65546 Timestamp      c Resp: 1792528206.945272 0.060456 0.000702
+-        65546 ReqAcct        c 132 0 132 316 20 336
+-        65546 End            c 
+**             << BeReq    >>   65547     
+--       65547 Begin          b bereq 65546 fetch
+--       65547 VCL_use        b boot
+--       65547 Timestamp      b Start: 1792528206.923381 0.000000 0.000000
+--       65547 BereqMethod    b GET
+--       65547 BereqURL       b /private.html
+--       65547 BereqProtocol  b HTTP/1.1
+--       65547 BereqHeader    b User-Agent: Python-urllib/3.13
+--       65547 BereqHeader    b Host: app.fixture.test
+--       65547 BereqHeader    b X-Forwarded-For: 192.168.164.5
+--       65547 BereqHeader    b Via: 1.1 313fc632fd82 (Varnish/8.0)
+--       65547 BereqHeader    b Accept-Encoding: gzip
+--       65547 BereqHeader    b X-Varnish: 65547
+--       65547 VCL_call       b BACKEND_FETCH
+--       65547 VCL_return     b fetch
+--       65547 Timestamp      b Fetch: 1792528206.923481 0.000099 0.000099
+--       65547 Timestamp      b Connected: 1792528206.924164 0.000783 0.000683
+--       65547 BackendOpen    b 24 default 192.168.164.2 80 192.168.164.3 57770 connect
+--       65547 Timestamp      b Bereq: 1792528206.924283 0.000902 0.000118
+--       65547 BerespProtocol b HTTP/1.1
+--       65547 BerespStatus   b 200
+--       65547 BerespReason   b OK
+--       65547 BerespHeader   b Server: nginx/1.27.5
+--       65547 BerespHeader   b Date: Tue, 20 Oct 2026 20:30:06 GMT
+--       65547 BerespHeader   b Content-Type: text/html
+--       65547 BerespHeader   b Content-Length: 20
+--       65547 BerespHeader   b Connection: keep-alive
+--       65547 BerespHeader   b Cache-Control: private, no-cache
+--       65547 BerespHeader   b Set-Cookie: REDACTED
+--       65547 Timestamp      b Beresp: 1792528206.939962 0.016580 0.015678
+--       65547 TTL            b RFC 2 3600 0 1792528207 1792528207 1792528206 0 0 cacheable
+--       65547 VCL_call       b BACKEND_RESPONSE
+--       65547 BerespUnset    b Set-Cookie: REDACTED
+--       65547 TTL            b VCL 120 3600 0 1792528207 cacheable
+--       65547 TTL            b VCL 120 3600 0 1792528207 uncacheable
+--       65547 VCL_return     b deliver
+--       65547 Timestamp      b Process: 1792528206.940032 0.016650 0.000070
+--       65547 Filters        b  esi_gzip
+--       65547 BerespUnset    b Content-Length: 20
+--       65547 BerespHeader   b Content-Encoding: gzip
+--       65547 BerespHeader   b Vary: Accept-Encoding
+--       65547 Storage        b malloc Transient
+--       65547 Fetch_Body     b 3 length -
+--       65547 Gzip           b G F E 20 48 80 304 314
+--       65547 BackendClose   b 24 default recycle
+--       65547 Timestamp      b BerespBody: 1792528206.943705 0.020324 0.003673
+--       65547 Length         b 48
+--       65547 BereqAcct      b 196 0 196 219 20 239
+--       65547 End            b 
+
+*              << Request  >>   32778     
+-        32778 Begin          c req 32777 rxreq
+-        32778 Timestamp      c Start: 1792528206.960512 0.000000 0.000000
+-        32778 Timestamp      c Req: 1792528206.960512 0.000000 0.000000
+-        32778 VCL_use        c boot
+-        32778 ReqStart       c 192.168.164.5 56888 a0
+-        32778 ReqMethod      c GET
+-        32778 ReqURL         c /private.html
+-        32778 ReqProtocol    c HTTP/1.1
+-        32778 ReqHeader      c Accept-Encoding: identity
+-        32778 ReqHeader      c User-Agent: Python-urllib/3.13
+-        32778 ReqHeader      c Host: app.fixture.test
+-        32778 ReqHeader      c Connection: close
+-        32778 ReqHeader      c X-Forwarded-For: 192.168.164.5
+-        32778 ReqHeader      c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        32778 VCL_call       c RECV
+-        32778 ReqURL         c /private.html
+-        32778 ReqUnset       c Accept-Encoding: identity
+-        32778 VCL_return     c hash
+-        32778 VCL_call       c HASH
+-        32778 VCL_return     c lookup
+-        32778 HitMiss        c 65547 119.979446
+-        32778 VCL_call       c MISS
+-        32778 VCL_return     c fetch
+-        32778 Link           c bereq 32779 fetch
+-        32778 Timestamp      c Fetch: 1792528206.966079 0.005567 0.005567
+-        32778 RespProtocol   c HTTP/1.1
+-        32778 RespStatus     c 200
+-        32778 RespReason     c OK
+-        32778 RespHeader     c Server: nginx/1.27.5
+-        32778 RespHeader     c Date: Tue, 20 Oct 2026 20:30:06 GMT
+-        32778 RespHeader     c Content-Type: text/html
+-        32778 RespHeader     c Cache-Control: private, no-cache
+-        32778 RespHeader     c Content-Encoding: gzip
+-        32778 RespHeader     c Vary: Accept-Encoding
+-        32778 RespHeader     c X-Varnish: 32778
+-        32778 RespHeader     c Age: 0
+-        32778 RespHeader     c Via: 1.1 313fc632fd82 (Varnish/8.0)
+-        32778 RespHeader     c Accept-Ranges: bytes
+-        32778 VCL_call       c DELIVER
+-        32778 RespHeader     c X-Cache: MISS
+-        32778 RespHeader     c X-Cache-Hits: 0
+-        32778 VCL_return     c deliver
+-        32778 Timestamp      c Process: 1792528206.966110 0.005598 0.000030
+-        32778 Filters        c  gunzip
+-        32778 RespUnset      c Content-Encoding: gzip
+-        32778 RespHeader     c Content-Length: 20
+-        32778 RespHeader     c Connection: close
+-        32778 Gzip           c U D - 48 20 80 304 314
+-        32778 Timestamp      c Resp: 1792528206.966194 0.005681 0.000083
+-        32778 ReqAcct        c 132 0 132 316 20 336
+-        32778 End            c 
+**             << BeReq    >>   32779     
+--       32779 Begin          b bereq 32778 fetch
+--       32779 VCL_use        b boot
+--       32779 Timestamp      b Start: 1792528206.960641 0.000000 0.000000
+--       32779 BereqMethod    b GET
+--       32779 BereqURL       b /private.html
+--       32779 BereqProtocol  b HTTP/1.1
+--       32779 BereqHeader    b User-Agent: Python-urllib/3.13
+--       32779 BereqHeader    b Host: app.fixture.test
+--       32779 BereqHeader    b X-Forwarded-For: 192.168.164.5
+--       32779 BereqHeader    b Via: 1.1 313fc632fd82 (Varnish/8.0)
+--       32779 BereqHeader    b Accept-Encoding: gzip
+--       32779 BereqHeader    b X-Varnish: 32779
+--       32779 VCL_call       b BACKEND_FETCH
+--       32779 VCL_return     b fetch
+--       32779 Timestamp      b Fetch: 1792528206.960649 0.000007 0.000007
+--       32779 Timestamp      b Connected: 1792528206.960652 0.000010 0.000003
+--       32779 BackendOpen    b 24 default 192.168.164.2 80 192.168.164.3 57770 reuse
+--       32779 Timestamp      b Bereq: 1792528206.960718 0.000077 0.000066
+--       32779 BerespProtocol b HTTP/1.1
+--       32779 BerespStatus   b 200
+--       32779 BerespReason   b OK
+--       32779 BerespHeader   b Server: nginx/1.27.5
+--       32779 BerespHeader   b Date: Tue, 20 Oct 2026 20:30:06 GMT
+--       32779 BerespHeader   b Content-Type: text/html
+--       32779 BerespHeader   b Content-Length: 20
+--       32779 BerespHeader   b Connection: keep-alive
+--       32779 BerespHeader   b Cache-Control: private, no-cache
+--       32779 BerespHeader   b Set-Cookie: REDACTED
+--       32779 Timestamp      b Beresp: 1792528206.965598 0.004957 0.004880
+--       32779 TTL            b RFC 2 3600 0 1792528207 1792528207 1792528206 0 0 cacheable
+--       32779 VCL_call       b BACKEND_RESPONSE
+--       32779 BerespUnset    b Set-Cookie: REDACTED
+--       32779 TTL            b VCL 120 3600 0 1792528207 cacheable
+--       32779 TTL            b VCL 120 3600 0 1792528207 uncacheable
+--       32779 VCL_return     b deliver
+--       32779 Timestamp      b Process: 1792528206.965635 0.004993 0.000036
+--       32779 Filters        b  esi_gzip
+--       32779 BerespUnset    b Content-Length: 20
+--       32779 BerespHeader   b Content-Encoding: gzip
+--       32779 BerespHeader   b Vary: Accept-Encoding
+--       32779 Storage        b malloc Transient
+--       32779 Fetch_Body     b 3 length -
+--       32779 Gzip           b G F E 20 48 80 304 314
+--       32779 BackendClose   b 24 default recycle
+--       32779 Timestamp      b BerespBody: 1792528206.966280 0.005639 0.000645
+--       32779 Length         b 48
+--       32779 BereqAcct      b 196 0 196 219 20 239
+--       32779 End            b 
+

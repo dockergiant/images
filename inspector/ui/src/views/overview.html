@@ -1,0 +1,120 @@
+<section x-data="overviewTiles" aria-label="Services" class="tile-grid">
+  <template x-for="t in tiles" :key="t.kind">
+    <article class="tile" :class="t.cls">
+      <h2 class="tile-name" x-text="t.label"></h2>
+      <div class="tile-main" :data-form="t.form">
+        <div class="tile-text">
+          <span class="tile-value" :class="t.valueCls" x-text="t.value"></span>
+          <span class="tile-sub" x-text="t.sub"></span>
+        </div>
+        <div x-show="t.present" class="tile-chart" :data-tile="t.kind"></div>
+      </div>
+      <span x-show="t.caption" class="tile-caption" x-text="t.caption"></span>
+      <a class="tile-link" :href="t.href" :aria-label="t.linkLabel"><span x-text="t.linkText"></span><span aria-hidden="true"> →</span></a>
+    </article>
+  </template>
+</section>
+
+<section x-show="hasWarnings" x-cloak aria-label="Warnings" class="flex flex-col gap-2">
+  <template x-for="w in warnings" :key="w.key">
+    <div class="banner" role="status">
+      <span class="banner-title" :class="w.cls" x-text="w.title"></span>
+      <span class="min-w-0 flex-1 basis-80" x-text="w.text"></span>
+      <span x-show="w.source" class="text-xs text-muted" x-text="w.source"></span>
+      <code x-show="w.hasFix" class="mono rounded bg-well px-2 py-1 text-xs text-ink select-all" x-text="w.fix"></code>
+      <button type="button" x-show="w.hasFix" class="btn btn-sm" @click="copy(w.fix)">Copy fix</button>
+    </div>
+  </template>
+</section>
+
+<section x-show="hasMagentoError" x-cloak class="banner">
+  <span class="banner-title">Magento config not readable</span>
+  <span x-text="magentoError"></span>
+</section>
+
+<section aria-label="Requests" class="flex flex-wrap items-start gap-4">
+  <div class="flex min-w-0 max-w-[440px] flex-[1_1_360px] flex-col gap-2">
+    <div class="flex items-center gap-2.5">
+      <h2 class="heading">Requests</h2>
+      <span class="text-xs" :class="liveCls" x-text="liveText"></span>
+      <div class="grow"></div>
+      <label class="flex cursor-pointer items-center gap-1.5 text-xs text-muted">
+        <input type="checkbox" name="hide-hits" :checked="hideHits" @change="toggleHits()">
+        <span>hide HITs</span>
+      </label>
+      <label class="flex cursor-pointer items-center gap-1.5 text-xs text-muted" title="Files under /static and /media">
+        <input type="checkbox" name="hide-assets" :checked="hideAssets" @change="toggleAssets()">
+        <span>hide static files</span>
+      </label>
+    </div>
+    <p x-show="hiddenText" class="m-0 text-xs text-muted" x-text="hiddenText"></p>
+    <div class="flex max-h-[62vh] flex-col gap-2 overflow-y-auto pr-1">
+      <template x-for="r in rows" :key="r.key">
+        <a href="#/overview" class="pick-item mono text-xs" :aria-current="r.current" @click.prevent="select(r)">
+          <span class="break-all" x-text="r.title"></span>
+          <span class="text-muted"><span :class="r.badgeCls" x-text="r.badge"></span> · <span x-text="r.meta"></span></span>
+          <span x-show="r.hasStrip" class="cost-strip" role="img" :aria-label="r.stripLabel">
+            <template x-for="s in r.strip" :key="s.key"><span :class="s.cls" :style="s.style" :title="s.title"></span></template>
+          </span>
+        </a>
+      </template>
+    </div>
+    <div x-show="!hasRows" class="empty text-sm" x-text="emptyText"></div>
+  </div>
+
+  <article x-show="hasCurrent" x-cloak class="panel min-w-0 flex-[999_1_520px] gap-4 px-5 py-[18px]">
+    <div class="flex flex-wrap items-baseline gap-3">
+      <h2 class="mono m-0 min-w-0 break-all text-base font-medium" x-text="title"></h2>
+      <span class="text-xs text-muted" x-text="subtitle"></span>
+      <div class="grow"></div>
+      <a x-show="hasTrace" :href="traceHref" class="text-[13px] text-php">Open PHP trace →</a>
+    </div>
+    <div x-show="hasCurrentStrip" class="cost-strip cost-strip-lg" role="img" :aria-label="currentStrip.label">
+      <template x-for="s in currentStrip.segments" :key="s.key"><span :class="s.cls" :style="s.style" :title="s.title"></span></template>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <div class="grid grid-cols-[110px_minmax(0,1fr)_70px] items-center gap-3 text-xs text-muted">
+        <span>Service</span>
+        <span class="flex justify-between"><span>0 ms</span><span x-text="axisEnd"></span></span>
+        <span class="text-right">Source</span>
+      </div>
+      <template x-for="l in lanes" :key="l.key">
+        <div class="flex flex-col gap-0.5">
+          <div class="grid grid-cols-[110px_minmax(0,1fr)_70px] items-center gap-3 text-[13px]">
+            <span :class="l.labelCls" x-text="l.label"></span>
+            <div class="lane-track" :class="l.trackCls">
+              <template x-for="b in l.bars" :key="b.id">
+                <div class="lane-bar" :style="barStyle(b)"></div>
+              </template>
+            </div>
+            <span class="text-right text-[11px]" :class="l.joinCls" :title="l.joinTitle" x-text="l.join"></span>
+          </div>
+          <p x-show="l.caption" class="m-0 pl-[122px] text-[11px] text-muted" x-text="l.caption"></p>
+        </div>
+      </template>
+    </div>
+
+    <div x-show="hasAnswers" class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3">
+      <template x-for="a in answers" :key="a.key">
+        <div class="card gap-1 rounded-lg px-3.5 py-3">
+          <span class="card-label" x-text="a.label"></span>
+          <span class="text-[13px]" :class="a.cls" x-text="a.value"></span>
+          <span class="card-sub" x-text="a.sub"></span>
+        </div>
+      </template>
+    </div>
+  </article>
+</section>
+
+<section x-show="hasFacts" x-cloak aria-label="Magento" class="panel">
+  <h2 class="heading">Magento</h2>
+  <dl class="m-0 grid grid-cols-[160px_minmax(0,1fr)] gap-x-4 gap-y-1.5 text-[13px]">
+    <template x-for="f in facts" :key="f.k">
+      <div class="contents">
+        <dt class="text-muted" x-text="f.k"></dt>
+        <dd class="m-0 break-all" x-text="f.v"></dd>
+      </div>
+    </template>
+  </dl>
+</section>

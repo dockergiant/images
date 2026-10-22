@@ -1,0 +1,27 @@
+[ 2, ["param.show", "-j", "changed"], 1792528552.498,
+  {
+    "name": "default_grace",
+    "implemented": true,
+    "value": 3600.000,
+    "units": "seconds",
+    "default": "10.000",
+    "minimum": "0.000",
+    "description": "Default grace period.  We will deliver an object this long after it has expired, provided another thread is attempting to get a new copy.",
+    "flags": [
+      "obj_sticky"
+    ]
+  },
+  {
+    "name": "default_ttl",
+    "implemented": true,
+    "value": 2.000,
+    "units": "seconds",
+    "default": "120.000",
+    "minimum": "0.000",
+    "description": "The TTL assigned to objects if neither the backend nor the VCL code assigns one.",
+    "flags": [
+      "obj_sticky"
+    ]
+  }
+]
+

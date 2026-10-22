@@ -1,0 +1,431 @@
+/*
+  Chart kit (lib/charts.js): donut, timeseries, ranked and stacked bars,
+  histogram and sparkline. Imported by ../styles.css into the components layer
+  after shell.css, because the kit reuses .btn, .table and .sr-only-text.
+
+  The kit draws SVG with attributes only and colours every mark through a
+  .chart-sN class, so a palette change is an edit to the tokens below.
+*/
+
+/* The categorical slots --chart-1 … --chart-8 live with the other tokens in
+   ../styles.css (validated on --plate: adjacent CVD ΔE 8.4, normal vision
+   19.3). These are the kit's own seams. */
+:root {
+  --chart-other: #66717e;
+  --chart-grid: var(--seam-soft);
+  --chart-baseline: var(--seam-strong);
+  --chart-track: var(--seam);
+}
+
+.chart-s1 { --series: var(--chart-1); }
+.chart-s2 { --series: var(--chart-2); }
+.chart-s3 { --series: var(--chart-3); }
+.chart-s4 { --series: var(--chart-4); }
+.chart-s5 { --series: var(--chart-5); }
+.chart-s6 { --series: var(--chart-6); }
+.chart-s7 { --series: var(--chart-7); }
+.chart-s8 { --series: var(--chart-8); }
+.chart-sother { --series: var(--chart-other); }
+
+.chart {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  transition: opacity 160ms ease;
+}
+.chart.is-stale {
+  opacity: 0.55;
+}
+
+.chart-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.chart-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.chart-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--chalk);
+}
+.chart-subtitle {
+  margin: 0;
+  font-size: 12px;
+  color: var(--fog);
+}
+.chart-toggle {
+  flex: none;
+  margin: -4px -6px 0 0;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--soft);
+}
+.chart-legend.is-empty {
+  display: none;
+}
+.chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Identity keys: a short stroke for lines, a small block for areas and bars.
+   The text beside them stays in the text tokens. */
+.chart-key {
+  display: inline-block;
+  flex: none;
+  background: var(--series);
+}
+.chart-key-line {
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+}
+.chart-key-rect {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.chart-body {
+  min-width: 0;
+}
+.chart-svg {
+  display: block;
+  overflow: visible;
+  font-family: var(--font-sans);
+}
+.chart-svg:focus {
+  outline: none;
+}
+.chart-svg:focus-visible {
+  outline: 2px solid var(--chalk);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.chart-grid {
+  stroke: var(--chart-grid);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+.chart-baseline {
+  stroke: var(--chart-baseline);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+.chart-axis {
+  fill: var(--fog);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-line {
+  fill: none;
+  stroke: var(--series);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.chart-area {
+  fill: var(--series);
+  fill-opacity: 0.1;
+  stroke: none;
+}
+.chart-band {
+  fill: var(--series);
+  fill-opacity: 0.16;
+  stroke: none;
+}
+.chart-dot {
+  fill: var(--series);
+  stroke: var(--plate);
+  stroke-width: 2;
+}
+.chart-key-stroke {
+  stroke: var(--series);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.chart-direct-label {
+  font-size: 11px;
+}
+.chart-direct-name {
+  fill: var(--soft);
+}
+.chart-direct-value {
+  fill: var(--chalk);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-cross {
+  visibility: hidden;
+  pointer-events: none;
+}
+.chart-cross.is-on {
+  visibility: visible;
+}
+.chart-crossline {
+  stroke: var(--fog);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+.chart-hit {
+  fill: transparent;
+}
+.chart-hit-ring {
+  stroke: transparent;
+}
+
+.chart-bar {
+  fill: var(--series);
+  transition: opacity 120ms ease;
+}
+.chart-row-label {
+  fill: var(--soft);
+  font-size: 12px;
+}
+.chart-mono {
+  font-family: var(--font-mono);
+  font-variant-ligatures: none;
+}
+.chart-bar-value {
+  fill: var(--chalk);
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.chart-flag {
+  fill: var(--soft);
+  font-size: 11px;
+}
+.chart-flag-icon {
+  fill: var(--warn);
+}
+.chart-row,
+.chart-col,
+.chart-mark {
+  outline: none;
+}
+.chart-row.is-link {
+  cursor: pointer;
+}
+.chart-row.is-active .chart-row-label {
+  fill: var(--chalk);
+}
+/* Ranges: the spread is a quiet band, the samples sit on it, and the median
+   is the mark to read, ringed in the surface so it stays clear of the dots. */
+.chart-range {
+  fill: var(--series);
+  fill-opacity: 0.28;
+}
+.chart-sample {
+  fill: var(--series);
+  fill-opacity: 0.75;
+  stroke: var(--plate);
+  stroke-width: 1;
+}
+.chart-median {
+  fill: var(--series);
+  stroke: var(--plate);
+  stroke-width: 2;
+}
+.chart-row.is-active .chart-median {
+  filter: brightness(1.18);
+}
+
+.chart-row.is-active .chart-bar,
+.chart-col.is-active .chart-bar {
+  filter: brightness(1.18);
+}
+.chart-row:focus-visible .chart-hit,
+.chart-col:focus-visible .chart-hit {
+  stroke: var(--chalk);
+  stroke-width: 1;
+}
+.chart-row:focus-visible .chart-hit {
+  fill: var(--plate-raised);
+}
+
+.chart-donut-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.chart-track {
+  stroke: var(--chart-track);
+}
+.chart-ring {
+  stroke: var(--series);
+}
+.chart-mark:focus-visible .chart-hit-ring {
+  stroke: var(--plate-raised);
+}
+.chart-hero {
+  fill: var(--chalk);
+  font-family: var(--font-condensed);
+  font-size: 28px;
+  font-weight: 600;
+  font-variant-numeric: normal;
+}
+.chart-hero-sm {
+  font-size: 20px;
+}
+.chart-hero-label {
+  fill: var(--fog);
+  font-size: 11px;
+}
+.chart-delta {
+  fill: var(--soft);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.chart-delta-good {
+  fill: var(--ok);
+}
+.chart-delta-bad {
+  fill: var(--error);
+}
+.chart-caption {
+  margin: 0;
+  font-size: 12px;
+  color: var(--soft);
+  text-align: center;
+}
+
+.chart-spark .chart-direct-value {
+  font-size: 12px;
+}
+
+.chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  margin: 0;
+  border: 1px solid var(--seam-soft);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--fog);
+  text-align: center;
+  padding: 12px;
+}
+.chart-spark .chart-empty {
+  min-height: 32px;
+  border: 0;
+  padding: 0;
+  justify-content: flex-start;
+}
+
+.chart-table-wrap {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--seam);
+  border-radius: 6px;
+}
+.chart-table {
+  font-size: 12px;
+}
+.chart-table th {
+  position: sticky;
+  top: 0;
+  background: var(--plate);
+}
+.chart-table .num {
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-tip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  display: none;
+  min-width: 120px;
+  max-width: 280px;
+  padding: 8px 10px;
+  border: 1px solid var(--seam-strong);
+  border-radius: 6px;
+  background: var(--plate-raised);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.35);
+  pointer-events: none;
+  font-size: 12px;
+}
+.chart-tip.is-open {
+  display: block;
+}
+.chart-tip-title {
+  margin-bottom: 4px;
+  color: var(--fog);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.chart-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.6;
+}
+.chart-tip-value {
+  color: var(--chalk);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.chart-tip-label {
+  color: var(--soft);
+}
+.chart-tip-note {
+  margin-top: 4px;
+  color: var(--soft);
+  font-size: 11px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart,
+  .chart-bar {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .chart-line,
+  .chart-key-stroke {
+    stroke: CanvasText;
+  }
+  .chart-bar,
+  .chart-dot,
+  .chart-key {
+    fill: CanvasText;
+    background: CanvasText;
+  }
+}
+
+.chart-zero-note {
+  fill: var(--fog);
+  font-size: 12px;
+  /* A halo in the card colour keeps the note clear of the grid line under it. */
+  stroke: var(--plate);
+  stroke-width: 8px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}

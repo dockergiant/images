@@ -1,0 +1,10 @@
+[ 2, ["vcl.list", "-j"], 1792527808.070,
+  {
+    "status": "active",
+    "state": "auto",
+    "temperature": "warm",
+    "busy": 0,
+    "name": "boot"
+}
+]
+

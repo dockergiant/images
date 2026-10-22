@@ -1,0 +1,809 @@
+/*
+  PHP traces: Hotspots, Requests and the trace detail screens.
+  Imported by ../styles.css into the components layer, after the shared
+  primitives, so rules here can use every token (var(--plate), var(--heat-3),
+  var(--cat-sql) …) and override a shared class where traces need it.
+
+  Heat (--heat-1 … --heat-4) marks cost and nothing else: the rank badge, the
+  share bar and the left edge of the hottest rows. Levels come from the share
+  of time through data-heat="0…4".
+*/
+
+.page-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--chalk);
+}
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 12px;
+}
+.section-note {
+  font-size: 12px;
+  color: var(--fog);
+  max-width: 80ch;
+}
+
+.text-link,
+.link-btn {
+  color: var(--soft);
+  text-decoration: underline;
+  text-decoration-color: var(--seam-strong);
+  text-underline-offset: 3px;
+}
+.text-link:hover,
+.link-btn:hover {
+  color: var(--chalk);
+  text-decoration-color: var(--fog);
+}
+.link-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+/* In-page jumps: the sections of a long page, one click each, with how
+   much each holds so an empty section is not worth the click. */
+.jump-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+.jump-btn {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-height: 26px;
+  padding: 3px 10px;
+  border: 1px solid var(--seam);
+  border-radius: 6px;
+  background: var(--plate);
+  color: var(--soft);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.jump-btn:hover {
+  border-color: var(--seam-strong);
+  color: var(--chalk);
+}
+.jump-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fog);
+  font-variant-numeric: tabular-nums;
+}
+.jump-target {
+  scroll-margin-top: 12px;
+}
+
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+/* ---- type tag: the dot names the cost category the span's time lands in ---- */
+
+.kind-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  padding: 0 6px 0 5px;
+  height: 18px;
+  border: 1px solid var(--seam-strong);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--soft);
+  white-space: nowrap;
+}
+.kind-tag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--cat-php);
+}
+.kind-tag[data-kind="sql"]::before {
+  background: var(--cat-sql);
+}
+.kind-tag[data-kind="cache"]::before {
+  background: var(--cat-cache);
+}
+.kind-tag[data-kind="search"]::before {
+  background: var(--cat-search);
+}
+.kind-tag[data-kind="http"]::before {
+  background: var(--cat-http);
+}
+
+/* ---- heat ---- */
+
+.rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 4px;
+  font-family: var(--font-condensed);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--fog);
+  border: 1px solid var(--seam);
+}
+.rank[data-heat="2"] {
+  border-color: transparent;
+  background: var(--heat-2);
+  color: var(--chalk);
+}
+/* Darker than --heat-3 itself: chalk on #C2502E is 3.8:1, under AA for 12 px
+   text. The heat bars and the flame graph keep the token. */
+.rank[data-heat="3"] {
+  border-color: transparent;
+  background: #A3412A;
+  color: var(--chalk);
+}
+.rank[data-heat="4"] {
+  border-color: transparent;
+  background: var(--heat-4);
+  color: var(--ground);
+}
+.rank-count {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 11px;
+  min-width: 44px;
+}
+
+.heat-bar,
+.share-track {
+  position: relative;
+  flex: 1;
+  min-width: 40px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--seam-soft);
+}
+.share-track {
+  height: 8px;
+}
+.heat-fill,
+.share-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 2px;
+}
+.heat-fill {
+  min-width: 2px;
+  background: var(--heat-2);
+}
+.heat-fill[data-heat="3"] {
+  background: var(--heat-3);
+}
+.heat-fill[data-heat="4"] {
+  background: var(--heat-4);
+}
+
+tr.heat-row[data-heat="4"] > td:first-child,
+li.heat-row[data-heat="4"] {
+  box-shadow: inset 3px 0 0 var(--heat-4);
+}
+
+/* ---- the cost strip legend ---- */
+
+.cost-swatch {
+  display: inline-block;
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+.cost-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+.cost-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.cost-legend li[data-zero="true"] {
+  opacity: 0.45;
+}
+/* The key on pages that show strips without a legend of their own. */
+.cost-legend-sm {
+  gap: 2px 12px;
+  font-size: 11px;
+  color: var(--fog);
+}
+.cost-legend-sm li {
+  gap: 5px;
+}
+
+/* ---- tables ---- */
+
+.op-cell {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+@media (max-width: 639px) {
+  .op-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .trace-table th,
+  .trace-table td {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+/* .sr-only-text is absolutely positioned; without a positioned ancestor
+   inside the scrolling .content it would stretch the document instead. */
+.trace-table,
+.filter-field {
+  position: relative;
+}
+.trace-table td {
+  vertical-align: middle;
+}
+.trace-table .num {
+  white-space: nowrap;
+}
+.trace-table th[aria-sort="ascending"],
+.trace-table th[aria-sort="descending"] {
+  color: var(--chalk);
+}
+.sort-link {
+  display: inline-flex;
+  gap: 4px;
+  color: inherit;
+  text-decoration: none;
+}
+.sort-link:hover {
+  color: var(--chalk);
+}
+.sort-arrow {
+  font-size: 11px;
+}
+.click-row {
+  cursor: pointer;
+}
+.click-row:hover > td,
+.click-row:focus-within > td {
+  background: var(--plate-raised);
+}
+.trace-table tr[data-focus="true"] > td {
+  background: var(--accent-tint);
+}
+.row-link {
+  color: var(--chalk);
+  text-decoration: none;
+}
+.row-link:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--fog);
+  text-underline-offset: 3px;
+}
+.row-link:focus-visible {
+  outline-offset: 3px;
+}
+
+.req-link {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+.req-route,
+.req-url {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.req-route {
+  font-size: 13px;
+}
+.req-url {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fog);
+}
+@media (max-width: 639px) {
+  /* On a phone the query string is what tells two requests apart, so the
+     URL wraps instead of losing its end. */
+  .req-url {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+}
+.req-method {
+  display: inline-block;
+  padding: 0 4px;
+  border: 1px solid var(--seam-strong);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 15px;
+  color: var(--fog);
+  vertical-align: 2px;
+}
+.req-method:empty {
+  display: none;
+}
+
+.marker {
+  display: inline-block;
+  padding: 0 5px;
+  border: 1px solid var(--seam-strong);
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 17px;
+  color: var(--fog);
+  white-space: nowrap;
+}
+.marker-warn {
+  border-color: var(--color-warn-line);
+  color: var(--warn);
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--seam);
+  border-radius: 8px;
+  background: var(--plate);
+}
+.filter-field {
+  display: flex;
+  min-width: 0;
+}
+.filter-field.grow {
+  flex: 1 1 200px;
+}
+.filter-field select {
+  max-width: 22rem;
+}
+@media (max-width: 639px) {
+  .filter-field {
+    flex: 1 1 100%;
+  }
+  .filter-field select {
+    max-width: none;
+    width: 100%;
+  }
+}
+
+/* ---- trace header and tabs ---- */
+
+.trace-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.trace-url {
+  margin: 0;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--chalk);
+  overflow-wrap: anywhere;
+}
+.trace-duration {
+  font-family: var(--font-condensed);
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 1.1;
+  color: var(--chalk);
+}
+
+.trace-tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--seam);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.trace-tab {
+  flex: none;
+  padding: 8px 12px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  font-size: 13px;
+  color: var(--fog);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.trace-tab:hover {
+  color: var(--chalk);
+}
+.trace-tab[aria-current="page"] {
+  color: var(--chalk);
+  border-bottom-color: var(--accent);
+}
+
+.focus-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--seam-strong);
+  border-radius: 8px;
+  background: var(--plate-raised);
+  min-width: 0;
+}
+
+/* ---- bottlenecks ---- */
+
+.bn-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bn-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 210px;
+  align-items: start;
+  gap: 2px 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--seam);
+  border-radius: 8px;
+  background: var(--plate);
+  list-style: none;
+}
+.bn-item[data-focus="true"] {
+  border-color: var(--accent);
+  background: var(--accent-tint);
+}
+.bn-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.bn-resource {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.bn-path {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fog);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bn-metrics {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+.bn-sub {
+  font-size: 11.5px;
+  color: var(--fog);
+  white-space: nowrap;
+}
+.bn-self {
+  font-family: var(--font-condensed);
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.1;
+  color: var(--chalk);
+}
+
+.bn-share {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+@media (max-width: 639px) {
+  .bn-item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .bn-metrics {
+    grid-column: 2;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 12px;
+  }
+  .bn-share {
+    width: auto;
+    flex: 1 1 120px;
+  }
+  .bn-sub {
+    flex-basis: 100%;
+  }
+}
+
+.slow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+.slow-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--seam);
+  border-radius: 8px;
+  background: var(--plate);
+}
+.slow-title {
+  margin: 0;
+}
+.slow-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  padding: 5px 6px;
+  margin: 0 -6px;
+  border-top: 1px solid var(--seam-soft);
+  border-radius: 4px;
+  list-style: none;
+}
+.slow-item:first-child {
+  border-top-color: transparent;
+}
+.slow-item[data-focus="true"] {
+  background: var(--accent-tint);
+}
+
+/* ---- waterfall ---- */
+
+.wf-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  min-width: 0;
+}
+@media (min-width: 1100px) {
+  .wf-layout[data-panel="true"] {
+    grid-template-columns: minmax(0, 1fr) 360px;
+  }
+}
+/* Span names get two fifths of the width: a name cut to its first word
+   is the waterfall's most common reason to hover. With the side panel open
+   the timeline gives up more of its share. */
+.wf-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) 64px;
+  align-items: center;
+  gap: 10px;
+}
+@media (min-width: 1100px) {
+  .wf-layout[data-panel="true"] .wf-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 60px;
+  }
+}
+@media (max-width: 639px) {
+  .wf-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 28%) 52px;
+    gap: 6px;
+  }
+}
+.wf-viewport {
+  position: relative;
+  max-height: 62vh;
+  min-height: 6rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.wf-row {
+  height: 22px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.wf-row:hover {
+  background: var(--plate-raised);
+}
+.wf-row[data-selected="true"] {
+  background: var(--accent-tint);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.wf-prefix {
+  flex: none;
+  white-space: pre;
+  font-size: 10px;
+  color: color-mix(in srgb, var(--fog) 60%, transparent);
+}
+@media (max-width: 639px) {
+  /* Deep trees would spend the whole name column on guides; tiny glyphs keep
+     the shape of the tree at a quarter of the width. */
+  .wf-prefix {
+    font-size: 5px;
+  }
+}
+.wf-caret {
+  width: 16px;
+  flex: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  color: var(--fog);
+  cursor: pointer;
+}
+.wf-caret:hover {
+  color: var(--chalk);
+}
+.wf-caret:disabled {
+  cursor: default;
+}
+.wf-name {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.wf-name:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+.flame-frame:focus {
+  outline: none;
+}
+.flame-frame:focus-visible rect {
+  stroke: var(--chalk);
+  stroke-width: 2;
+}
+.wf-bar {
+  position: absolute;
+  top: 0;
+  height: 12px;
+  min-width: 1px;
+  border-radius: 2px;
+}
+
+.span-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  align-self: start;
+  padding: 14px;
+  border: 1px solid var(--seam);
+  border-radius: 8px;
+  background: var(--plate);
+}
+@media (min-width: 1100px) {
+  .span-panel {
+    position: sticky;
+    top: 12px;
+    max-height: calc(100vh - var(--topbar-h) - 32px);
+    overflow-y: auto;
+  }
+}
+.self-track {
+  position: relative;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--seam-soft);
+}
+.self-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  min-width: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.panel-facts,
+.panel-attrs {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 3px 12px;
+  margin: 0;
+  font-size: 12px;
+}
+.panel-facts dt,
+.panel-attrs dt {
+  color: var(--fog);
+}
+.panel-facts dd,
+.panel-attrs dd {
+  margin: 0;
+  color: var(--chalk);
+  overflow-wrap: anywhere;
+}
+/* Attribute names run to 30 characters and values to paths and URLs, so
+   each pair stacks: side by side, the value column was a few letters wide. */
+.panel-attrs {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  font-size: 11.5px;
+}
+.panel-attrs dt {
+  padding-top: 6px;
+  border-top: 1px solid var(--seam-soft);
+  overflow-wrap: anywhere;
+}
+.panel-attrs > div:first-of-type > dt {
+  padding-top: 0;
+  border-top: 0;
+}
+.panel-attrs dd {
+  padding-bottom: 6px;
+  color: var(--soft);
+}
+
+/* ---- flame graph key ---- */
+
+.flame-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+.flame-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+.flame-swatch {
+  background: var(--color-php-bar);
+}
+.flame-swatch-hot {
+  box-shadow: inset 0 0 0 2px var(--heat-4);
+}
+.flame-swatch-warm {
+  box-shadow: inset 0 0 0 1px var(--heat-3);
+}

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="dark">
+<title>Roll Inspector options</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="panel.css">
+<script defer src="lib/core.js"></script>
+<script defer src="options.js"></script>
+</head>
+<body class="page">
+<main class="options">
+  <h1 class="title">Roll Inspector</h1>
+  <p class="soft">The panel finds Inspector from the inspected shop's host: it tries <span class="mono">inspector.&lt;host without its first label&gt;</span>, then <span class="mono">inspector.&lt;host&gt;</span>, and confirms each through <span class="mono">/api/v1/</span>.</p>
+
+  <section class="card" aria-labelledby="override-title">
+    <h2 id="override-title" class="h2">Inspector address</h2>
+    <p class="soft">Set this only when discovery picks the wrong env. It applies to every site.</p>
+    <form id="form" class="row">
+      <label class="field grow">
+        <span class="sr-only">Inspector URL</span>
+        <input id="override" class="input mono" type="url" name="override" placeholder="https://inspector.shop.test" spellcheck="false" autocomplete="off">
+      </label>
+      <button type="submit" class="btn btn-accent">Save</button>
+      <button id="reset" type="button" class="btn">Clear</button>
+    </form>
+    <p id="saved" class="soft" role="status"></p>
+  </section>
+
+  <section class="card" aria-labelledby="perm-title">
+    <h2 id="perm-title" class="h2">Sites outside .test</h2>
+    <p class="soft">The extension may call <span class="mono">https://*.test</span>. For an env on another domain, allow every site.</p>
+    <div class="row">
+      <button id="grant" type="button" class="btn">Allow every site</button>
+      <button id="revoke" type="button" class="btn btn-ghost">Back to .test only</button>
+      <span id="perm" class="soft" role="status"></span>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="found-title">
+    <h2 id="found-title" class="h2">Found Inspectors</h2>
+    <ul id="found" class="found"></ul>
+    <p id="none" class="soft">None yet. Open the Roll Inspector panel on a shop page.</p>
+  </section>
+</main>
+</body>
+</html>

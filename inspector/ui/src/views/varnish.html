@@ -1,0 +1,185 @@
+<div x-show="hasHealthError && isHealth" x-cloak class="banner"><span class="banner-title">Varnish did not answer</span><span x-text="healthError"></span></div>
+
+<div x-show="isHealth" class="flex flex-col gap-4">
+  <section aria-label="Key numbers" class="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">
+    <template x-for="c in hv.cards" :key="c.label">
+      <div class="card">
+        <span class="card-label" x-text="c.label"></span>
+        <span class="card-value" :class="c.cls" x-text="c.value"></span>
+        <span class="card-sub" x-text="c.sub"></span>
+      </div>
+    </template>
+  </section>
+
+  <template x-for="w in hv.warnings" :key="w.key">
+    <div class="banner"><span class="banner-title" :class="w.cls" x-text="w.title"></span><span class="min-w-0 flex-1 basis-80" x-text="w.text"></span><code x-show="w.hasFix" class="mono rounded bg-well px-2 py-1 text-xs select-all" x-text="w.fix"></code><button type="button" x-show="w.hasFix" class="btn btn-sm" @click="copy(w.fix)">Copy fix</button></div>
+  </template>
+
+  <template x-if="isHealth">
+    <div x-data="varnishDashboard" class="dash">
+      <div class="dash-bar">
+        <div class="seg" role="group" aria-label="Time window for the charts">
+          <span class="seg-label" aria-hidden="true">Last</span>
+          <template x-for="w in windows" :key="w.id">
+            <button type="button" class="seg-btn" :aria-pressed="w.pressed" @click="setWindow(w.id)" x-text="w.label"></button>
+          </template>
+        </div>
+        <span class="dash-note" x-text="note"></span>
+        <span x-show="sampleError" x-cloak class="dash-note text-warn" x-text="sampleError"></span>
+      </div>
+      <div x-show="hasFailed" x-cloak class="banner"><span class="banner-title">Metrics did not load</span><span x-text="failed"></span><div class="grow"></div><button type="button" class="btn btn-sm" @click="retry()">Retry</button></div>
+      <div x-show="!raw" class="dash-grid">
+        <div class="dash-card dash-w4"><div x-ref="chartHit"></div></div>
+        <div class="dash-card dash-w8"><div x-ref="chartOutcomes"></div></div>
+        <div class="dash-card dash-w4"><div x-ref="chartStorage"></div></div>
+        <div class="dash-card dash-w8"><div x-ref="chartBackend"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartObjects"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartMisses"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartChurn"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartBans"></div></div>
+      </div>
+      <section x-show="raw" x-cloak class="panel"><h2 class="heading">Raw metrics history</h2><pre class="code m-0 max-h-[60vh]" x-text="rawMetrics"></pre></section>
+    </div>
+  </template>
+
+  <section x-show="!raw" class="panel">
+    <h2 class="heading">Recent bans</h2>
+    <div x-show="hasBans" class="mono flex flex-col gap-1 text-xs leading-relaxed text-soft">
+      <template x-for="b in recentBans" :key="b.key">
+        <div class="flex gap-2"><span class="w-16 shrink-0 text-muted" x-text="b.age"></span><span class="min-w-0 break-all" x-text="b.spec"></span><span x-show="b.flush" class="text-warn">(full flush)</span></div>
+      </template>
+    </div>
+    <p x-show="!hasBans" class="empty m-0 p-3 text-[13px] text-muted">No bans since Varnish started. Purge or ban from Actions and they show up here.</p>
+    <a href="#/varnish/actions" class="text-[13px] text-accent">Ban a URL or tag in Actions →</a>
+  </section>
+
+  <section x-show="raw" x-cloak class="panel">
+    <h2 class="heading">Raw counters</h2>
+    <pre class="code m-0" x-text="rawCounters"></pre>
+  </section>
+</div>
+
+<div x-show="isBrowse" x-cloak class="flex flex-col gap-4">
+  <div class="flex flex-wrap gap-2" role="group" aria-label="Browse">
+    <template x-for="t in tabList" :key="t.id">
+      <button type="button" class="chip" :aria-pressed="t.pressed" @click="selectTab(t)" x-text="t.label"></button>
+    </template>
+  </div>
+  <div x-show="hasError" class="banner"><span x-text="error"></span></div>
+
+  <section x-show="isTabSearch" class="flex flex-col gap-3">
+    <form class="panel" @submit.prevent="runSearch()">
+      <h2 class="heading">Find requests in the Varnish log</h2>
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-3">
+        <label class="field">URL contains<input type="text" name="url" class="input mono" x-model="searchUrl" placeholder="/category-1" spellcheck="false"></label>
+        <label class="field">Cache tag<input type="text" name="tag" class="input mono" x-model="searchTag" placeholder="cat_c_41" spellcheck="false"></label>
+        <label class="field">VSL query<input type="text" name="q" class="input mono" x-model="searchQ" placeholder="RespStatus == 500" spellcheck="false"></label>
+      </div>
+      <div class="flex items-center gap-3"><button type="submit" class="btn btn-accent" :disabled="!canSearch">Search</button><span class="text-xs text-muted">Searches what varnishd still holds in its log buffer.</span></div>
+    </form>
+    <section x-show="hasResult" x-cloak class="panel">
+      <div class="flex flex-wrap items-baseline gap-3"><h2 class="heading" x-text="resultTitle"></h2><span class="mono text-xs text-muted break-all" x-text="resultQuery"></span></div>
+      <div class="flex flex-col">
+        <template x-for="r in resultRows" :key="r.key">
+          <button type="button" class="log-row h-auto min-h-6 flex-wrap whitespace-normal py-1 text-left" :aria-selected="r.open" @click="pick(r)">
+            <span class="text-muted" x-text="r.time"></span>
+            <span class="w-12 shrink-0" :class="r.badgeCls" x-text="r.badge"></span>
+            <span class="min-w-0 break-all" x-text="r.text"></span>
+            <span class="text-muted" x-text="r.tags"></span>
+            <span class="text-warn" x-text="r.reason"></span>
+          </button>
+        </template>
+      </div>
+      <pre x-show="hasPicked" class="code m-0" x-text="pickedRaw"></pre>
+    </section>
+  </section>
+
+  <section x-show="isTabBans" x-cloak class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Added</th><th>Ban</th><th>State</th><th class="num">Objects referencing it</th></tr></thead>
+      <tbody>
+        <template x-for="b in banList" :key="b.key">
+          <tr><td class="whitespace-nowrap text-muted" x-text="b.age"></td><td class="mono break-all" x-text="b.spec"></td><td x-text="b.done"></td><td class="num" x-text="b.refs"></td></tr>
+        </template>
+      </tbody>
+    </table>
+    <p x-show="banList.length === 0" class="empty m-4 p-3 text-[13px] text-muted">The ban list is empty. Bans you add in Actions, or that Magento sends on save, appear here until Varnish has applied them.</p>
+  </section>
+
+  <section x-show="isTabVcl" x-cloak class="flex flex-wrap items-start gap-4">
+    <div class="flex min-w-0 max-w-[260px] flex-[1_1_200px] flex-col gap-2">
+      <template x-for="v in vclList" :key="v.name">
+        <button type="button" class="pick-item" :aria-current="v.current" @click="showVcl(v.name)"><span class="mono" x-text="v.name"></span><span class="text-xs text-muted" x-text="v.meta"></span></button>
+      </template>
+    </div>
+    <div class="flex min-w-0 flex-[3_1_480px] flex-col gap-3">
+      <template x-for="f in vclFileList" :key="f.key">
+        <div class="flex flex-col gap-1.5"><span class="mono text-xs text-muted" x-text="f.path"></span><pre class="code m-0 max-h-[60vh]" x-text="f.source"></pre></div>
+      </template>
+    </div>
+  </section>
+
+  <section x-show="isTabBackends" x-cloak class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Backend</th><th>Health</th><th>Probe</th><th>Changed</th></tr></thead>
+      <tbody>
+        <template x-for="b in backendList" :key="b.key">
+          <tr><td class="mono" x-text="b.name"></td><td :class="b.healthCls" x-text="b.health"></td><td x-text="b.probe"></td><td class="text-muted" x-text="b.changed"></td></tr>
+        </template>
+      </tbody>
+    </table>
+  </section>
+
+  <section x-show="isTabParams" x-cloak class="flex flex-col gap-3">
+    <p class="m-0 text-[13px]" :class="panicCls" x-text="panicText"></p>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Parameter</th><th>Value</th><th>Default</th><th>What it does</th></tr></thead>
+        <tbody>
+          <template x-for="p in paramList" :key="p.key">
+            <tr><td class="mono" x-text="p.name"></td><td class="mono break-all" x-text="p.value"></td><td class="text-muted" x-text="p.def"></td><td class="max-w-[48ch] text-xs text-soft"><div class="line-clamp-3" :title="p.description" x-text="p.description"></div></td></tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+    <p class="m-0 text-xs text-muted">Only parameters that differ from the Varnish defaults are listed.</p>
+  </section>
+</div>
+
+<div x-show="isLive" x-cloak class="flex flex-col gap-4">
+  <section class="panel">
+    <h2 class="heading">Watch requests as they happen</h2>
+    <p class="m-0 text-[13px] text-soft">Rows land in the Live drawer at the bottom: HIT, MISS or PASS, the URL, the time and how many cache tags the page carries. Click a row to read the full log of that request.</p>
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-3">
+      <label class="field">Only URLs containing<input type="text" name="live-url" class="input mono" x-model="liveUrl" placeholder="optional, for example /checkout" spellcheck="false"></label>
+      <label class="field">VSL query<input type="text" name="live-q" class="input mono" x-model="liveQ" placeholder="optional, for example RespStatus >= 500" spellcheck="false"></label>
+    </div>
+    <div class="flex items-center gap-3"><button type="button" class="btn btn-accent" @click="openLive()" :disabled="liveInvalid" x-text="liveButton"></button><span class="mono text-xs text-muted" x-text="liveSub"></span></div>
+  </section>
+</div>
+
+<div x-show="isActions" x-cloak class="flex flex-col gap-4">
+  <p x-show="lanReason" class="banner m-0" x-text="lanReason"></p>
+  <div class="flex flex-wrap items-start gap-4">
+    <form class="panel min-w-0 flex-[1_1_320px]" @submit.prevent="doPurgeTag()">
+      <h2 class="heading">Purge pages by tag</h2>
+      <p class="m-0 text-[13px] text-soft">Sends the same PURGE request Magento sends when a product or category is saved.</p>
+      <label class="field">Cache tag<input type="text" name="purge-tag" class="input mono" x-model="purgeTag" placeholder="cat_c_41" spellcheck="false"></label>
+      <div><button type="submit" class="btn btn-danger" :disabled="!canPurgeTag">Purge pages…</button></div>
+    </form>
+    <form class="panel min-w-0 flex-[1_1_320px]" @submit.prevent="doBanUrl()">
+      <h2 class="heading">Ban URLs by regex</h2>
+      <p class="m-0 text-[13px] text-soft">Matches against the request URL, for example <span class="mono">^/category-</span>.</p>
+      <label class="field">URL regex<input type="text" name="ban-regex" class="input mono" x-model="banRegex" placeholder="^/category-" spellcheck="false"></label>
+      <div><button type="submit" class="btn btn-danger" :disabled="!canBan">Ban URLs…</button></div>
+    </form>
+  </div>
+  <section class="panel">
+    <h2 class="heading">Everything at once</h2>
+    <p class="m-0 text-[13px] text-soft">Both ask you to type the target before they run.</p>
+    <div class="flex flex-wrap gap-2.5">
+      <button type="button" class="btn btn-danger" :disabled="lan" @click="doPurgeAll()">Purge all Magento pages…</button>
+      <button type="button" class="btn btn-danger" :disabled="lan" @click="doBanAll()">Ban everything…</button>
+    </div>
+  </section>
+</div>

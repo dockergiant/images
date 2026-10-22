@@ -1,0 +1,257 @@
+/* API & extensions (#/connect). */
+
+.connect-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 76ch;
+}
+.connect-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.connect-lede {
+  margin: 0;
+  color: var(--soft);
+}
+.connect-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--fog);
+}
+.connect-note .icon {
+  flex: none;
+  margin-top: 2px;
+}
+
+.connect-clients {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: 16px;
+}
+.connect-client,
+.connect-probe {
+  gap: 12px;
+}
+.connect-client-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.connect-text {
+  margin: 0;
+  color: var(--soft);
+  max-width: 72ch;
+}
+
+.connect-steps {
+  counter-reset: step;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.connect-steps li {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 10px;
+  align-items: baseline;
+}
+.connect-steps li::before {
+  content: counter(step);
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--seam-strong);
+  border-radius: 50%;
+  font-family: var(--font-condensed);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--soft);
+}
+
+.connect-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+}
+.connect-inline {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--chalk);
+  font-size: inherit;
+  text-decoration: underline dotted var(--fog);
+  text-underline-offset: 3px;
+  cursor: copy;
+}
+.connect-inline:hover {
+  text-decoration-color: var(--chalk);
+}
+
+.connect-probe-rows {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 0;
+}
+.connect-probe-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.connect-probe-row dt {
+  font-size: 11px;
+  color: var(--fog);
+}
+.connect-probe-row dd {
+  margin: 0;
+  font-family: var(--font-condensed);
+  font-size: 15px;
+  font-weight: 600;
+}
+.connect-probe-row dd.mono {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.connect-verdict {
+  margin: 0;
+  font-size: 12px;
+}
+
+.connect-snippet {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.connect-snippet .connect-code {
+  flex: 1;
+}
+.connect-snippet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.connect-code {
+  margin: 0;
+  min-width: 0;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.connect-api {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.connect-api-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.connect-api-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+@media (min-width: 1000px) {
+  .connect-api-body {
+    grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  }
+  .connect-example {
+    position: sticky;
+    top: 16px;
+  }
+  .connect-eps {
+    max-height: calc(100vh - var(--topbar-h) - 64px);
+    overflow-y: auto;
+  }
+}
+.connect-eps {
+  padding: 8px;
+  gap: 4px;
+}
+.connect-ep-group + .connect-ep-group {
+  margin-top: 8px;
+}
+.connect-ep-label {
+  margin: 0;
+  padding: 6px 8px 4px;
+}
+.connect-ep-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.connect-ep {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  color: var(--soft);
+  text-decoration: none;
+}
+.connect-ep:hover {
+  background: var(--plate-raised);
+  color: var(--chalk);
+}
+.connect-ep[aria-current="page"] {
+  background: var(--plate-raised);
+  box-shadow: inset 2px 0 0 var(--chalk);
+  color: var(--chalk);
+}
+.connect-ep-path {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.connect-ep-get {
+  flex: none;
+  padding: 0 5px;
+  border-radius: 3px;
+  background: var(--seam-soft);
+  color: var(--ok);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 16px;
+}
+.connect-example {
+  gap: 10px;
+}
+.connect-example-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.connect-example-path {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}

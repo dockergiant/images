@@ -1,0 +1,165 @@
+<div x-show="hasHealthError && isHealth" x-cloak class="banner"><span class="banner-title">RabbitMQ did not answer</span><span x-text="healthError"></span></div>
+
+<div x-show="isHealth" class="flex flex-col gap-4">
+  <template x-for="w in hv.warnings" :key="w.key">
+    <div class="banner" role="status">
+      <span class="banner-title" :class="w.cls" x-text="w.title"></span>
+      <span class="min-w-0 flex-1 basis-80" x-text="w.text"></span>
+      <code x-show="w.hasFix" class="mono rounded bg-well px-2 py-1 text-xs text-ink select-all" x-text="w.fix"></code>
+      <button type="button" x-show="w.hasFix" class="btn btn-sm" @click="copy(w.fix)">Copy fix</button>
+      <button type="button" x-show="w.id === 'tracing-no-consumer'" class="btn btn-sm" :disabled="lan" @click="doTracingOff()">Switch tracing off…</button>
+    </div>
+  </template>
+
+  <section x-show="!raw" aria-label="Key numbers" class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3">
+    <template x-for="c in hv.cards" :key="c.label">
+      <div class="card"><span class="card-label" x-text="c.label"></span><span class="card-value" :class="c.cls" x-text="c.value"></span><span class="card-sub" x-text="c.sub"></span></div>
+    </template>
+  </section>
+
+  <template x-if="isHealth">
+    <div x-data="rabbitmqDashboard" class="dash">
+      <div class="dash-bar">
+        <div class="seg" role="group" aria-label="Time window for the charts">
+          <span class="seg-label" aria-hidden="true">Last</span>
+          <template x-for="w in windows" :key="w.id">
+            <button type="button" class="seg-btn" :aria-pressed="w.pressed" @click="setWindow(w.id)" x-text="w.label"></button>
+          </template>
+        </div>
+        <span class="dash-note" x-text="note"></span>
+        <span x-show="sampleError" x-cloak class="dash-note text-warn" x-text="sampleError"></span>
+      </div>
+      <div x-show="hasFailed" x-cloak class="banner"><span class="banner-title">Metrics did not load</span><span x-text="failed"></span><div class="grow"></div><button type="button" class="btn btn-sm" @click="retry()">Retry</button></div>
+      <div x-show="!raw" class="dash-grid">
+        <div class="dash-card dash-w8"><div x-ref="chartFlow"></div></div>
+        <div class="dash-card dash-w4"><div x-ref="chartConnections"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartQueues"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartConsumers"></div></div>
+      </div>
+      <section x-show="raw" x-cloak class="panel"><h2 class="heading">Raw metrics history</h2><pre class="code m-0 max-h-[60vh]" x-text="rawMetrics"></pre></section>
+    </div>
+  </template>
+  <section x-show="!raw" aria-label="Queues" class="table-wrap">
+    <table class="table min-w-[760px]">
+      <thead><tr><th>Queue</th><th>What it does</th><th class="num">Waiting</th><th class="num">In progress</th><th>Consumers</th><th class="num">Published</th><th>Oldest</th><th></th></tr></thead>
+      <tbody>
+        <template x-for="q in queueList" :key="q.key">
+          <tr>
+            <td class="mono break-all text-xs" x-text="q.name"></td>
+            <td class="text-soft" x-text="q.what"></td>
+            <td class="num" :class="q.readyCls" x-text="q.ready"></td>
+            <td class="num" x-text="q.unacked"></td>
+            <td :class="q.consumersCls" x-text="q.consumers"></td>
+            <td class="num" x-text="q.published"></td>
+            <td class="text-muted" x-text="q.oldest"></td>
+            <td class="text-right"><button type="button" class="btn btn-sm btn-ghost" @click="peekFrom(q)">Peek</button></td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+    <p x-show="!hasQueues" class="empty m-4 p-3 text-[13px] text-muted">No queues yet. Magento declares them on its first publish or on setup:upgrade.</p>
+  </section>
+
+  <section x-show="raw" x-cloak class="panel"><h2 class="heading">Raw JSON</h2><pre class="code m-0" x-text="rawHealth"></pre></section>
+</div>
+
+<div x-show="isBrowse" x-cloak class="flex flex-col gap-4">
+  <div class="flex flex-wrap gap-2" role="group" aria-label="Browse">
+    <template x-for="t in tabList" :key="t.id">
+      <button type="button" class="chip" :aria-pressed="t.pressed" @click="selectTab(t)" x-text="t.label"></button>
+    </template>
+  </div>
+  <div x-show="hasError" class="banner"><span x-text="error"></span></div>
+
+  <section x-show="isTabConsumers" class="flex flex-col gap-3">
+    <div x-show="!noConsumers" class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Queue</th><th>Consumer</th><th>Prefetch</th><th>Process</th><th>State</th></tr></thead>
+        <tbody>
+          <template x-for="c in consumerList" :key="c.key">
+            <tr><td class="mono text-xs" x-text="c.queue"></td><td class="mono text-xs" x-text="c.consumer"></td><td x-text="c.prefetch"></td><td class="text-soft" x-text="c.process"></td><td x-text="c.active"></td></tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+    <p x-show="noConsumers" class="banner m-0">No consumer is attached. Magento starts consumers from cron, so check that <span class="mono">roll magento cron:run</span> is running.</p>
+  </section>
+
+  <section x-show="isTabTopology" x-cloak class="flex flex-wrap items-start gap-4">
+    <div class="table-wrap min-w-0 flex-[1_1_240px]">
+      <table class="table"><thead><tr><th>Exchange</th><th>Type</th></tr></thead><tbody>
+        <template x-for="e in exchangeList" :key="e.key"><tr><td class="mono text-xs" x-text="e.name"></td><td x-text="e.type"></td></tr></template>
+      </tbody></table>
+    </div>
+    <div class="table-wrap min-w-0 flex-[3_1_480px]">
+      <table class="table"><thead><tr><th>From exchange</th><th>Routing key</th><th>To</th></tr></thead><tbody>
+        <template x-for="b in bindingList" :key="b.key"><tr><td class="mono text-xs" x-text="b.source"></td><td class="mono text-xs" x-text="b.key2"></td><td class="mono text-xs" x-text="b.dest"></td></tr></template>
+      </tbody></table>
+    </div>
+  </section>
+
+  <section x-show="isTabDb" x-cloak class="flex flex-col gap-3">
+    <p class="m-0 text-[13px] text-soft">Magento can keep queues in the database instead of RabbitMQ. These are the rows waiting in <span class="mono">queue_message_status</span>.</p>
+    <p x-show="hasDbError" class="banner m-0" x-text="dbError"></p>
+    <div class="table-wrap">
+      <table class="table"><thead><tr><th>Queue</th><th class="num">Messages</th><th>By status</th><th>Oldest update</th></tr></thead><tbody>
+        <template x-for="q in dbList" :key="q.key"><tr><td class="mono text-xs" x-text="q.name"></td><td class="num" x-text="q.total"></td><td class="text-soft" x-text="q.statuses"></td><td class="text-muted" x-text="q.oldest"></td></tr></template>
+      </tbody></table>
+    </div>
+  </section>
+
+  <section x-show="isTabPeek" x-cloak class="panel">
+    <div class="flex flex-wrap items-end gap-3">
+      <label class="field min-w-0 flex-[1_1_320px]">Queue
+        <select name="peek-queue" class="input mono" x-model="peekQueue">
+          <template x-for="o in queueOptions" :key="o.name"><option :value="o.name" x-text="o.label"></option></template>
+        </select>
+      </label>
+      <label class="field w-28">How many
+        <input type="number" name="peek-count" min="1" max="20" class="input" x-model="peekCount">
+      </label>
+      <button type="button" class="btn btn-accent" @click="doPeek()">Peek</button>
+    </div>
+    <p class="m-0 text-xs text-muted">Peek is a write: each message is read and put back with the redelivered flag set. It is refused while a consumer is attached.</p>
+    <p x-show="hasPeekError" class="banner m-0" x-text="peekError"></p>
+    <h2 x-show="hasPeeked" class="heading" x-text="peekTitle"></h2>
+    <p x-show="peekEmpty" class="empty m-0 p-3 text-[13px] text-muted">The queue is empty. Messages appear here once Magento publishes to it.</p>
+    <template x-for="m in peeked" :key="m.key"><pre class="code m-0" x-text="m.text"></pre></template>
+  </section>
+</div>
+
+<div x-show="isLive" x-cloak class="flex flex-col gap-4">
+  <section class="panel">
+    <h2 class="heading">Publish rates</h2>
+    <p class="m-0 text-[13px] text-soft">Counts new messages per queue every 2 seconds from the management API. It does not change the broker.</p>
+    <div><button type="button" class="btn btn-accent" @click="openRates()" x-text="ratesLabel"></button></div>
+  </section>
+  <section class="panel">
+    <h2 class="heading">Publish firehose</h2>
+    <p class="m-0 text-[13px] text-soft">Shows every publish with its exchange, routing key and size. This switches RabbitMQ tracing on for the vhost, and off again when you close the drawer, after 30 minutes, or when Inspector stops.</p>
+    <p class="m-0 text-xs text-warn" x-text="tracingText"></p>
+    <p x-show="lanReason" class="m-0 text-xs text-warn" x-text="lanReason"></p>
+    <div><button type="button" class="btn btn-accent" :disabled="lan" @click="openFirehose()" x-text="firehoseLabel"></button></div>
+  </section>
+</div>
+
+<div x-show="isActions" x-cloak class="flex flex-col gap-4">
+  <p x-show="lanReason" class="banner m-0" x-text="lanReason"></p>
+  <section class="panel">
+    <h2 class="heading">Purge a queue</h2>
+    <p class="m-0 text-[13px] text-soft">Deletes the waiting messages. In-progress messages are not touched.</p>
+    <div class="flex flex-wrap items-end gap-3">
+      <label class="field min-w-0 flex-[1_1_320px]">Queue
+        <select name="purge-queue" class="input mono" x-model="purgeQueue">
+          <template x-for="o in queueOptions" :key="o.name"><option :value="o.name" x-text="o.label"></option></template>
+        </select>
+      </label>
+      <button type="button" class="btn btn-danger" :disabled="!canPurge" @click="doPurge()">Purge queue…</button>
+    </div>
+  </section>
+  <section class="panel">
+    <h2 class="heading">Tracing</h2>
+    <p class="m-0 text-[13px] text-soft" x-text="tracingText"></p>
+    <div x-show="tracingOn"><button type="button" class="btn" :disabled="lan" @click="doTracingOff()">Switch tracing off…</button></div>
+  </section>
+</div>

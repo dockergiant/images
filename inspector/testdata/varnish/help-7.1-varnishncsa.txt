@@ -1,0 +1,25 @@
+Usage: varnishncsa <options>
+
+Options:
+ [-a]                      Append to file
+ [-b]                      Backend mode
+ [-c]                      Client mode
+ [-C]                      Caseless regular expressions
+ [-d]                      Process old log entries and exit
+ [-D]                      Daemonize
+ [-E]                      Show ESI requests
+ [-F <format>]             Set output format
+ [-f <formatfile>]         Read output format from file
+ [-g <request|vxid>]       Grouping mode (default: vxid)
+ [-h]                      Usage help
+ [-j]                      Make output JSON-compatible
+ [-L <limit>]              Incomplete transaction limit
+ [-n <dir>]                varnishd working directory
+ [-P <file>]               PID file
+ [-Q <file>]               VSL query file
+ [-q <query>]              VSL query
+ [-r <filename>]           Binary file input
+ [-R <limit[/duration]>]   Output rate limit
+ [-t <seconds|off>]        VSM connection timeout
+ [-V]                      Version
+ [-w <filename>]           Output filename

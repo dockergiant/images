@@ -1,0 +1,91 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [
+          {"key": "service.name", "value": {"stringValue": "shop"}},
+          {"key": "telemetry.sdk.language", "value": {"stringValue": "php"}}
+        ]
+      },
+      "scopeSpans": [
+        {
+          "scope": {"name": "io.opentelemetry.contrib.php.magento"},
+          "spans": [
+            {
+              "traceId": "6ad7d4d30000000025a83c7ee41d7769",
+              "spanId": "25a83c7ee41d7769",
+              "name": "magento.request",
+              "kind": 2,
+              "startTimeUnixNano": "1792528628696313479",
+              "endTimeUnixNano": "1792528630682043638",
+              "attributes": [
+                {"key": "component", "value": {"stringValue": "magento"}},
+                {"key": "http.request.method", "value": {"stringValue": "GET"}},
+                {"key": "url.full", "value": {"stringValue": "https://app.shop.test/women.html"}},
+                {"key": "http.response.status_code", "value": {"intValue": "200"}},
+                {"key": "magento.pathinfo", "value": {"stringValue": "catalog/category/view"}},
+                {"key": "varnish.xid", "value": {"stringValue": "53"}},
+                {"key": "process_id", "value": {"intValue": "4604"}}
+              ],
+              "status": {}
+            },
+            {
+              "traceId": "6ad7d4d30000000025a83c7ee41d7769",
+              "spanId": "0000000000000002",
+              "parentSpanId": "25a83c7ee41d7769",
+              "name": "PDOStatement.execute",
+              "kind": 3,
+              "startTimeUnixNano": "1792528628796313479",
+              "endTimeUnixNano": "1792528628798313479",
+              "attributes": [
+                {"key": "db.system", "value": {"stringValue": "mysql"}},
+                {"key": "db.statement", "value": {"stringValue": "SELECT `catalog_eav_attribute`.* FROM `catalog_eav_attribute` WHERE (attribute_id = ?)"}}
+              ]
+            },
+            {
+              "traceId": "6ad7d4d30000000025a83c7ee41d7769",
+              "spanId": "0000000000000003",
+              "parentSpanId": "25a83c7ee41d7769",
+              "name": "Redis.mGet",
+              "kind": 3,
+              "startTimeUnixNano": "1792528628806313479",
+              "endTimeUnixNano": "1792528628806813479",
+              "attributes": [
+                {"key": "db.system", "value": {"stringValue": "redis"}},
+                {"key": "db.statement", "value": {"stringValue": "mGet 69d_:SYSTEM_STORES_EN"}}
+              ]
+            },
+            {
+              "traceId": "6ad7d4d30000000025a83c7ee41d7769",
+              "spanId": "0000000000000004",
+              "parentSpanId": "25a83c7ee41d7769",
+              "name": "curl_exec",
+              "kind": 3,
+              "startTimeUnixNano": "1792528628906313479",
+              "endTimeUnixNano": "1792528628918313479",
+              "attributes": [
+                {"key": "url.full", "value": {"stringValue": "http://opensearch/magento2_product_1/_search?track_total_hits=true"}},
+                {"key": "server.address", "value": {"stringValue": "opensearch"}},
+                {"key": "server.port", "value": {"intValue": "9200"}},
+                {"key": "http.response.status_code", "value": {"intValue": "200"}}
+              ],
+              "status": {"code": 2, "message": "slow"}
+            },
+            {
+              "traceId": "6ad7d4d30000000025a83c7ee41d7769",
+              "spanId": "0000000000000005",
+              "parentSpanId": "25a83c7ee41d7769",
+              "name": "curl_exec",
+              "kind": 3,
+              "startTimeUnixNano": "1792528630660000000",
+              "endTimeUnixNano": "1792528630672000000",
+              "attributes": [
+                {"key": "url.full", "value": {"stringValue": "http://inspector:8126/profiles/6ad7d4d30000000025a83c7ee41d7769"}}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

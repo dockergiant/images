@@ -1,0 +1,9 @@
+{
+    "packages": [
+        {"name": "magento/framework", "version": "103.0.7-p3"},
+        {"name": "magento/magento2-base", "version": "2.4.7-p3"},
+        {"name": "magento/product-community-edition", "version": "2.4.7-p3"},
+        {"name": "stripe/stripe-payments", "version": "4.0.0"}
+    ],
+    "dev": true
+}

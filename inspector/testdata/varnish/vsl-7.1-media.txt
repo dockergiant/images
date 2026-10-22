@@ -1,0 +1,227 @@
+*              << Request  >>   2         
+-            2 Begin          c req 1 rxreq
+-            2 Timestamp      c Start: 1792519765.365895 0.000000 0.000000
+-            2 Timestamp      c Req: 1792519765.365895 0.000000 0.000000
+-            2 VCL_use        c boot
+-            2 ReqStart       c 127.0.0.1 42174 a0
+-            2 ReqMethod      c GET
+-            2 ReqURL         c /
+-            2 ReqProtocol    c HTTP/1.1
+-            2 ReqHeader      c User-Agent: Wget
+-            2 ReqHeader      c Connection: close
+-            2 ReqHeader      c Host: shop2.test
+-            2 ReqHeader      c X-Forwarded-Proto: https
+-            2 ReqHeader      c X-Forwarded-For: 127.0.0.1
+-            2 VCL_call       c RECV
+-            2 ReqURL         c /
+-            2 VCL_return     c hash
+-            2 VCL_call       c HASH
+-            2 VCL_return     c lookup
+-            2 VCL_call       c MISS
+-            2 VCL_return     c fetch
+-            2 Link           c bereq 3 fetch
+-            2 Timestamp      c Fetch: 1792519765.473025 0.107130 0.107130
+-            2 RespProtocol   c HTTP/1.1
+-            2 RespStatus     c 403
+-            2 RespReason     c Forbidden
+-            2 RespHeader     c Server: nginx/1.24.0
+-            2 RespHeader     c Date: Tue, 20 Oct 2026 18:09:25 GMT
+-            2 RespHeader     c Content-Type: text/html; charset=UTF-8
+-            2 RespHeader     c Content-Encoding: gzip
+-            2 RespHeader     c Vary: Accept-Encoding
+-            2 RespHeader     c X-Varnish: 2
+-            2 RespHeader     c Age: 0
+-            2 RespHeader     c Via: 1.1 varnish (Varnish/7.1)
+-            2 VCL_call       c DELIVER
+-            2 RespHeader     c X-Cache: MISS
+-            2 RespHeader     c X-Cache-Hits: 0
+-            2 RespHeader     c Pragma: no-cache
+-            2 RespHeader     c Expires: -1
+-            2 RespHeader     c Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+-            2 VCL_return     c deliver
+-            2 Timestamp      c Process: 1792519765.473086 0.107191 0.000060
+-            2 Filters        c  gunzip
+-            2 RespUnset      c Content-Encoding: gzip
+-            2 RespHeader     c Content-Length: 153
+-            2 RespHeader     c Connection: close
+-            2 Gzip           c U D - 125 153 80 920 930
+-            2 Timestamp      c Resp: 1792519765.473526 0.107630 0.000439
+-            2 ReqAcct        c 109 0 109 368 153 521
+-            2 End            c 
+**             << BeReq    >>   3         
+--           3 Begin          b bereq 2 fetch
+--           3 VCL_use        b boot
+--           3 Timestamp      b Start: 1792519765.371606 0.000000 0.000000
+--           3 BereqMethod    b GET
+--           3 BereqURL       b /
+--           3 BereqProtocol  b HTTP/1.1
+--           3 BereqHeader    b User-Agent: Wget
+--           3 BereqHeader    b Host: shop2.test
+--           3 BereqHeader    b X-Forwarded-Proto: https
+--           3 BereqHeader    b X-Forwarded-For: 127.0.0.1
+--           3 BereqHeader    b Accept-Encoding: gzip
+--           3 BereqHeader    b X-Varnish: 3
+--           3 VCL_call       b BACKEND_FETCH
+--           3 VCL_return     b fetch
+--           3 Timestamp      b Fetch: 1792519765.372091 0.000484 0.000484
+--           3 Timestamp      b Connected: 1792519765.373560 0.001954 0.001469
+--           3 BackendOpen    b 26 default 192.168.147.10 80 192.168.147.12 41354 connect
+--           3 Timestamp      b Bereq: 1792519765.377434 0.005827 0.003873
+--           3 Timestamp      b Beresp: 1792519765.471775 0.100168 0.094341
+--           3 BerespProtocol b HTTP/1.1
+--           3 BerespStatus   b 403
+--           3 BerespReason   b Forbidden
+--           3 BerespHeader   b Server: nginx/1.24.0
+--           3 BerespHeader   b Date: Tue, 20 Oct 2026 18:09:25 GMT
+--           3 BerespHeader   b Content-Type: text/html; charset=UTF-8
+--           3 BerespHeader   b Content-Length: 153
+--           3 BerespHeader   b Connection: keep-alive
+--           3 TTL            b RFC -1 3600 0 1792519765 1792519765 1792519765 0 0 cacheable
+--           3 VCL_call       b BACKEND_RESPONSE
+--           3 TTL            b VCL 120 3600 0 1792519765 cacheable
+--           3 TTL            b VCL 120 3600 0 1792519765 uncacheable
+--           3 VCL_return     b deliver
+--           3 Timestamp      b Process: 1792519765.472299 0.100692 0.000524
+--           3 Filters        b  esi_gzip
+--           3 BerespUnset    b Content-Length: 153
+--           3 BerespHeader   b Content-Encoding: gzip
+--           3 BerespHeader   b Vary: Accept-Encoding
+--           3 Storage        b malloc Transient
+--           3 Fetch_Body     b 3 length -
+--           3 Gzip           b G F E 153 125 80 920 930
+--           3 BackendClose   b 26 default recycle
+--           3 Timestamp      b BerespBody: 1792519765.480385 0.108779 0.008086
+--           3 Length         b 125
+--           3 BereqAcct      b 155 0 155 170 153 323
+--           3 End            b 
+
+*              << Request  >>   196610    
+-       196610 Begin          c req 196609 rxreq
+-       196610 Timestamp      c Start: 1792526164.501253 0.000000 0.000000
+-       196610 Timestamp      c Req: 1792526164.501253 0.000000 0.000000
+-       196610 VCL_use        c boot
+-       196610 ReqStart       c 192.168.147.2 41856 a0
+-       196610 ReqMethod      c GET
+-       196610 ReqURL         c /media/resized/widgets/477x477/sample_product.jpg
+-       196610 ReqProtocol    c HTTP/1.1
+-       196610 ReqHeader      c Host: app.shop2.test
+-       196610 ReqHeader      c User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36
+-       196610 ReqHeader      c Accept: image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+-       196610 ReqHeader      c Accept-Encoding: gzip, deflate, br, zstd
+-       196610 ReqHeader      c Accept-Language: en-US,en;q=0.9
+-       196610 ReqHeader      c Cookie: REDACTED
+-       196610 ReqHeader      c Priority: u=1, i
+-       196610 ReqHeader      c Referer: https://app.shop2.test/
+-       196610 ReqHeader      c Sec-Ch-Ua: "Chromium";v="155", "Not(A:Brand";v="24"
+-       196610 ReqHeader      c Sec-Ch-Ua-Mobile: ?0
+-       196610 ReqHeader      c Sec-Ch-Ua-Platform: "macOS"
+-       196610 ReqHeader      c Sec-Fetch-Dest: image
+-       196610 ReqHeader      c Sec-Fetch-Mode: no-cors
+-       196610 ReqHeader      c Sec-Fetch-Site: same-origin
+-       196610 ReqHeader      c X-Forwarded-For: 192.168.148.1
+-       196610 ReqHeader      c X-Forwarded-Host: app.shop2.test
+-       196610 ReqHeader      c X-Forwarded-Port: 443
+-       196610 ReqHeader      c X-Forwarded-Proto: https
+-       196610 ReqHeader      c X-Forwarded-Server: 853d8aa62131
+-       196610 ReqHeader      c X-Real-Ip: 192.168.148.1
+-       196610 ReqUnset       c X-Forwarded-For: 192.168.148.1
+-       196610 ReqHeader      c X-Forwarded-For: 192.168.148.1, 192.168.147.2
+-       196610 VCL_call       c RECV
+-       196610 ReqURL         c /media/resized/widgets/477x477/sample_product.jpg
+-       196610 ReqUnset       c Accept-Encoding: gzip, deflate, br, zstd
+-       196610 VCL_return     c pass
+-       196610 VCL_call       c HASH
+-       196610 VCL_return     c lookup
+-       196610 VCL_call       c PASS
+-       196610 VCL_return     c fetch
+-       196610 Link           c bereq 196611 pass
+-       196610 Timestamp      c Fetch: 1792526164.547638 0.046385 0.046385
+-       196610 RespProtocol   c HTTP/1.1
+-       196610 RespStatus     c 200
+-       196610 RespReason     c OK
+-       196610 RespHeader     c Server: nginx/1.24.0
+-       196610 RespHeader     c Date: Tue, 20 Oct 2026 19:56:04 GMT
+-       196610 RespHeader     c Content-Type: image/jpeg
+-       196610 RespHeader     c Content-Length: 30688
+-       196610 RespHeader     c Last-Modified: Wed, 08 Oct 2025 16:30:17 GMT
+-       196610 RespHeader     c ETag: "68e69199-77e0"
+-       196610 RespHeader     c Expires: Wed, 20 Oct 2027 19:56:04 GMT
+-       196610 RespHeader     c Cache-Control: max-age=31536000, public
+-       196610 RespHeader     c X-Frame-Options: SAMEORIGIN
+-       196610 RespHeader     c Accept-Ranges: bytes
+-       196610 RespHeader     c X-Varnish: 196610
+-       196610 RespHeader     c Age: 0
+-       196610 RespHeader     c Via: 1.1 varnish (Varnish/7.1)
+-       196610 VCL_call       c DELIVER
+-       196610 RespHeader     c X-Cache: MISS
+-       196610 RespHeader     c X-Cache-Hits: 0
+-       196610 VCL_return     c deliver
+-       196610 Timestamp      c Process: 1792526164.547662 0.046409 0.000024
+-       196610 Filters        c 
+-       196610 RespHeader     c Connection: keep-alive
+-       196610 Timestamp      c Resp: 1792526164.550859 0.049606 0.003196
+-       196610 ReqAcct        c 1045 0 1045 443 30688 31131
+-       196610 End            c 
+**             << BeReq    >>   196611    
+--      196611 Begin          b bereq 196610 pass
+--      196611 VCL_use        b boot
+--      196611 Timestamp      b Start: 1792526164.539214 0.000000 0.000000
+--      196611 BereqMethod    b GET
+--      196611 BereqURL       b /media/resized/widgets/477x477/sample_product.jpg
+--      196611 BereqProtocol  b HTTP/1.1
+--      196611 BereqHeader    b Host: app.shop2.test
+--      196611 BereqHeader    b User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36
+--      196611 BereqHeader    b Accept: image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+--      196611 BereqHeader    b Accept-Language: en-US,en;q=0.9
+--      196611 BereqHeader    b Cookie: REDACTED
+--      196611 BereqHeader    b Priority: u=1, i
+--      196611 BereqHeader    b Referer: https://app.shop2.test/
+--      196611 BereqHeader    b Sec-Ch-Ua: "Chromium";v="155", "Not(A:Brand";v="24"
+--      196611 BereqHeader    b Sec-Ch-Ua-Mobile: ?0
+--      196611 BereqHeader    b Sec-Ch-Ua-Platform: "macOS"
+--      196611 BereqHeader    b Sec-Fetch-Dest: image
+--      196611 BereqHeader    b Sec-Fetch-Mode: no-cors
+--      196611 BereqHeader    b Sec-Fetch-Site: same-origin
+--      196611 BereqHeader    b X-Forwarded-Host: app.shop2.test
+--      196611 BereqHeader    b X-Forwarded-Port: 443
+--      196611 BereqHeader    b X-Forwarded-Proto: https
+--      196611 BereqHeader    b X-Forwarded-Server: 853d8aa62131
+--      196611 BereqHeader    b X-Real-Ip: 192.168.148.1
+--      196611 BereqHeader    b X-Forwarded-For: 192.168.148.1, 192.168.147.2
+--      196611 BereqHeader    b X-Varnish: 196611
+--      196611 VCL_call       b BACKEND_FETCH
+--      196611 VCL_return     b fetch
+--      196611 Timestamp      b Fetch: 1792526164.540837 0.001622 0.001622
+--      196611 Timestamp      b Connected: 1792526164.541912 0.002698 0.001075
+--      196611 BackendOpen    b 54 default 192.168.147.10 80 192.168.147.12 45010 connect
+--      196611 Timestamp      b Bereq: 1792526164.541970 0.002756 0.000057
+--      196611 Timestamp      b Beresp: 1792526164.547568 0.008353 0.005597
+--      196611 BerespProtocol b HTTP/1.1
+--      196611 BerespStatus   b 200
+--      196611 BerespReason   b OK
+--      196611 BerespHeader   b Server: nginx/1.24.0
+--      196611 BerespHeader   b Date: Tue, 20 Oct 2026 19:56:04 GMT
+--      196611 BerespHeader   b Content-Type: image/jpeg
+--      196611 BerespHeader   b Content-Length: 30688
+--      196611 BerespHeader   b Last-Modified: Wed, 08 Oct 2025 16:30:17 GMT
+--      196611 BerespHeader   b Connection: keep-alive
+--      196611 BerespHeader   b ETag: "68e69199-77e0"
+--      196611 BerespHeader   b Expires: Wed, 20 Oct 2027 19:56:04 GMT
+--      196611 BerespHeader   b Cache-Control: max-age=31536000
+--      196611 BerespHeader   b Cache-Control: public
+--      196611 BerespHeader   b X-Frame-Options: SAMEORIGIN
+--      196611 BerespHeader   b Accept-Ranges: bytes
+--      196611 VCL_call       b BACKEND_RESPONSE
+--      196611 TTL            b VCL 120 0 0 1792526165 uncacheable
+--      196611 TTL            b VCL 120 0 0 1792526165 uncacheable
+--      196611 VCL_return     b deliver
+--      196611 Timestamp      b Process: 1792526164.547603 0.008389 0.000035
+--      196611 Filters        b 
+--      196611 Storage        b malloc Transient
+--      196611 Fetch_Body     b 3 length stream
+--      196611 BackendClose   b 54 default recycle
+--      196611 Timestamp      b BerespBody: 1792526164.550890 0.011675 0.003286
+--      196611 Length         b 30688
+--      196611 BereqAcct      b 1037 0 1037 367 30688 31055
+--      196611 End            b 
+

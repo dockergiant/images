@@ -1,0 +1,168 @@
+<div x-show="hasHealthError && isHealth" x-cloak class="banner"><span class="banner-title">The search engine did not answer</span><span x-text="healthError"></span></div>
+
+<div x-show="isHealth" class="flex flex-col gap-4">
+  <template x-for="w in hv.warnings" :key="w.key">
+    <div class="banner"><span class="banner-title" :class="w.cls" x-text="w.title"></span><span class="min-w-0 flex-1 basis-80" x-text="w.text"></span><code x-show="w.hasFix" class="mono rounded bg-well px-2 py-1 text-xs select-all" x-text="w.fix"></code><button type="button" x-show="w.hasFix" class="btn btn-sm" @click="copy(w.fix)">Copy fix</button></div>
+  </template>
+  <section x-show="!raw" aria-label="Key numbers" class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3">
+    <template x-for="c in hv.cards" :key="c.label">
+      <div class="card"><span class="card-label" x-text="c.label"></span><span class="card-value" :class="c.cls" x-text="c.value"></span><span class="card-sub" x-text="c.sub"></span></div>
+    </template>
+  </section>
+  <template x-if="isHealth">
+    <div x-data="searchDashboard" class="dash">
+      <div class="dash-bar">
+        <div class="seg" role="group" aria-label="Time window for the charts">
+          <span class="seg-label" aria-hidden="true">Last</span>
+          <template x-for="w in windows" :key="w.id">
+            <button type="button" class="seg-btn" :aria-pressed="w.pressed" @click="setWindow(w.id)" x-text="w.label"></button>
+          </template>
+        </div>
+        <span class="dash-note" x-text="note"></span>
+        <span x-show="sampleError" x-cloak class="dash-note text-warn" x-text="sampleError"></span>
+      </div>
+      <div x-show="hasFailed" x-cloak class="banner"><span class="banner-title">Metrics did not load</span><span x-text="failed"></span><div class="grow"></div><button type="button" class="btn btn-sm" @click="retry()">Retry</button></div>
+      <div x-show="!raw" class="dash-grid">
+        <div class="dash-card dash-w4"><div x-ref="chartHeap"></div></div>
+        <div class="dash-card dash-w4"><div x-ref="chartQueryCache"></div></div>
+        <div class="dash-card dash-w4"><div x-ref="chartRequestCache"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartQueries"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartLatency"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartIndexing"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartGc"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartDocs"></div></div>
+        <div class="dash-card dash-w6"><div x-ref="chartSize"></div></div>
+      </div>
+      <section x-show="raw" x-cloak class="panel"><h2 class="heading">Raw metrics history</h2><pre class="code m-0 max-h-[60vh]" x-text="rawMetrics"></pre></section>
+    </div>
+  </template>
+  <section x-show="raw" x-cloak class="panel"><h2 class="heading">Raw JSON</h2><pre class="code m-0" x-text="rawHealth"></pre></section>
+</div>
+
+<div x-show="isBrowse" x-cloak class="flex flex-col gap-4">
+  <div x-show="hasError" class="banner"><span x-text="error"></span></div>
+  <div x-show="hasStoresError" class="banner"><span class="banner-title">Store list unavailable</span><span x-text="storesError"></span></div>
+
+  <section aria-label="Indices" class="flex flex-col gap-2">
+    <div class="flex items-center gap-3">
+      <h2 class="heading">Indices</h2>
+      <div class="grow"></div>
+      <label class="flex cursor-pointer items-center gap-1.5 text-xs text-muted"><input type="checkbox" name="show-system" :checked="showSystem" @change="toggleSystem()"><span>show system indices</span></label>
+    </div>
+    <div class="table-wrap">
+      <table class="table min-w-[720px]">
+        <thead><tr><th>Index</th><th>Store</th><th class="num">Documents</th><th class="num">Size</th><th>Health</th><th>Name in the engine</th></tr></thead>
+        <tbody>
+          <template x-for="r in rows" :key="r.key">
+            <tr>
+              <td class="font-medium" :class="r.titleCls" x-text="r.title"></td>
+              <td x-text="r.store"></td>
+              <td class="num" x-text="r.docs"></td>
+              <td class="num" x-text="r.size"></td>
+              <td :class="r.healthCls" x-text="r.health"></td>
+              <td class="mono break-all text-xs text-muted" x-text="r.name"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="flex flex-wrap gap-2" role="group" aria-label="Tools">
+    <template x-for="t in tabList" :key="t.id">
+      <button type="button" class="chip" :aria-pressed="t.pressed" @click="selectTab(t)" x-text="t.label"></button>
+    </template>
+  </div>
+
+  <div x-show="isTabSearch" class="flex flex-wrap items-start gap-4">
+    <form class="panel min-w-0 flex-[1_1_380px]" @submit.prevent="runSearch()">
+      <h2 class="heading">Search like the storefront does</h2>
+      <label class="field">Index
+        <select name="target" class="input mono" x-model="target">
+          <template x-for="t in targets" :key="t.value"><option :value="t.value" x-text="t.label"></option></template>
+        </select>
+      </label>
+      <label class="field">Search term<input type="text" name="term" class="input text-sm" x-model="term" placeholder="espresso" spellcheck="false"></label>
+      <div class="flex flex-wrap gap-2"><button type="submit" class="btn btn-accent" :disabled="!canSearch">Search</button></div>
+    </form>
+    <section x-show="hasResult" x-cloak class="panel min-w-0 flex-[2_1_480px]">
+      <div class="flex items-baseline gap-2.5"><h2 class="heading" x-text="resultTitle"></h2><span class="text-xs text-muted" x-text="resultTook"></span></div>
+      <div class="flex flex-col">
+        <div class="eyebrow grid grid-cols-[minmax(0,1fr)_70px_170px] gap-x-3 px-1 pb-1.5"><span>Product</span><span class="text-right">Score</span><span>Why</span></div>
+        <template x-for="h in hits" :key="h.key">
+          <div class="grid grid-cols-[minmax(0,1fr)_70px_170px] gap-x-3 border-t border-row px-1 py-1.5 text-[13px]">
+            <span class="min-w-0 break-words"><span x-text="h.name"></span> <span class="text-muted" x-show="h.sku">· sku <span x-text="h.sku"></span></span></span>
+            <span class="text-right tabular-nums" x-text="h.score"></span>
+            <button type="button" class="cursor-pointer border-0 bg-transparent p-0 text-left text-xs text-accent underline decoration-accent-bar underline-offset-4" @click="toggleHit(h)" x-text="h.why || 'explain'"></button>
+          </div>
+        </template>
+      </div>
+      <p class="m-0 text-xs text-muted" x-text="shownNote"></p>
+      <pre x-show="hasOpenHit" class="code m-0" x-text="openExplanation"></pre>
+    </section>
+  </div>
+
+  <div x-show="isTabAnalyzer" x-cloak class="panel">
+    <h2 class="heading">Analyzer</h2>
+    <p class="m-0 text-[13px] text-soft">Shows how the engine splits a word into tokens, which is what a search term gets matched on.</p>
+    <form class="flex flex-wrap items-end gap-3" @submit.prevent="runAnalyze()">
+      <label class="field min-w-0 flex-[1_1_280px]">Text<input type="text" name="analyze-text" class="input" x-model="analyzeText" placeholder="Espresso machines" spellcheck="false"></label>
+      <label class="field min-w-0 flex-[1_1_240px]">Analyzer
+        <select name="analyzer" class="input mono" x-model="analyzeAnalyzer">
+          <template x-for="a in analyzerOptions" :key="a.value"><option :value="a.value" x-text="a.label"></option></template>
+        </select>
+      </label>
+      <button type="submit" class="btn btn-accent" :disabled="!canAnalyze">Show tokens</button>
+    </form>
+    <p x-show="hasAnalyzed" class="mono m-0 text-[13px] text-soft" x-text="tokenText"></p>
+    <pre x-show="hasAnalyzed && raw" class="code m-0" x-text="analyzedRaw"></pre>
+  </div>
+
+  <div x-show="isTabMapping" x-cloak class="panel">
+    <h2 class="heading">Mapping</h2>
+    <form class="flex flex-wrap items-end gap-3" @submit.prevent="loadMapping()">
+      <label class="field min-w-0 flex-[1_1_280px]">Field name contains<input type="text" name="mapping-filter" class="input mono" x-model="mappingFilter" placeholder="name" spellcheck="false"></label>
+      <button type="submit" class="btn btn-accent">Show fields</button>
+    </form>
+    <div class="table-wrap max-h-[60vh]">
+      <table class="table"><thead><tr><th>Field</th><th>Type</th><th>Analyzer</th><th>Copied to</th></tr></thead><tbody>
+        <template x-for="f in mappingList" :key="f.key"><tr><td class="mono break-all text-xs" x-text="f.field"></td><td x-text="f.type"></td><td class="text-soft" x-text="f.analyzer"></td><td class="mono text-xs text-muted" x-text="f.copyTo"></td></tr></template>
+      </tbody></table>
+    </div>
+  </div>
+</div>
+
+<div x-show="isLive" x-cloak class="flex flex-col gap-4">
+  <section class="panel">
+    <h2 class="heading">Top queries</h2>
+    <p class="m-0 text-[13px] text-soft">The ten slowest queries per five minutes, from OpenSearch Query Insights. Read-only.</p>
+    <div><button type="button" class="btn btn-accent" @click="openInsights()" x-text="insightsLabel"></button></div>
+  </section>
+  <section class="panel">
+    <h2 class="heading">Slowlog tail</h2>
+    <p class="m-0 text-[13px] text-soft">Queries the engine already logs as slow. Read-only. Pick this or the capture, not both: the capture reads the same log.</p>
+    <div><button type="button" class="btn btn-accent" @click="toggleSlowlog()" x-text="slowlogLabel"></button></div>
+  </section>
+  <section class="panel">
+    <h2 class="heading">Capture all queries</h2>
+    <p class="m-0 text-[13px] text-soft">Sets the slowlog threshold to 0 ms on the Magento indices so every query shows up. Inspector restores the old values when you stop, close the drawer, after 30 minutes, or when it stops.</p>
+    <p x-show="lanReason" class="m-0 text-xs text-warn" x-text="lanReason"></p>
+    <div><button type="button" class="btn btn-accent" :disabled="captureDisabled" @click="toggleCapture()" x-text="captureLabel"></button></div>
+  </section>
+</div>
+
+<div x-show="isActions" x-cloak class="flex flex-col gap-4">
+  <p x-show="lanReason" class="banner m-0" x-text="lanReason"></p>
+  <section class="panel">
+    <h2 class="heading">Orphan indices</h2>
+    <p class="m-0 text-[13px] text-soft">An orphan is a Magento index with no alias, older than ten minutes, whose store no longer exists. Reindexing leaves these behind.</p>
+    <p x-show="!hasOrphans" class="empty m-0 p-3 text-[13px] text-muted">No orphan indices. After a reindex that fails halfway, leftovers show up here.</p>
+    <template x-for="o in orphans" :key="o.key">
+      <div class="flex flex-wrap items-center gap-3 border-t border-row pt-3">
+        <span class="mono min-w-0 flex-1 break-all text-xs" x-text="o.index"></span>
+        <span class="text-xs text-muted"><span x-text="o.docs"></span> docs · <span x-text="o.size"></span></span>
+        <button type="button" class="btn btn-danger btn-sm" :disabled="lan" @click="deleteOrphan(o)">Delete…</button>
+      </div>
+    </template>
+  </section>
+</div>

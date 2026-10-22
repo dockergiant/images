@@ -1,0 +1,216 @@
+*              << Request  >>   1441840   
+-      1441840 Begin          c req 1441835 rxreq
+-      1441840 Timestamp      c Start: 1792535096.480775 0.000000 0.000000
+-      1441840 Timestamp      c Req: 1792535096.480775 0.000000 0.000000
+-      1441840 VCL_use        c boot
+-      1441840 ReqStart       c 192.168.165.2 40270 a0
+-      1441840 ReqMethod      c GET
+-      1441840 ReqURL         c /category-2.html
+-      1441840 ReqProtocol    c HTTP/1.1
+-      1441840 ReqHeader      c Host: app.inspector-e2e.test
+-      1441840 ReqHeader      c User-Agent: curl/8.7.1
+-      1441840 ReqHeader      c Accept: */*
+-      1441840 ReqHeader      c X-Forwarded-For: 192.168.148.1
+-      1441840 ReqHeader      c X-Forwarded-Host: app.inspector-e2e.test
+-      1441840 ReqHeader      c X-Forwarded-Port: 443
+-      1441840 ReqHeader      c X-Forwarded-Proto: https
+-      1441840 ReqHeader      c X-Forwarded-Server: be42dfa5ab20
+-      1441840 ReqHeader      c X-Real-Ip: 192.168.148.1
+-      1441840 ReqHeader      c Accept-Encoding: gzip
+-      1441840 ReqUnset       c X-Forwarded-For: 192.168.148.1
+-      1441840 ReqHeader      c X-Forwarded-For: 192.168.148.1, 192.168.165.2
+-      1441840 ReqHeader      c Via: 1.1 inspector-e2e-varnish (Varnish/8.0)
+-      1441840 VCL_call       c RECV
+-      1441840 ReqURL         c /category-2.html
+-      1441840 ReqUnset       c Accept-Encoding: gzip
+-      1441840 ReqHeader      c Accept-Encoding: gzip
+-      1441840 VCL_return     c hash
+-      1441840 VCL_call       c HASH
+-      1441840 VCL_return     c lookup
+-      1441840 HitMiss        c 1441819 -465.687195
+-      1441840 VCL_call       c MISS
+-      1441840 VCL_return     c fetch
+-      1441840 Link           c bereq 1441841 fetch
+-      1441840 Timestamp      c Fetch: 1792535097.088079 0.607303 0.607303
+-      1441840 RespProtocol   c HTTP/1.1
+-      1441840 RespStatus     c 200
+-      1441840 RespReason     c OK
+-      1441840 RespHeader     c Server: nginx/1.30.5
+-      1441840 RespHeader     c Date: Tue, 20 Oct 2026 22:24:57 GMT
+-      1441840 RespHeader     c Content-Type: text/html; charset=UTF-8
+-      1441840 RespHeader     c Vary: Accept-Encoding
+-      1441840 RespHeader     c X-Powered-By: PHP/8.5.0
+-      1441840 RespHeader     c Pragma: cache
+-      1441840 RespHeader     c Cache-Control: max-age=604800, public, s-maxage=604800
+-      1441840 RespHeader     c Expires: Tue, 27 Oct 2026 22:24:56 GMT
+-      1441840 RespHeader     c X-Magento-Tags: store,cms_b,cat_c_10,cat_c_p_10,cat_p_1194,cat_p,cat_p_1195,cat_p_1196,cat_p_1197,cat_p_1198,cat_p_1192,cat_p_1193,cat_p_10,cat_p_100,cat_p_101,cat_p_102,cat_p_103
+-      1441840 RespHeader     c X-Magento-Debug: 1
+-      1441840 RespHeader     c Content-Security-Policy-Report-Only: font-src www.paypalobjects.com data: 'self' 'unsafe-inline'; form-action geostag.cardinalcommerce.com geo.cardinalcommerce.com 1eafstag.cardinalcommerce.com 1eaf.cardinalcommerce.com centinelapistag.cardinalcommerce.c
+-      1441840 RespHeader     c X-Content-Type-Options: nosniff
+-      1441840 RespHeader     c X-Dist: Mage-OS
+-      1441840 RespHeader     c X-XSS-Protection: 1; mode=block
+-      1441840 RespHeader     c X-Frame-Options: SAMEORIGIN
+-      1441840 RespHeader     c X-Magento-Cache-Control: max-age=604800, public, s-maxage=604800
+-      1441840 RespHeader     c Content-Encoding: gzip
+-      1441840 RespHeader     c X-Varnish: 1441840
+-      1441840 RespHeader     c Age: 0
+-      1441840 RespHeader     c Via: 1.1 inspector-e2e-varnish (Varnish/8.0)
+-      1441840 RespHeader     c Accept-Ranges: bytes
+-      1441840 VCL_call       c DELIVER
+-      1441840 RespHeader     c X-Cache: MISS
+-      1441840 RespHeader     c X-Cache-Hits: 0
+-      1441840 RespUnset      c Pragma: cache
+-      1441840 RespHeader     c Pragma: no-cache
+-      1441840 RespUnset      c Expires: Tue, 27 Oct 2026 22:24:56 GMT
+-      1441840 RespHeader     c Expires: -1
+-      1441840 RespUnset      c Cache-Control: max-age=604800, public, s-maxage=604800
+-      1441840 RespHeader     c Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+-      1441840 VCL_return     c deliver
+-      1441840 Timestamp      c Process: 1792535097.088121 0.607345 0.000042
+-      1441840 Filters        c  esi
+-      1441840 RespHeader     c Connection: keep-alive
+-      1441840 RespHeader     c Transfer-Encoding: chunked
+-      1441840 Link           c req 1441842 esi 1
+-      1441840 Timestamp      c Resp: 1792535097.088376 0.607600 0.000255
+-      1441840 ReqAcct        c 306 0 306 3600 23703 27303
+-      1441840 End            c 
+**             << Request  >>   1441842   
+--     1441842 Begin          c req 1441840 esi 1
+--     1441842 Timestamp      c Start: 1792535097.088206 0.000000 0.000000
+--     1441842 ReqURL         c /page_cache/block/esi/blocks/%5B%22catalog.topnav%22%5D/handles/WyJkZWZhdWx0IiwiY2F0YWxvZ19jYXRlZ29yeV92aWV3IiwiY2F0YWxvZ19jYXRlZ29yeV92aWV3X3R5cGVfbGF5ZXJlZCIsImNhdGFsb2dfY2F0ZWdvcnlfdmlld19kaXNwbGF5bW9kZV9wcm9kdWN0cyJd/
+--     1441842 ReqUnset       c Host: app.inspector-e2e.test
+--     1441842 ReqHeader      c Host: app.inspector-e2e.test
+--     1441842 ReqStart       c 192.168.165.2 40270 a0
+--     1441842 ReqMethod      c GET
+--     1441842 ReqURL         c /page_cache/block/esi/blocks/%5B%22catalog.topnav%22%5D/handles/WyJkZWZhdWx0IiwiY2F0YWxvZ19jYXRlZ29yeV92aWV3IiwiY2F0YWxvZ19jYXRlZ29yeV92aWV3X3R5cGVfbGF5ZXJlZCIsImNhdGFsb2dfY2F0ZWdvcnlfdmlld19kaXNwbGF5bW9kZV9wcm9kdWN0cyJd/
+--     1441842 ReqProtocol    c HTTP/1.1
+--     1441842 ReqHeader      c User-Agent: curl/8.7.1
+--     1441842 ReqHeader      c Accept: */*
+--     1441842 ReqHeader      c X-Forwarded-For: 192.168.148.1
+--     1441842 ReqHeader      c X-Forwarded-Host: app.inspector-e2e.test
+--     1441842 ReqHeader      c X-Forwarded-Port: 443
+--     1441842 ReqHeader      c X-Forwarded-Proto: https
+--     1441842 ReqHeader      c X-Forwarded-Server: be42dfa5ab20
+--     1441842 ReqHeader      c X-Real-Ip: 192.168.148.1
+--     1441842 ReqHeader      c Accept-Encoding: gzip
+--     1441842 ReqHeader      c Host: app.inspector-e2e.test
+--     1441842 ReqUnset       c X-Forwarded-For: 192.168.148.1
+--     1441842 ReqHeader      c X-Forwarded-For: 192.168.148.1, 192.168.165.2
+--     1441842 ReqHeader      c Via: 1.1 inspector-e2e-varnish (Varnish/8.0)
+--     1441842 VCL_call       c RECV
+--     1441842 ReqURL         c /page_cache/block/esi/blocks/%5B%22catalog.topnav%22%5D/handles/WyJkZWZhdWx0IiwiY2F0YWxvZ19jYXRlZ29yeV92aWV3IiwiY2F0YWxvZ19jYXRlZ29yeV92aWV3X3R5cGVfbGF5ZXJlZCIsImNhdGFsb2dfY2F0ZWdvcnlfdmlld19kaXNwbGF5bW9kZV9wcm9kdWN0cyJd/
+--     1441842 ReqUnset       c Accept-Encoding: gzip
+--     1441842 ReqHeader      c Accept-Encoding: gzip
+--     1441842 VCL_return     c hash
+--     1441842 VCL_call       c HASH
+--     1441842 VCL_return     c lookup
+--     1441842 Hit            c 196652 3523.656534 3600.000000 0.000000
+--     1441842 VCL_call       c HIT
+--     1441842 VCL_return     c deliver
+--     1441842 RespProtocol   c HTTP/1.1
+--     1441842 RespStatus     c 200
+--     1441842 RespReason     c OK
+--     1441842 RespHeader     c Server: nginx/1.30.5
+--     1441842 RespHeader     c Date: Tue, 20 Oct 2026 22:23:40 GMT
+--     1441842 RespHeader     c Content-Type: text/html; charset=UTF-8
+--     1441842 RespHeader     c Vary: Accept-Encoding
+--     1441842 RespHeader     c X-Powered-By: PHP/8.5.0
+--     1441842 RespHeader     c X-Magento-Tags: cat_c,cat_c_3,cat_c_10,cat_c_17,cat_c_24,cat_c_31
+--     1441842 RespHeader     c Pragma: cache
+--     1441842 RespHeader     c Cache-Control: max-age=3600, public, s-maxage=3600
+--     1441842 RespHeader     c Expires: Tue, 20 Oct 2026 23:23:40 GMT
+--     1441842 RespHeader     c X-Magento-Debug: 1
+--     1441842 RespHeader     c Content-Security-Policy-Report-Only: font-src www.paypalobjects.com data: 'self' 'unsafe-inline'; form-action geostag.cardinalcommerce.com geo.cardinalcommerce.com 1eafstag.cardinalcommerce.com 1eaf.cardinalcommerce.com centinelapistag.cardinalcommerce.c
+--     1441842 RespHeader     c X-Content-Type-Options: nosniff
+--     1441842 RespHeader     c X-Dist: Mage-OS
+--     1441842 RespHeader     c X-XSS-Protection: 1; mode=block
+--     1441842 RespHeader     c X-Frame-Options: SAMEORIGIN
+--     1441842 RespHeader     c X-Magento-Cache-Control: max-age=3600, public, s-maxage=3600
+--     1441842 RespHeader     c Content-Encoding: gzip
+--     1441842 RespHeader     c X-Varnish: 1441842 196652
+--     1441842 RespHeader     c Age: 76
+--     1441842 RespHeader     c Via: 1.1 inspector-e2e-varnish (Varnish/8.0)
+--     1441842 RespHeader     c Accept-Ranges: bytes
+--     1441842 VCL_call       c DELIVER
+--     1441842 RespHeader     c X-Cache: HIT
+--     1441842 RespHeader     c X-Cache-Hits: 3
+--     1441842 RespUnset      c Pragma: cache
+--     1441842 RespHeader     c Pragma: no-cache
+--     1441842 RespUnset      c Expires: Tue, 20 Oct 2026 23:23:40 GMT
+--     1441842 RespHeader     c Expires: -1
+--     1441842 RespUnset      c Cache-Control: max-age=3600, public, s-maxage=3600
+--     1441842 RespHeader     c Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+--     1441842 VCL_return     c deliver
+--     1441842 Timestamp      c Process: 1792535097.088258 0.000051 0.000051
+--     1441842 Filters        c 
+--     1441842 RespHeader     c Content-Length: 657
+--     1441842 Timestamp      c Resp: 1792535097.088285 0.000078 0.000027
+--     1441842 ReqAcct        c 0 0 0 0 657 657
+--     1441842 End            c 
+**             << BeReq    >>   1441841   
+--     1441841 Begin          b bereq 1441840 fetch
+--     1441841 VCL_use        b boot
+--     1441841 Timestamp      b Start: 1792535096.481086 0.000000 0.000000
+--     1441841 BereqMethod    b GET
+--     1441841 BereqURL       b /category-2.html
+--     1441841 BereqProtocol  b HTTP/1.1
+--     1441841 BereqHeader    b Host: app.inspector-e2e.test
+--     1441841 BereqHeader    b User-Agent: curl/8.7.1
+--     1441841 BereqHeader    b Accept: */*
+--     1441841 BereqHeader    b X-Forwarded-Host: app.inspector-e2e.test
+--     1441841 BereqHeader    b X-Forwarded-Port: 443
+--     1441841 BereqHeader    b X-Forwarded-Proto: https
+--     1441841 BereqHeader    b X-Forwarded-Server: be42dfa5ab20
+--     1441841 BereqHeader    b X-Real-Ip: 192.168.148.1
+--     1441841 BereqHeader    b X-Forwarded-For: 192.168.148.1, 192.168.165.2
+--     1441841 BereqHeader    b Via: 1.1 inspector-e2e-varnish (Varnish/8.0)
+--     1441841 BereqHeader    b Accept-Encoding: gzip
+--     1441841 BereqHeader    b X-Varnish: 1441841
+--     1441841 VCL_call       b BACKEND_FETCH
+--     1441841 VCL_return     b fetch
+--     1441841 Timestamp      b Fetch: 1792535096.481115 0.000029 0.000029
+--     1441841 Timestamp      b Connected: 1792535096.481516 0.000429 0.000400
+--     1441841 BackendOpen    b 24 default 192.168.165.12 80 192.168.165.13 53088 connect
+--     1441841 Timestamp      b Bereq: 1792535096.481572 0.000485 0.000056
+--     1441841 BerespProtocol b HTTP/1.1
+--     1441841 BerespStatus   b 200
+--     1441841 BerespReason   b OK
+--     1441841 BerespHeader   b Server: nginx/1.30.5
+--     1441841 BerespHeader   b Date: Tue, 20 Oct 2026 22:24:57 GMT
+--     1441841 BerespHeader   b Content-Type: text/html; charset=UTF-8
+--     1441841 BerespHeader   b Transfer-Encoding: chunked
+--     1441841 BerespHeader   b Connection: keep-alive
+--     1441841 BerespHeader   b Vary: Accept-Encoding
+--     1441841 BerespHeader   b X-Powered-By: PHP/8.5.0
+--     1441841 BerespHeader   b Set-Cookie: PHPSESSID=REDACTED00000000000000000000000; expires=Tue, 20 Oct 2026 23:24:56 GMT; Max-Age=3600; path=/; domain=app.inspector-e2e.test; secure; HttpOnly; SameSite=Lax
+--     1441841 BerespHeader   b Pragma: cache
+--     1441841 BerespHeader   b Cache-Control: max-age=604800, public, s-maxage=604800
+--     1441841 BerespHeader   b Expires: Tue, 27 Oct 2026 22:24:56 GMT
+--     1441841 BerespHeader   b X-Magento-Tags: store,cms_b,cat_c_10,cat_c_p_10,cat_p_1194,cat_p,cat_p_1195,cat_p_1196,cat_p_1197,cat_p_1198,cat_p_1192,cat_p_1193,cat_p_10,cat_p_100,cat_p_101,cat_p_102,cat_p_103
+--     1441841 BerespHeader   b X-Magento-Debug: 1
+--     1441841 BerespHeader   b Content-Security-Policy-Report-Only: font-src www.paypalobjects.com data: 'self' 'unsafe-inline'; form-action geostag.cardinalcommerce.com geo.cardinalcommerce.com 1eafstag.cardinalcommerce.com 1eaf.cardinalcommerce.com centinelapistag.cardinalcommerce.c
+--     1441841 BerespHeader   b X-Content-Type-Options: nosniff
+--     1441841 BerespHeader   b X-Dist: Mage-OS
+--     1441841 BerespHeader   b X-XSS-Protection: 1; mode=block
+--     1441841 BerespHeader   b X-Frame-Options: SAMEORIGIN
+--     1441841 BerespHeader   b Content-Encoding: gzip
+--     1441841 Timestamp      b Beresp: 1792535097.029170 0.548083 0.547598
+--     1441841 TTL            b RFC 604800 3600 0 1792535097 1792535097 1792535097 1793139896 604800 cacheable
+--     1441841 VCL_call       b BACKEND_RESPONSE
+--     1441841 BerespHeader   b X-Magento-Cache-Control: max-age=604800, public, s-maxage=604800
+--     1441841 BerespUnset    b Set-Cookie: PHPSESSID=REDACTED00000000000000000000000; expires=Tue, 20 Oct 2026 23:24:56 GMT; Max-Age=3600; path=/; domain=app.inspector-e2e.test; secure; HttpOnly; SameSite=Lax
+--     1441841 VCL_return     b deliver
+--     1441841 Timestamp      b Process: 1792535097.029214 0.548127 0.000043
+--     1441841 Filters        b  gunzip esi_gzip
+--     1441841 BerespUnset    b Content-Encoding: gzip
+--     1441841 BerespHeader   b Content-Encoding: gzip
+--     1441841 Storage        b malloc s0
+--     1441841 Fetch_Body     b 2 chunked -
+--     1441841 Gzip           b G F E 213610 23254 80 185952 185962
+--     1441841 Gzip           b U F - 22274 213610 80 80 178128
+--     1441841 BackendClose   b 24 default recycle
+--     1441841 Timestamp      b BerespBody: 1792535097.088384 0.607297 0.059170
+--     1441841 Length         b 23254
+--     1441841 BereqAcct      b 387 0 387 3603 22274 25877
+--     1441841 End            b 
+

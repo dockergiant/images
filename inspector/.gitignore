@@ -1,0 +1,2 @@
+# ui/build.sh output, embedded by ui/embed.go; CI and the Dockerfile build it from ui/src
+ui/dist/

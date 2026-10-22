@@ -1,0 +1,297 @@
+/*
+  Dashboards: the chart grid on every service's Health section, the strip on
+  top of PHP Hotspots and the service tiles on the Overview. Imported by
+  ../styles.css after the area files. The charts themselves come from
+  lib/charts.js and charts.css; this file only places them.
+*/
+
+.dash {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* The one filter row: it scopes every chart under it. */
+.dash-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.dash-note {
+  font-size: 12px;
+  color: var(--fog);
+}
+
+.seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--seam);
+  border-radius: 8px;
+  background: var(--well);
+}
+.seg-label {
+  padding: 0 6px 0 8px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fog);
+}
+.seg-btn {
+  min-height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--soft);
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.seg-btn:hover {
+  color: var(--chalk);
+}
+.seg-btn[aria-pressed="true"] {
+  background: var(--plate-raised);
+  color: var(--chalk);
+  box-shadow: inset 0 0 0 1px var(--seam-strong);
+}
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 12px;
+}
+.dash-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--seam);
+  border-radius: 8px;
+  background: var(--plate);
+}
+.dash-card > .chart {
+  flex: 1 1 auto;
+}
+/* A ring sits in the middle of whatever height its row gives it. */
+.dash-card > .chart-donut > .chart-body {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+}
+.dash-w4 {
+  grid-column: span 4;
+}
+.dash-w6 {
+  grid-column: span 6;
+}
+.dash-w8 {
+  grid-column: span 8;
+}
+.dash-w12 {
+  grid-column: span 12;
+}
+/* Four small charts side by side: the PHP strip on top of Hotspots. */
+.dash-w3 {
+  grid-column: span 3;
+}
+@media (max-width: 1279px) {
+  .dash-w3 {
+    grid-column: span 6;
+  }
+}
+@media (max-width: 899px) {
+  .dash-w4,
+  .dash-w6,
+  .dash-w8 {
+    grid-column: span 12;
+  }
+}
+
+/* The PHP strip is context for the bottleneck tables under it, so it stays
+   short enough that the Routes table starts in the first screen. */
+.dash-strip .dash-kpis {
+  gap: 8px;
+}
+.dash-strip .dash-kpi {
+  gap: 2px;
+  padding: 8px 12px 10px;
+}
+.dash-strip .dash-kpi .card-value {
+  font-size: 22px;
+}
+.dash-strip .dash-grid {
+  gap: 8px;
+}
+.dash-strip .dash-card {
+  padding: 10px 12px 12px;
+}
+.dash-strip .chart-subtitle {
+  display: none;
+}
+@media (max-width: 719px) {
+  /* On a phone the four charts become one swipeable row. */
+  .dash-strip .dash-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 82%;
+    grid-template-columns: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 4px;
+  }
+  .dash-strip .dash-w3 {
+    grid-column: auto;
+    scroll-snap-align: start;
+  }
+  .dash-strip .dash-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .dash-strip .dash-kpi-tail {
+    grid-column: auto;
+  }
+  .dash-strip .dash-kpi .card-value {
+    font-size: 18px;
+  }
+  .dash-strip .dash-kpi .card-sub {
+    display: none;
+  }
+}
+
+.dash-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.dash-kpi {
+  gap: 4px;
+  padding: 12px 16px 14px;
+  box-shadow: inset 0 2px 0 var(--accent-bar);
+}
+.dash-kpi .card-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.dash-kpi .card-value {
+  font-size: 28px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  font-variant-numeric: proportional-nums;
+}
+.dash-kpi .card-sub {
+  color: var(--fog);
+}
+
+@media (max-width: 719px) {
+  .dash-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .dash-kpi {
+    padding: 10px 12px 12px;
+  }
+  .dash-kpi .card-value {
+    font-size: 22px;
+  }
+  .dash-kpi-tail {
+    grid-column: span 2;
+  }
+}
+
+/* ---- Overview tiles ---- */
+
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 16px 12px;
+  border: 1px solid var(--seam);
+  border-radius: 8px;
+  background: var(--plate);
+  box-shadow: inset 0 2px 0 var(--accent-bar);
+}
+.tile-name {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.tile-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.tile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.tile-value {
+  font-family: var(--font-condensed);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.15;
+  font-variant-numeric: proportional-nums;
+  overflow-wrap: anywhere;
+}
+/* As on the KPI rows: only a warning or an error colours the headline. */
+.tile-value.tone-ok {
+  color: var(--chalk);
+}
+.tile-sub {
+  font-size: 12px;
+  color: var(--fog);
+}
+.tile-chart {
+  min-width: 0;
+}
+.tile-main[data-form="donut"] .tile-chart {
+  align-self: flex-start;
+  width: 96px;
+}
+.tile-caption {
+  margin-top: -4px;
+  font-size: 11px;
+  color: var(--fog);
+}
+.tile-link {
+  margin-top: auto;
+  padding-top: 4px;
+  font-size: 12px;
+  color: var(--soft);
+  text-decoration: none;
+}
+.tile-link:hover {
+  color: var(--chalk);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.tile.is-absent .tile-main {
+  opacity: 0.6;
+}
+/* Inside a tile the empty state is a quiet line, not a framed box. */
+.tile .chart-empty {
+  min-height: 0;
+  border: 0;
+  padding: 0;
+  justify-content: flex-start;
+  text-align: left;
+}

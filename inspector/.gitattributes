@@ -1,0 +1,2 @@
+# Fixtures are recorded protocol output (Redis INFO and HTTP headers use CRLF); keep them byte-exact
+testdata/** -text

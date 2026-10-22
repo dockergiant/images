@@ -1,0 +1,49 @@
+name: inspectortest
+
+services:
+  nginx:
+    image: nginx:1.27-alpine
+
+  varnish:
+    image: ghcr.io/dockergiant/varnish:8.0
+    init: true
+    environment:
+      - BACKEND_HOST=nginx
+    depends_on:
+      - nginx
+
+  redis:
+    image: ghcr.io/dockergiant/valkey:9.0
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli ping"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  opensearch:
+    image: ghcr.io/dockergiant/opensearch:3.5
+    environment:
+      - discovery.type=single-node
+      - indices.query.bool.max_clause_count=16384
+      - indices.id_field_data.enabled=true
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+      - DISABLE_INSTALL_DEMO_CONFIG=true
+      - DISABLE_SECURITY_PLUGIN=true
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=1s"]
+      interval: 3s
+      timeout: 5s
+      retries: 60
+
+  rabbitmq:
+    image: ghcr.io/dockergiant/rabbitmq:4.3
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+      interval: 3s
+      timeout: 10s
+      retries: 60
+
+  # Stands in for the env's php-fpm: the docker package test curls Varnish
+  # from it as www-data, and the Magento reader execs into it.
+  php-fpm:
+    image: ghcr.io/dockergiant/php-fpm:8.5

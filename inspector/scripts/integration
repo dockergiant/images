@@ -1,0 +1,33 @@
+#!/bin/sh
+# Runs the integration tests against the throwaway compose stack in
+# testdata/compose.yml (project inspectortest), never against a roll env.
+# Extra arguments go to go test, for example: scripts/integration -run Firehose
+# INSPECTOR_IT_KEEP=1 leaves the stack running afterwards.
+set -eu
+root=$(cd "$(dirname "$0")/.." && pwd)
+project=inspectortest
+compose="docker compose -p $project -f $root/testdata/compose.yml"
+
+down() {
+  if [ "${INSPECTOR_IT_KEEP:-0}" != 1 ]; then
+    $compose down -v --remove-orphans >/dev/null 2>&1 || true
+  fi
+}
+trap down EXIT INT TERM
+
+$compose up -d --wait --wait-timeout 300
+
+# -p 1: the docker, search and root tests share the one stack, and the search
+# test counts the capture markers it reconciles.
+docker run --rm \
+  --network "${project}_default" \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$root":/src -w /src \
+  -v roll-inspector-gomod:/go/pkg/mod \
+  -v roll-inspector-gocache:/root/.cache/go-build \
+  -e CGO_ENABLED=0 -e GOFLAGS=-mod=mod \
+  -e ROLL_ENV_NAME=$project \
+  -e INSPECTOR_IT_ENV=$project \
+  -e INSPECTOR_TEST_REDIS=redis:6379 \
+  -e SEARCH_SCRATCH_URL=http://opensearch:9200 \
+  golang:1.27-alpine go test -tags integration -p 1 -count=1 "$@" ./...

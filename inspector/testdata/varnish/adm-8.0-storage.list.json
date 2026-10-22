@@ -1,0 +1,11 @@
+[ 2, ["storage.list", "-j"], 1792527806.269,
+  {
+    "name": "s0",
+    "storage": "malloc"
+},
+  {
+    "name": "Transient",
+    "storage": "default"
+}
+]
+

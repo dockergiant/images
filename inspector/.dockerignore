@@ -1,0 +1,4 @@
+ui/dist
+scripts
+testdata
+*.md

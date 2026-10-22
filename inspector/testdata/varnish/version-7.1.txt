@@ -1,0 +1,3 @@
+varnishd (varnish-7.1.2 revision b399e1fcc7467b8c255630fa3b3fd6311e59e4df)
+Copyright (c) 2006 Verdens Gang AS
+Copyright (c) 2006-2022 Varnish Software
