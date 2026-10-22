@@ -175,6 +175,12 @@ func TestEnvScriptOnFixture(t *testing.T) {
 	}
 	want, _ := parseEnv(scriptOutput(readFixture(t, "envphp-synthetic.json")))
 	got.MTime, want.MTime = 0, 0
+	// igbinary reports the PHP that runs the script, not the fixture: CI runners ship it, the php-fpm image does not
+	ext, err := exec.Command(php, "-r", `echo extension_loaded("igbinary") ? "1" : "0";`).Output()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want.Igbinary = string(ext) == "1"
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("got %+v\nwant %+v", got, want)
 	}
