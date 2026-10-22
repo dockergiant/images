@@ -35,6 +35,16 @@ RUN if [ "${PHP_VERSION}" = "7.0" ]; \
     python \
     python-pip; fi
 
+# pecl.php.net's CDN answers HTTP/1.1 requests with chunked bodies, which PEAR's raw-socket client
+# does not decode ("XML Error: Not well-formed", "No releases available"). HTTP/1.0 gets a plain body.
+# Variants and the entrypoint's ADD_PHP_EXT run inherit this PEAR.
+RUN set -eux; \
+    pear_dir="$(pear config-get php_dir)/PEAR"; \
+    test -f "$pear_dir/REST.php"; \
+    test -f "$pear_dir/Downloader.php"; \
+    sed -i 's#HTTP/1\.1\\r\\n#HTTP/1.0\\r\\n#' "$pear_dir/REST.php" "$pear_dir/Downloader.php"; \
+    ! grep -q 'HTTP/1\.1' "$pear_dir/REST.php" "$pear_dir/Downloader.php"
+
 # Install PHP Extensions required by Magento OS, Adobe Commerce, and the UCT (pcntl)
 RUN chmod +x /usr/local/bin/install-php-extensions && install-php-extensions \
     apcu \
