@@ -171,6 +171,8 @@ The `*-autologin.conf` templates inject `/auto-login.js` before `</head>` with `
 
 Key env vars: `NGINX_TEMPLATE`, `NGINX_ROOT=/var/www/html`, `NGINX_PUBLIC=/pub`, `NGINX_UPSTREAM_HOST=php-fpm`, `NGINX_UPSTREAM_PORT=9000`, `NGINX_UPSTREAM_DEBUG_HOST=php-debug`, `NGINX_UPSTREAM_BLACKFIRE_HOST=php-blackfire`.
 
+**DNS cache:** `etc/nginx/conf.d/default.conf` sets `resolver 127.0.0.11 valid=10s`. Without the short `valid`, nginx kept the old php-fpm IP after a container recreate and answered 502.
+
 **Xdebug routing:** requests are routed to the `php-debug` upstream automatically when an `XDEBUG_SESSION`, `XDEBUG_PROFILE`, or `XDEBUG_TRACE` cookie is present.
 
 ---
